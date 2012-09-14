@@ -1,0 +1,6 @@
+;; -*- emacs-lisp -*- <12/04/09 22:48:22 /Users/acobb/.emacs.d/tramp>
+;; Tramp connection history.  Don't change this file.
+;; You can delete it, forcing Tramp to reapply the checks.
+
+((["ssh" nil "samwise.local" nil]
+  nil))
