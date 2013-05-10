@@ -50,6 +50,26 @@
  '(lambda ()
    (c-add-style "my" my-c-style t)))
 
+(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+
+(unless (require 'el-get nil 'noerror)
+  (with-current-buffer
+      (url-retrieve-synchronously
+       "https://raw.github.com/dimitri/el-get/master/el-get-install.el")
+    (let (el-get-master-branch)
+      (goto-char (point-max))
+      (eval-print-last-sexp))))
+
+(setq
+ el-get-sources
+ '(el-get
+   vimpulse
+   haskell-mode
+   auto-complete
+   clojure-mode))
+
+(el-get 'sync)
+
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 300)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
 
@@ -87,18 +107,13 @@
 
 ;;(load-file (expand-file-name "~/elisp/sml-mode/sml-mode-startup.el"))
 
-(setq load-path
- (append
-  (mapcar #'expand-file-name
+(mapc
+ (lambda (x)
+  (add-to-list 'load-path (expand-file-name x)))
    '("~/.emacs.d"
-     "~/.emacs.d/vimpulse"
-     "~/.emacs.d/dart-mode"
-     "~/.emacs.d/slime"
-     "~/.emacs.d/auto-complete"))
-  load-path))
+     "~/collab-mode"))
 
 (require 'vimpulse)
-(require 'dart-mode)
 
 (require 'auto-complete)
 (require 'auto-complete-config)
@@ -184,6 +199,7 @@
     ("\\.clj\\'" . clojure-mode)
     ("\\.nu\\'" .  nu-mode)
     ("[Nn]ukefile\\'" . nu-mode)
+    ("[Mm]akefile." . makefile-mode)
     ("\\.json\\'" . js-mode)
     ("\\.cs\\'" . csharp-mode)
     ("\\.cl\\'" . lisp-mode)
@@ -258,10 +274,20 @@
 
 ;; Auto-generated: do not touch
 (custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(emdroid-activity-creator "activityCreator.py")
  '(emdroid-tools-dir "/Users/acobb/Desktop/programs/android/tools/")
  '(fill-column 80)
  '(ido-create-new-buffer (quote always))
  '(ido-everywhere t)
- '(ido-mode (quote both) nil (ido)))
-(custom-set-faces)
+ '(ido-mode (quote both) nil (ido))
+ '(safe-local-variable-values (quote ((encoding . utf-8)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
