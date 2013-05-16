@@ -82,6 +82,7 @@
 
 (define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "<f9>") "λ")
+(global-set-key (kbd "M-u") 'ucs-insert)
 (global-set-key (kbd "C-c s") 'query-replace-regexp)
 (global-set-key (kbd "C-c a") 'auto-complete-mode)
 (global-set-key (kbd "C-c w") 'fixup-whitespace)
@@ -271,6 +272,8 @@
 (require 'visible-mark)
 
 (global-visible-mark-mode t)
+
+(server-start)
 
 ;; Auto-generated: do not touch
 (custom-set-variables
