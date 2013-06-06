@@ -27,10 +27,12 @@
 (setq inhibit-splash-screen t)
 (setq initial-scratch-message "")
 (setq tab-width 4)
+(setq coffee-tab-width 4)
 (setq viper-shift-width 4)
 (setq-default indent-tabs-mode nil)
 (setq-default py-indent-offset 4)
 (setq sgml-basic-offset 1)
+(setq hamlet-basic-offset 1)
 (setq lisp-indent-offset 1)
 (show-paren-mode 1)
 
@@ -66,6 +68,7 @@
  '(vimpulse
    haskell-mode
    auto-complete
+   coffee-mode
    clojure-mode))
 
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 300)))
@@ -195,6 +198,7 @@
     ("\\.ijs\\'" . j-mode)
     ("\\.j\\'" . objj-mode)
     ("\\.js\\'" . js-mode)
+    ("\\.julius\\'" . js-mode)
     ("\\.clj\\'" . clojure-mode)
     ("\\.nu\\'" .  nu-mode)
     ("[Nn]ukefile\\'" . nu-mode)
@@ -206,6 +210,7 @@
     ("\\.rkt\\'" . scheme-mode)
     ("\\.dart\\'" . dart-mode)
     ("\\.pro\\'" . qmake-mode)
+    ("\\.coffee\\'" . coffee-mode)
     ("\\.ly\\'" . LilyPond-mode))
   auto-mode-alist))
 
@@ -259,6 +264,7 @@
 (put 'upcase-region 'disabled nil)
 
 (load "~/.emacs.d/el-get/haskell-mode/haskell-site-file")
+(require 'hamlet-mode)
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
