@@ -104,10 +104,8 @@
    (setq ns-input-file (cdr ns-input-file))
    (find-file f))))
 
-(require 'tex-mode) ;; TODO: figure out a way to autoload this
-(define-key tex-mode-map (kbd "C-j") 'newline-and-indent)
-
-;;(load-file (expand-file-name "~/elisp/sml-mode/sml-mode-startup.el"))
+(eval-after-load "tex-mode"
+ '(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
 
 (mapc
  (lambda (x)
@@ -166,9 +164,6 @@
  (setq linum-format "%d "))
 
 (require 'autoloaded)
-;;(require 'ispell)
-
-;; (require 'show-whitespace-mode)
 
 (defun http-find-file (arg url)
  (interactive "P\nsURL: ")
@@ -180,12 +175,6 @@
     (http-decode-buffer)
     (set-visited-file-name (concat "/tmp/" buffer-name)))
    nil buffer-name nil)))
-
-(defun google-style ()
- "loads google c style"
- (interactive)
- (require 'google-c-style)
- (add-hook 'c-mode-common-hook 'google-set-c-style))
 
 (autoload 'glsl-mode "glsl-mode" nil t)
 
@@ -279,22 +268,11 @@
 
 (server-start)
 
-;; Auto-generated: do not touch
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(emdroid-activity-creator "activityCreator.py")
- '(emdroid-tools-dir "/Users/acobb/Desktop/programs/android/tools/")
- '(fill-column 80)
- '(ido-create-new-buffer (quote always))
- '(ido-everywhere t)
- '(ido-mode (quote both) nil (ido))
- '(safe-local-variable-values (quote ((encoding . utf-8)))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(setq emdroid-activity-creator "activityCreator.py")
+(setq emdroid-tools-dir "/Users/acobb/Desktop/programs/android/tools/")
+(setq fill-column 80)
+(setq ido-create-new-buffer 'always)
+(setq ido-everywhere t)
+(eval-after-load "ido"
+ '(setq ido-mode 'both))
+(setq safe-local-variable-values '((encoding . utf-8)))
