@@ -275,8 +275,10 @@
 (setq emdroid-activity-creator "activityCreator.py")
 (setq emdroid-tools-dir "/Users/acobb/Desktop/programs/android/tools/")
 (setq fill-column 80)
-(setq ido-create-new-buffer 'always)
-(setq ido-everywhere t)
 (eval-after-load "ido"
- '(setq ido-mode 'both))
+ '(progn
+   (setq ido-create-new-buffer 'always)
+   (setq ido-enable-flex-matching t)
+   (setq ido-everywhere t)
+   (ido-mode 'both)))
 (setq safe-local-variable-values '((encoding . utf-8)))
