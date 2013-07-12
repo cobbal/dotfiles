@@ -36,6 +36,10 @@
 (setq lisp-indent-offset 1)
 (show-paren-mode 1)
 
+;; Sea lion hack
+(when (string= default-directory "/Applications/")
+ (setq default-directory (expand-file-name "~/")))
+
 (defconst my-c-style
  '((c-basic-offset . 4)
    (c-offsets-alist . ((substatement-open . 0)
