@@ -107,6 +107,8 @@
   (let ((f (car ns-input-file)))
    (setq ns-input-file (cdr ns-input-file))
    (find-file f))))
+;; bind C-x 5 3 to be same as C-x 5 2
+(define-key ctl-x-5-map "3" 'make-frame-command)
 
 (eval-after-load "tex-mode"
  '(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
