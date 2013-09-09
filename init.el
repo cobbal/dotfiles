@@ -80,7 +80,8 @@
 
 (if (x-display-list)
  (catch 'break
-  (dolist (font '("-apple-Espresso mono-medium-r-normal--0-0-0-0-m-0-iso10646-1"))
+  (dolist (font '("-apple-Espresso mono-medium-r-normal--0-0-0-0-m-0-iso10646-1"
+                  "-unknown-DejaVu Sans mono-normal-normal-normal-*-*-*-*-*-*-0-iso10646-1"))
    (when (x-list-fonts font)
     (add-to-list 'default-frame-alist (cons 'font font))
     (throw 'break nil)))))
