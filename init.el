@@ -56,6 +56,10 @@
  '(lambda ()
    (c-add-style "my" my-c-style t)))
 
+(add-hook 'mixal-mode-hook
+ '(lambda ()
+   (setq indent-tabs-mode t)))
+
 (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
 
 (setq el-get-notify-type 'message)
