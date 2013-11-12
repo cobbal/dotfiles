@@ -5,7 +5,7 @@
 (setq ns-pop-up-frames nil)
 (tool-bar-mode -1)
 
-(blink-cursor-mode 1)
+(blink-cursor-mode 0)
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 
@@ -37,7 +37,7 @@
 (show-paren-mode 1)
 
 ;; Sea lion hack
-(when (string= default-directory "/Applications/")
+(when (string= default-directory "/")
  (setq default-directory (expand-file-name "~/")))
 
 (defconst my-c-style
@@ -259,7 +259,7 @@
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
 
-(load "~/.emacs.d/el-get/haskell-mode/haskell-site-file")
+;;(load "~/.emacs.d/el-get/haskell-mode/haskell-site-file")
 (require 'hamlet-mode)
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
