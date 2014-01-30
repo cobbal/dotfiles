@@ -26,7 +26,7 @@
 (setq inhibit-startup-screen t)
 (setq inhibit-splash-screen t)
 (setq initial-scratch-message "")
-(setq tab-width 4)
+(setq-default tab-width 4)
 (setq coffee-tab-width 4)
 (setq viper-shift-width 4)
 (setq-default indent-tabs-mode nil)
@@ -60,6 +60,8 @@
  '(lambda ()
    (setq indent-tabs-mode t)))
 
+(add-to-list 'exec-path "/usr/local/bin")
+
 (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
 
 (setq el-get-notify-type 'message)
@@ -84,11 +86,16 @@
 
 (if (x-display-list)
  (catch 'break
-  (dolist (font '("-apple-Espresso mono-medium-r-normal--0-0-0-0-m-0-iso10646-1"
+  (dolist (font '(
+                  ;;"-apple-CMU_Typewriter_Text-medium-normal-normal-*-*-*-*-*-m-0-iso10646-1"
+                  "-apple-Espresso mono-medium-r-normal--0-0-0-0-m-0-iso10646-1"
                   "-unknown-DejaVu Sans mono-normal-normal-normal-*-*-*-*-*-*-0-iso10646-1"))
    (when (x-list-fonts font)
     (add-to-list 'default-frame-alist (cons 'font font))
     (throw 'break nil)))))
+;;(set-face-attribute 'default nil :height 90)
+;;(set-face-attribute 'default nil :font "Espresso Mono-10")
+;;(setq mac-allow-anti-aliasing nil)
 
 (define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "<f9>") "λ")
@@ -100,7 +107,7 @@
 (global-set-key (kbd "C-c C") 'compile)
 (global-set-key (kbd "C-c C-c") 'comment-region)
 (global-set-key (kbd "C-c u") 'revert-buffer)
-(global-set-key (kbd "C-c ;") 'ispell)
+(global-set-key (kbd "C-c ;") 'ispell-buffer)
 (global-set-key (kbd "M-`") 'ff-find-other-file)
 (global-set-key (kbd "M-h") 'ns-do-hide-emacs)
 (global-set-key (kbd "M-RET") 'ns-toggle-fullscreen)
@@ -155,6 +162,26 @@
 (require 'objc-help)
 (iphoneize)
 
+
+;; borrowed from http://www.emacswiki.org/emacs/NxmlMode
+(defun nxml-where ()
+ "Display the hierarchy of XML elements the point is on as a path."
+ (interactive)
+ (let ((path nil))
+  (save-excursion
+   (save-restriction
+    (widen)
+    (while (and (< (point-min) (point)) ;; Doesn't error if point is at beginning of buffer
+            (condition-case nil
+             (progn
+              (nxml-backward-up-element) ; always returns nil
+              t)
+             (error nil)))
+     (setq path (cons (xmltok-start-tag-local-name) path)))
+    (if (called-interactively-p t)
+     (message "/%s" (mapconcat 'identity path "/"))
+     (format "/%s" (mapconcat 'identity path "/")))))))
+
 ;; Function to make brace highlighting like Vim's
 ;; Contributed by Alessandro Piras
 (require 'advice)
@@ -193,7 +220,7 @@
  (append
   '(("\\.mm\\'" . objc-mode)
     ("\\.h\\'" . c++-mode)
-    ("\\.[vf]sh\\'" . glsl-mode)
+    ("\\.\\(v\\|f\\|tc\\|te\\)sh\\'" . glsl-mode)
     ("\\.jsont\\'" . html-mode)
     ("\\.ijs\\'" . j-mode)
     ("\\.j\\'" . objj-mode)
@@ -255,10 +282,7 @@
 
 (defun byte-compile-all-in-emacs-d ()
  (interactive)
- (mapcar
-  (lambda (file-name)
-   (list file-name (byte-compile-file file-name)))
-  (split-string (shell-command-to-string "find ~/.emacs.d -name '*.el' -print0") "\0" t)))
+ (byte-recompile-directory (expand-file-name "~/.emacs.d") 0))
 
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
@@ -288,4 +312,6 @@
    (setq ido-enable-flex-matching t)
    (setq ido-everywhere t)
    (ido-mode 'both)))
-(setq safe-local-variable-values '((encoding . utf-8)))
+(setq safe-local-variable-values
+ '((eval . (auto-fill-mode t))
+   (encoding . utf-8)))

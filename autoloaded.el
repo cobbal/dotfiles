@@ -63,4 +63,6 @@ use `decode-coding-region' and get the coding system to use from
  "Major mode for editing Objective-J files."
  t)
 
+(autoload 'light-symbol "light-symbol")
+
 (provide 'autoloaded)
