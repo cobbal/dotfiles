@@ -1,3 +1,5 @@
+;; -*-no-byte-compile: t; -*-
+
 (setq mac-option-key-is-meta nil)
 (setq mac-command-key-is-meta t)
 (setq mac-command-modifier 'meta)
@@ -9,8 +11,32 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 
-(setq viper-mode t)
-(require 'viper)
+(add-to-list 'exec-path "/usr/local/bin")
+
+(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+(add-to-list 'load-path "/usr/local/Cellar/coq/8.4pl3/lib/emacs/site-lisp")
+
+(setq el-get-notify-type 'message)
+(unless (require 'el-get nil 'noerror)
+ (with-current-buffer
+  (url-retrieve-synchronously
+   "https://raw.github.com/dimitri/el-get/master/el-get-install.el")
+  (let (el-get-master-branch)
+   (goto-char (point-max))
+   (eval-print-last-sexp))))
+
+(el-get 'sync
+ '(haskell-mode
+   auto-complete
+   coffee-mode
+   clojure-mode
+   evil))
+
+(require 'evil)
+(evil-mode 1)
+(global-undo-tree-mode -1)
+(setq undo-limit (round (* 1 1024 1024 1024)))
+(setq undo-strong-limit (round (* 1.5 1024 1024 1024)))
 
 (setq transient-mark-mode nil)
 (setq vc-follow-symlinks t)
@@ -26,9 +52,9 @@
 (setq inhibit-startup-screen t)
 (setq inhibit-splash-screen t)
 (setq initial-scratch-message "")
+(setq-default fill-column 80)
 (setq-default tab-width 4)
 (setq coffee-tab-width 4)
-(setq viper-shift-width 4)
 (setq-default indent-tabs-mode nil)
 (setq-default py-indent-offset 4)
 (setq sgml-basic-offset 1)
@@ -60,36 +86,14 @@
  '(lambda ()
    (setq indent-tabs-mode t)))
 
-(add-to-list 'exec-path "/usr/local/bin")
-
-(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
-
-(setq el-get-notify-type 'message)
-(unless (require 'el-get nil 'noerror)
- (with-current-buffer
-  (url-retrieve-synchronously
-   "https://raw.github.com/dimitri/el-get/master/el-get-install.el")
-  (let (el-get-master-branch)
-   (goto-char (point-max))
-   (eval-print-last-sexp))))
-
-
-(el-get 'sync
- '(vimpulse
-   haskell-mode
-   auto-complete
-   coffee-mode
-   clojure-mode))
-
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 300)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
 
 (if (x-display-list)
  (catch 'break
-  (dolist (font '(
-                  ;;"-apple-CMU_Typewriter_Text-medium-normal-normal-*-*-*-*-*-m-0-iso10646-1"
-                  "-apple-Espresso mono-medium-r-normal--0-0-0-0-m-0-iso10646-1"
-                  "-unknown-DejaVu Sans mono-normal-normal-normal-*-*-*-*-*-*-0-iso10646-1"))
+  (dolist (font
+           '("-apple-Espresso mono-medium-r-normal--0-0-0-0-m-0-iso10646-1"
+             "-unknown-DejaVu Sans mono-normal-normal-normal-*-*-*-*-*-*-0-iso10646-1"))
    (when (x-list-fonts font)
     (add-to-list 'default-frame-alist (cons 'font font))
     (throw 'break nil)))))
@@ -113,12 +117,7 @@
 (global-set-key (kbd "M-RET") 'ns-toggle-fullscreen)
 (global-set-key (kbd "RET") 'newline-and-indent)
 (global-set-key (kbd "M-s") 'save-buffer)
-(global-set-key (kbd "<ns-drag-file>")
- (lambda ()
-  (interactive)
-  (let ((f (car ns-input-file)))
-   (setq ns-input-file (cdr ns-input-file))
-   (find-file f))))
+
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map "3" 'make-frame-command)
 
@@ -128,10 +127,8 @@
 (mapc
  (lambda (x)
   (add-to-list 'load-path (expand-file-name x)))
-   '("~/.emacs.d"
+   '("~/.emacs.d/lisp"
      "~/collab-mode"))
-
-(require 'vimpulse)
 
 (require 'auto-complete)
 (require 'auto-complete-config)
@@ -139,7 +136,7 @@
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
 (add-hook 'emacs-lisp-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-symbols)))
 (add-hook 'auto-complete-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-filename)))
-(define-key ac-complete-mode-map viper-ESC-key 'viper-intercept-ESC-key)
+;;(define-key ac-complete-mode-map viper-ESC-key 'viper-intercept-ESC-key)
 (add-hook 'objc-mode-hook
  (lambda ()
   (run-at-time ".1 second" nil
@@ -182,24 +179,10 @@
      (message "/%s" (mapconcat 'identity path "/"))
      (format "/%s" (mapconcat 'identity path "/")))))))
 
-;; Function to make brace highlighting like Vim's
-;; Contributed by Alessandro Piras
-(require 'advice)
-'(defadvice show-paren-function (around viper-shop-paren-function activate)
- (let ((close-chars (list ?\) ?\] ?\})))
-  (if viper-vi-basic-minor-mode
-   (cond
-    ((member (char-after (point)) close-chars)
-     (save-excursion
-      (forward-char)
-      ad-do-it))
-    ((member (char-after (- (point) 1)) close-chars) nil)
-    (t ad-do-it))
-   ad-do-it)))
-
 (when (boundp 'global-linum-mode)
  (global-linum-mode t)
  (setq linum-format "%d "))
+(column-number-mode t)
 
 (require 'autoloaded)
 
@@ -301,6 +284,17 @@
 
 (global-visible-mark-mode t)
 
+(setq proof-splash-enable nil)
+(setq auto-mode-alist (cons '("\.v$" . coq-mode) auto-mode-alist))
+(autoload 'coq-mode "coq" "Major mode for editing Coq vernacular." t)
+(load-file "~/.emacs.d/ProofGeneral/generic/proof-site.el")
+
+(require 'compile)
+(add-to-list
+ 'compilation-error-regexp-alist
+ '("^\\([^ \n]+\\)(\\([0-9]+\\)): \\(?:error\\|.\\|warnin\\(g\\)\\|remar\\(k\\)\\)"
+   1 2 nil (3 . 4)))
+
 (server-start)
 
 (setq emdroid-activity-creator "activityCreator.py")
@@ -315,3 +309,5 @@
 (setq safe-local-variable-values
  '((eval . (auto-fill-mode t))
    (encoding . utf-8)))
+
+(setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
