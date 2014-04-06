@@ -9,9 +9,6 @@
 Use `http-twiddle-mode-send' (\\[http-twiddle-mode-send]) to send the request."
   t)
 
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/domtool"))
-(autoload 'domtool-mode "domtool-mode" nil t)
-
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/clojure-mode"))
 (autoload 'clojure-mode "clojure-mode" nil t)
 

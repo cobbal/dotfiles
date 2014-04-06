@@ -30,6 +30,7 @@
    auto-complete
    coffee-mode
    clojure-mode
+   d-mode
    evil))
 
 (require 'evil)
@@ -66,25 +67,24 @@
 (when (string= default-directory "/")
  (setq default-directory (expand-file-name "~/")))
 
-(defconst my-c-style
- '((c-basic-offset . 4)
-   (c-offsets-alist . ((substatement-open . 0)
-                       (defun-open . 0)
-                       (innamespace . 0)
-                       (inextern-lang . 0)
-                       (case-label . 4)
-                       (statement-case-open . 4)
-                       (statement-case-intro . 4)
-                       (inline-open . 0)
-                       (brace-list-open . 0)))))
-
 (add-hook 'c-mode-common-hook
- '(lambda ()
-   (c-add-style "my" my-c-style t)))
+ (lambda ()
+  (c-add-style ""
+   '((c-basic-offset . 4)
+     (c-offsets-alist . ((substatement-open . 0)
+                         (defun-open . 0)
+                         (innamespace . 0)
+                         (inextern-lang . 0)
+                         (case-label . 4)
+                         (statement-case-open . 4)
+                         (statement-case-intro . 4)
+                         (inline-open . 0)
+                         (brace-list-open . 0)))))
+  t))
 
 (add-hook 'mixal-mode-hook
- '(lambda ()
-   (setq indent-tabs-mode t)))
+ (lambda ()
+  (setq indent-tabs-mode t)))
 
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 300)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
@@ -101,7 +101,7 @@
 ;;(set-face-attribute 'default nil :font "Espresso Mono-10")
 ;;(setq mac-allow-anti-aliasing nil)
 
-(define-key global-map [down-mouse-1] nil)
+;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "<f9>") "λ")
 (global-set-key (kbd "M-u") 'ucs-insert)
 (global-set-key (kbd "C-c s") 'query-replace-regexp)
@@ -199,30 +199,30 @@
 
 (autoload 'glsl-mode "glsl-mode" nil t)
 
-(setq auto-mode-alist
- (append
-  '(("\\.mm\\'" . objc-mode)
-    ("\\.h\\'" . c++-mode)
-    ("\\.\\(v\\|f\\|tc\\|te\\)sh\\'" . glsl-mode)
-    ("\\.jsont\\'" . html-mode)
-    ("\\.ijs\\'" . j-mode)
-    ("\\.j\\'" . objj-mode)
-    ("\\.js\\'" . js-mode)
-    ("\\.julius\\'" . js-mode)
-    ("\\.clj\\'" . clojure-mode)
-    ("\\.nu\\'" .  nu-mode)
-    ("[Nn]ukefile\\'" . nu-mode)
-    ("[Mm]akefile." . makefile-mode)
-    ("\\.json\\'" . js-mode)
-    ("\\.cs\\'" . csharp-mode)
-    ("\\.cl\\'" . lisp-mode)
-    ("\\.fscr\\'" . smalltalk-mode)
-    ("\\.rkt\\'" . scheme-mode)
-    ("\\.dart\\'" . dart-mode)
-    ("\\.pro\\'" . qmake-mode)
-    ("\\.coffee\\'" . coffee-mode)
-    ("\\.ly\\'" . LilyPond-mode))
-  auto-mode-alist))
+(dolist (a
+         '(("\\.mm\\'" . objc-mode)
+   ("\\.h\\'" . c++-mode)
+   ("\\.\\(v\\|f\\|tc\\|te\\)sh\\'" . glsl-mode)
+   ("\\.jsont\\'" . html-mode)
+   ("\\.ijs\\'" . j-mode)
+   ("\\.j\\'" . objj-mode)
+   ("\\.js\\'" . js-mode)
+   ("\\.julius\\'" . js-mode)
+   ("\\.clj\\'" . clojure-mode)
+   ("\\.nu\\'" .  nu-mode)
+   ("[Nn]ukefile\\'" . nu-mode)
+   ("[Mm]akefile." . makefile-mode)
+   ("\\.json\\'" . js-mode)
+   ("\\.cs\\'" . csharp-mode)
+   ("\\.cl\\'" . lisp-mode)
+   ("\\.fscr\\'" . smalltalk-mode)
+   ("\\.rkt\\'" . scheme-mode)
+   ("\\.dart\\'" . dart-mode)
+   ("\\.pro\\'" . qmake-mode)
+   ("\\.coffee\\'" . coffee-mode)
+   ("\\.ly\\'" . LilyPond-mode)
+ ("\\.v\\'" . coq-mode)))
+ (add-to-list 'auto-mode-alist a))
 
 (add-hook 'js-mode-hook
  (lambda ()
@@ -285,17 +285,15 @@
 (global-visible-mark-mode t)
 
 (setq proof-splash-enable nil)
-(setq auto-mode-alist (cons '("\.v$" . coq-mode) auto-mode-alist))
 (autoload 'coq-mode "coq" "Major mode for editing Coq vernacular." t)
 (load-file "~/.emacs.d/ProofGeneral/generic/proof-site.el")
 
-(require 'compile)
-(add-to-list
- 'compilation-error-regexp-alist
- '("^\\([^ \n]+\\)(\\([0-9]+\\)): \\(?:error\\|.\\|warnin\\(g\\)\\|remar\\(k\\)\\)"
-   1 2 nil (3 . 4)))
-
-(server-start)
+(add-hook 'd-mode-hook
+ (lambda ()
+  (add-to-list
+   'compilation-error-regexp-alist
+   '("^\\([^ \n]+\\)(\\([0-9]+\\)): \\(?:error\\|.\\|warnin\\(g\\)\\|remar\\(k\\)\\)"
+     1 2 nil (3 . 4)))))
 
 (setq emdroid-activity-creator "activityCreator.py")
 (setq emdroid-tools-dir "/Users/acobb/Desktop/programs/android/tools/")
@@ -311,3 +309,5 @@
    (encoding . utf-8)))
 
 (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
+
+(server-start)
