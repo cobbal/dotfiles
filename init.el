@@ -14,7 +14,7 @@
 (add-to-list 'exec-path "/usr/local/bin")
 
 (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
-(add-to-list 'load-path "/usr/local/Cellar/coq/8.4pl3/lib/emacs/site-lisp")
+(add-to-list 'load-path "/usr/local/opt/coq/lib/emacs/site-lisp")
 
 (setq el-get-notify-type 'message)
 (unless (require 'el-get nil 'noerror)
@@ -26,22 +26,26 @@
    (eval-print-last-sexp))))
 
 (el-get 'sync
- '(haskell-mode
-   auto-complete
+ '(auto-complete
    coffee-mode
    clojure-mode
    d-mode
-   evil))
+   evil
+   fsharp-mode
+   go-mode
+   graphviz-dot-mode
+   haskell-mode
+   hy-mode
+   markdown-mode
+   php-mode
+   rust-mode
+   scala-mode
+   sml-mode
+   swift-mode))
 
 (require 'evil)
 (evil-mode 1)
 (global-undo-tree-mode -1)
-(setq undo-limit (round (* 1 1024 1024 1024)))
-(setq undo-strong-limit (round (* 1.5 1024 1024 1024)))
-
-(setq transient-mark-mode nil)
-(setq vc-follow-symlinks t)
-(setq visible-bell t)
 
 (prefer-coding-system           'utf-8)
 (set-default-coding-systems     'utf-8)
@@ -49,6 +53,12 @@
 (set-keyboard-coding-system     'utf-8)
 (setq buffer-file-coding-system 'utf-8)
 
+(setq evil-cross-lines t)
+(setq undo-limit (round (* 1 1024 1024 1024)))
+(setq undo-strong-limit (round (* 1.5 1024 1024 1024)))
+(setq transient-mark-mode nil)
+(setq vc-follow-symlinks t)
+(setq visible-bell t)
 (setq apropos-do-all t)
 (setq inhibit-startup-screen t)
 (setq inhibit-splash-screen t)
@@ -61,15 +71,14 @@
 (setq sgml-basic-offset 1)
 (setq hamlet-basic-offset 1)
 (setq lisp-indent-offset 1)
-(show-paren-mode 1)
+(setq fill-column 80)
+(setq sentence-end-double-space nil)
 
-;; Sea lion hack
-(when (string= default-directory "/")
- (setq default-directory (expand-file-name "~/")))
+(show-paren-mode 1)
 
 (add-hook 'c-mode-common-hook
  (lambda ()
-  (c-add-style ""
+  (c-add-style "correct"
    '((c-basic-offset . 4)
      (c-offsets-alist . ((substatement-open . 0)
                          (defun-open . 0)
@@ -80,6 +89,7 @@
                          (statement-case-intro . 4)
                          (inline-open . 0)
                          (brace-list-open . 0)))))
+  (c-set-style "correct")
   t))
 
 (add-hook 'mixal-mode-hook
@@ -102,9 +112,10 @@
 ;;(setq mac-allow-anti-aliasing nil)
 
 ;;(define-key global-map [down-mouse-1] nil)
-(global-set-key (kbd "<f9>") "λ")
-(global-set-key (kbd "M-u") 'ucs-insert)
+(global-set-key (kbd "C-c \\") "λ")
+(global-set-key (kbd "M-u") 'insert-char)
 (global-set-key (kbd "C-c s") 'query-replace-regexp)
+(global-set-key (kbd "C-c q") 'refill-mode)
 (global-set-key (kbd "C-c a") 'auto-complete-mode)
 (global-set-key (kbd "C-c w") 'fixup-whitespace)
 (global-set-key (kbd "C-c c") 'recompile)
@@ -127,11 +138,13 @@
 (mapc
  (lambda (x)
   (add-to-list 'load-path (expand-file-name x)))
-   '("~/.emacs.d/lisp"
-     "~/collab-mode"))
+ '("~/.emacs.d/lisp"
+   "~/.emacs.d/lisp/gnu-apl-mode"
+   "~/collab-mode"))
 
 (require 'auto-complete)
 (require 'auto-complete-config)
+(require 'gnu-apl-mode)
 
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
 (add-hook 'emacs-lisp-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-symbols)))
@@ -199,29 +212,29 @@
 
 (autoload 'glsl-mode "glsl-mode" nil t)
 
-(dolist (a
-         '(("\\.mm\\'" . objc-mode)
-   ("\\.h\\'" . c++-mode)
-   ("\\.\\(v\\|f\\|tc\\|te\\)sh\\'" . glsl-mode)
-   ("\\.jsont\\'" . html-mode)
-   ("\\.ijs\\'" . j-mode)
-   ("\\.j\\'" . objj-mode)
-   ("\\.js\\'" . js-mode)
-   ("\\.julius\\'" . js-mode)
-   ("\\.clj\\'" . clojure-mode)
-   ("\\.nu\\'" .  nu-mode)
-   ("[Nn]ukefile\\'" . nu-mode)
-   ("[Mm]akefile." . makefile-mode)
-   ("\\.json\\'" . js-mode)
-   ("\\.cs\\'" . csharp-mode)
-   ("\\.cl\\'" . lisp-mode)
-   ("\\.fscr\\'" . smalltalk-mode)
-   ("\\.rkt\\'" . scheme-mode)
-   ("\\.dart\\'" . dart-mode)
-   ("\\.pro\\'" . qmake-mode)
-   ("\\.coffee\\'" . coffee-mode)
-   ("\\.ly\\'" . LilyPond-mode)
- ("\\.v\\'" . coq-mode)))
+(dolist (a '(("\\.mm\\'" . objc-mode)
+             ("\\.h\\'" . c++-mode)
+             ("\\.swift\\'" . swift-mode)
+             ("\\.\\(v\\|f\\|tc\\|te\\)sh\\'" . glsl-mode)
+             ("\\.jsont\\'" . html-mode)
+             ("\\.ijs\\'" . j-mode)
+             ("\\.j\\'" . objj-mode)
+             ("\\.js\\'" . js-mode)
+             ("\\.julius\\'" . js-mode)
+             ("\\.clj\\'" . clojure-mode)
+             ("\\.nu\\'" .  nu-mode)
+             ("[Nn]ukefile\\'" . nu-mode)
+             ("[Mm]akefile." . makefile-mode)
+             ("\\.json\\'" . js-mode)
+             ("\\.cs\\'" . csharp-mode)
+             ("\\.cl\\'" . lisp-mode)
+             ("\\.fscr\\'" . smalltalk-mode)
+             ("\\.rkt\\'" . scheme-mode)
+             ("\\.dart\\'" . dart-mode)
+             ("\\.pro\\'" . qmake-mode)
+             ("\\.coffee\\'" . coffee-mode)
+             ("\\.ly\\'" . LilyPond-mode)
+             ("\\.v\\'" . coq-mode)))
  (add-to-list 'auto-mode-alist a))
 
 (add-hook 'js-mode-hook
@@ -297,7 +310,7 @@
 
 (setq emdroid-activity-creator "activityCreator.py")
 (setq emdroid-tools-dir "/Users/acobb/Desktop/programs/android/tools/")
-(setq fill-column 80)
+
 (eval-after-load "ido"
  '(progn
    (setq ido-create-new-buffer 'always)
@@ -309,5 +322,8 @@
    (encoding . utf-8)))
 
 (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
+
+(load "~/.emacs.d/el-get/dash/dash.el")
+(require 'apl-map)
 
 (server-start)

@@ -1,0 +1,125 @@
++-----------------------------------------------------------------------+
++               Input Table for (US) Windows IME en_US                  +
++       Defined for V13.0 and the US keyboard as in V12 and prior       +
++                                                                       +
++       Note: By default Shift-Ctrl-0 (Nand) cannot be entered          +
++                if you are using Windows Vista or above;               +
++                Search for Nand in Dyalog Forums for more info         +
++-----------------------------------------------------------------------+
+
+MOD: special_keys.din
+
++-----------------------------------------------------------------------+
++       APL and non-native keyboard characters                          +
++-----------------------------------------------------------------------+
+
++UNI Desc                  Shift  Key   + Name
+
+ 8900=Ctrl+` :          2       192     + Diamond
+  168=Ctrl+1 :          2       49      + Diaeresis (Each)
+  175=Ctrl+2 :          2       50      + Overbar (High Minus)
+   60=Ctrl+3 :          2       51      + Less Than
+ 8804=Ctrl+4 :          2       52      + Less Than or Equal
+   61=Ctrl+5 :          2       53      + Equal
+ 8805=Ctrl+6 :          2       54      + Greater Than or Equal
+   62=Ctrl+7 :          2       55      + Greater Than
+ 8800=Ctrl+8 :          2       56      + Not-Equal
+ 8744=Ctrl+9 :          2       57      + Down-Caret (Or)
+ 8743=Ctrl+0 :          2       48      + Up-Caret (And)
+  215=Ctrl+- :          2       189     + Multiply (Signum)
+  247=Ctrl+= :          2       187     + Divide (Reciprocal)
+
+,9066=Shift+Ctrl+` :    3       192     + Comma Bar (Catenate 1st)
+,8801=Shift+Ctrl+1 :    3       49      + Equal Underbar (Match)
+ 9067=Shift+Ctrl+2 :    3       50      + Del-Tilde
+ 9042=Shift+Ctrl+3 :    3       51      + Grade Down
+ 9035=Shift+Ctrl+4 :    3       52      + Grade Up
+ 9021=Shift+Ctrl+5 :    3       53      + Rotate
+ 9033=Shift+Ctrl+6 :    3       54      + Transpose
+ 8854=Shift+Ctrl+7 :    3       55      + Reflect
+ 9055=Shift+Ctrl+8 :    3       56      + Log
+ 9073=Shift+Ctrl+9 :    3       57      + Nor
+ 9074=Shift+Ctrl+0 :    3       48      + Nand
+   33=Shift+Ctrl+- :    3       189     + Exclamation - if undefined, defaults to U+001F
+ 9017=Shift+Ctrl+= :    3       187     + Domino
+
+
+   63=Ctrl+q :          2       81      + Query
+ 9077=Ctrl+w :          2       87      + Omega
+ 8714=Ctrl+e :          2       69      + Epsilon (Type Membership)
+ 9076=Ctrl+r :          2       82      + Rho
+  126=Ctrl+t :          2       84      + Tilde (Not Exclude Without)
+,8593=Ctrl+y :          2       89      + Up-Arrow (Mix Take)
+,8595=Ctrl+u :          2       85      + Down-Arrow (Split Drop)
+ 9075=Ctrl+i :          2       73      + Iota
+ 9675=Ctrl+o :          2       79      + Circle (Trig)
+   42=Ctrl+p :          2       80      + Star (Exponential Power)
+ 8592=Ctrl+[ :          2       219     + Left-Arrow (Assign Specify)
+ 8594=Ctrl+] :          2       221     + Right-Arrow (Branch)
+ 8866=Ctrl+\ :          2       220     + Right-Tack
+
++    =Shift+Ctrl+q :                    + Unused
++    =Shift+Ctrl+w :                    + Unused
+,9079=Shift+Ctrl+e :    3       69      + Epsilon Underbar
++    =Shift+Ctrl+r :                    + Unused
++    =Shift+Ctrl+t :                    + Unused        Original 12.1 keyboard
+ 9064=Shift+Ctrl+t :    3       84      + Commute
+,8593=Ctrl+y :          3       89      + Up-Arrow (Mix Take)
+,8595=Ctrl+u :          3       85      + Down-Arrow (Split Drop)
+ 9014=Shift+Ctrl+i :    3       73      + I-Beam
++    =Shift+Ctrl+o :                    + Unused
+ 9059=Shift+Ctrl+p :    3       80      + Power Operator
+ 9054=Shift+Ctrl+[ :    3       219     + Quote Quad
+ 9068=Shift+Ctrl+] :    3       221     + Zilde
++8802=Shift+Ctrl+\ :    3       220     + Not-Equal Underbar (Natch)    Original 12.1 keyboard
+ 8867=Shift+Ctrl+\ :    3       220     + Left-Tack
+
+
+,9082=Ctrl+a :          2       65      + Alpha
+,8968=Ctrl+s :          2       83      + Ceiling (Max)
+ 8970=Ctrl+d :          2       68      + Floor (Min)
+   95=Ctrl+f :          2       70      + Underscore
+ 8711=Ctrl+g :          2       71      + Del (Function Edit)
+ 8710=Ctrl+h :          2       72      + Delta
+ 8728=Ctrl+j :          2       74      + Jot (Compose Outer)
+   39=Ctrl+k :          2       75      + Single Quote
+ 9109=Ctrl+l :          2       76      + Quad
+ 9038=Ctrl+; :          2       186     + Down-Tack Jot (Execute)
+ 9045=Ctrl+' :          2       222     + Up-Tack Jot (Format)
+
+,9082=Shift+Ctrl+a :    3       65      + Alpha
+,8968=Shift+Ctrl+s :    3       83      + Ceiling (Max)
++    =Shift+Ctrl+d :                    + Unused
++    =Shift+Ctrl+f :                    + Unused
++    =Shift+Ctrl+g :                    + Unused
++    =Shift+Ctrl+h :                    + Unused
++    =Shift+Ctrl+j :                    + Unused
++    =Shift+Ctrl+k :                    + Unused
+ 9015=Shift+Ctrl+l :    3       76      + Squad
+,8801=Shift+Ctrl+; :    3       186     + Equal Underbar (Match)
++,9066=Shift+Ctrl+' :   3       222     + Comma Bar (Catenate 1st)      Original 12.1 keyboard
+ 8802=Shift+Ctrl+' :    3       222     + Not-Equal Underbar (Natch)
+
+
+,8834=Ctrl+z :          2       90      + Left-Shoe (Enclose)   Uncomment for APL usage not Windows
+,8835=Ctrl+x :         2       88      + Right-Shoe (Disclose) Uncomment for APL usage not Windows
+,8745=Ctrl+c :         2       67      + Up-Shoe (Intersect)   Uncomment for APL usage not Windows
+,8746=Ctrl+v :         2       86      + Down-Shoe (Union)     Uncomment for APL usage not Windows
+ 8869=Ctrl+b :          2       66      + Down-Tack (Decode Base)
+ 8868=Ctrl+n :          2       78      + Up-Tack (Encode Represent)
+  124=Ctrl+m :          2       77      + Vertical Bar
+ 9053=Ctrl+, :          2       188     + Up-Shoe Jot (Lamp Comment)
+ 9024=Ctrl+. :          2       190     + Back-Slash Bar
+ 9023=Ctrl+/ :          2       191     + Slash Bar
+
+,8834=Shift+Ctrl+z :    3       90      + Left-Shoe (Enclose)   Comment out for APL usage not Windows
+,8835=Shift+Ctrl+x :    3       88      + Right-Shoe (Disclose) Comment out for APL usage not Windows
+,8745=Shift+Ctrl+c :    3       67      + Up-Shoe (Intersect)   Comment out for APL usage not Windows
+,8746=Shift+Ctrl+v :    3       86      + Down-Shoe (Union)     Comment out for APL usage not Windows
++    =Shift+Ctrl+b :                    + Unused
++    =Shift+Ctrl+n :                    + Unused
++    =Shift+Ctrl+m :                    + Unused
+,9079=Shift+Ctrl+, :    3       188     + Epsilon Underbar
+ 9049=Shift+Ctrl+. :    3       190     + Delta Underbar
++9064=Shift+Ctrl+/ :    3       191     + Commute       Original 12.1 keyboard
+ 9056=Shift+Ctrl+/ :    3       191     + Variant
