@@ -1,6 +1,6 @@
 # ZSH Theme
 
-local bg_color="$BG[052]"
+local bg_color="$BG[000]"
 local prompt_reset="$reset_color$bg_color$FG[231]$FX[bold]"
 local return_code="%{$reset_color%}%(?..%{$BG[009]%} %? ↵"$' \n)'
 
