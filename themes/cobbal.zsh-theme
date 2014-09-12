@@ -1,6 +1,17 @@
 # ZSH Theme
 
-local bg_color="$BG[000]"
+local bg_color="$BG[009]"
+
+local MACHINE_COOKIE="$((
+  set -e
+  echo "$(ifconfig | grep -o '..:..:..:..:..:..' | head -n 1)-$(uname -s)" | openssl sha1 | tr a-f A-F | grep -Eo '[0-9A-F]{40}'
+) 2>/dev/null )"
+case "$MACHINE_COOKIE" in
+    (686F22F212EF7D09BB659EF12208E8C7B4C5928B)
+        bg_color="$BG[000]"
+        ;;
+esac
+
 local prompt_reset="$reset_color$bg_color$FG[231]$FX[bold]"
 local return_code="%{$reset_color%}%(?..%{$BG[009]%} %? ↵"$' \n)'
 
