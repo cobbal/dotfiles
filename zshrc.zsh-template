@@ -26,9 +26,11 @@ ZSH_THEME="cobbal"
 
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git brew osx android)
+plugins=(git brew brew-cask osx android)
 
 source $ZSH/oh-my-zsh.sh
+
+test -f /usr/local/share/zsh/site-functions/_aws && source /usr/local/share/zsh/site-functions/_aws 
 
 # Customize to your needs...
 source ~/.profile
