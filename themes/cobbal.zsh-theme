@@ -16,6 +16,9 @@ case "$MACHINE_COOKIE" in
     (BD57C2529C519948B9849A4C795F6A03A284F9AE) # vmware
         bg_color="$BG[130]"
 	;;
+    (E4C342046B59FA82EEEE5EAA96BBFE4601CC6C60) # remus
+        bg_color="$BG[052]"
+        ;;
 esac
 
 local prompt_reset="$reset_color$bg_color$FG[231]$FX[bold]"
