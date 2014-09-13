@@ -7,9 +7,15 @@ local MACHINE_COOKIE="$((
   echo "$(ifconfig | grep -o '..:..:..:..:..:..' | head -n 1)-$(uname -s)" | openssl sha1 | tr a-f A-F | grep -Eo '[0-9A-F]{40}'
 ) 2>/dev/null )"
 case "$MACHINE_COOKIE" in
-    (686F22F212EF7D09BB659EF12208E8C7B4C5928B)
+    (686F22F212EF7D09BB659EF12208E8C7B4C5928B) # romulus
         bg_color="$BG[000]"
         ;;
+    (E2F17D3518FE11380D190E3C69D124FF52DCE70A) # cirrus
+        bg_color="$BG[022]"
+	;;
+    (BD57C2529C519948B9849A4C795F6A03A284F9AE) # vmware
+        bg_color="$BG[130]"
+	;;
 esac
 
 local prompt_reset="$reset_color$bg_color$FG[231]$FX[bold]"
