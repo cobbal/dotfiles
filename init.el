@@ -25,8 +25,18 @@
    (goto-char (point-max))
    (eval-print-last-sexp))))
 
+(require 'package)
+(add-to-list 'package-archives
+  '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(require 'el-get-elpa)
+;; Build the El-Get copy of the package.el packages if we have not
+;; built it before.  Will have to look into updating later ...
+(unless (file-directory-p el-get-recipe-path-elpa)
+  (el-get-elpa-build-local-recipes))
+
 (el-get 'sync
- '(auto-complete
+ '(auctex
+   auto-complete
    coffee-mode
    clojure-mode
    d-mode
@@ -38,13 +48,18 @@
    hy-mode
    markdown-mode
    php-mode
+   racket-mode
    rust-mode
-   scala-mode
    sml-mode
-   swift-mode))
+   swift-mode
+   unicode-fonts))
+
+(setq racket-mode-pretty-lambda nil)
 
 (require 'evil)
 (evil-mode 1)
+(define-key evil-motion-state-map [down-mouse-1] #'mouse-drag-region)
+(setq evil-symbol-word-search t)
 (global-undo-tree-mode -1)
 
 (prefer-coding-system           'utf-8)
@@ -96,7 +111,7 @@
  (lambda ()
   (setq indent-tabs-mode t)))
 
-(setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 300)))
+(setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 0)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
 
 (if (x-display-list)
@@ -132,8 +147,12 @@
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map "3" 'make-frame-command)
 
-(eval-after-load "tex-mode"
- '(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
+;;(eval-after-load "tex-mode"
+ ;;'(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
+
+(add-hook 'LaTeX-mode-hook
+ (lambda ()
+  (add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation))))
 
 (mapc
  (lambda (x)
@@ -288,6 +307,11 @@
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+(add-hook 'haskell-mode-hook
+ (lambda ()
+  (add-to-list 'prettify-symbols-alist
+   '("\\" . ?λ))
+  (prettify-symbols-mode t)))
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
 
@@ -317,13 +341,34 @@
    (setq ido-enable-flex-matching t)
    (setq ido-everywhere t)
    (ido-mode 'both)))
-(setq safe-local-variable-values
- '((eval . (auto-fill-mode t))
-   (encoding . utf-8)))
 
 (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
 
 (load "~/.emacs.d/el-get/dash/dash.el")
 (require 'apl-map)
 
+(setq unicode-fonts-skip-font-groups nil)
+(require 'unicode-fonts)
+(unicode-fonts-setup)
+
+(setq doc-view-resolution 200)
+
 (server-start)
+
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(safe-local-variable-values
+   (quote
+    ((eval visible-mode t)
+     (eval auto-fill-mode t)
+     (encoding . utf-8)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
