@@ -12,10 +12,13 @@ case "$MACHINE_COOKIE" in
         ;;
     (E2F17D3518FE11380D190E3C69D124FF52DCE70A) # cirrus
         bg_color="$BG[022]"
-	;;
+        ;;
     (BD57C2529C519948B9849A4C795F6A03A284F9AE) # vmware
         bg_color="$BG[130]"
-	;;
+        ;;
+    (9C363C1A31800282F4F8B8F16B0CB6DDEAFC979E) # osx-vm
+        bg_color="$BG[058]"
+        ;;
     (E4C342046B59FA82EEEE5EAA96BBFE4601CC6C60) # remus
         bg_color="$BG[052]"
         ;;
