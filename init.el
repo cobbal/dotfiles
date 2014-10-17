@@ -35,13 +35,14 @@
   (el-get-elpa-build-local-recipes))
 
 (el-get 'sync
- '(auctex
+ '(;;auctex ;; auctex requires latex to be installed
    auto-complete
    coffee-mode
    clojure-mode
    d-mode
    evil
    fsharp-mode
+   gnu-apl-mode
    go-mode
    graphviz-dot-mode
    haskell-mode
@@ -122,7 +123,7 @@
    (when (x-list-fonts font)
     (add-to-list 'default-frame-alist (cons 'font font))
     (throw 'break nil)))))
-;;(set-face-attribute 'default nil :height 90)
+(set-face-attribute 'default nil :height 90)
 ;;(set-face-attribute 'default nil :font "Espresso Mono-10")
 ;;(setq mac-allow-anti-aliasing nil)
 
@@ -158,12 +159,10 @@
  (lambda (x)
   (add-to-list 'load-path (expand-file-name x)))
  '("~/.emacs.d/lisp"
-   "~/.emacs.d/lisp/gnu-apl-mode"
    "~/collab-mode"))
 
 (require 'auto-complete)
 (require 'auto-complete-config)
-(require 'gnu-apl-mode)
 
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
 (add-hook 'emacs-lisp-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-symbols)))
