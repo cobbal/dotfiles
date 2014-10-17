@@ -115,17 +115,11 @@
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 0)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
 
-(if (x-display-list)
- (catch 'break
-  (dolist (font
-           '("-apple-Espresso mono-medium-r-normal--0-0-0-0-m-0-iso10646-1"
-             "-unknown-DejaVu Sans mono-normal-normal-normal-*-*-*-*-*-*-0-iso10646-1"))
-   (when (x-list-fonts font)
-    (add-to-list 'default-frame-alist (cons 'font font))
-    (throw 'break nil)))))
-(set-face-attribute 'default nil :height 90)
-;;(set-face-attribute 'default nil :font "Espresso Mono-10")
-;;(setq mac-allow-anti-aliasing nil)
+(cl-flet ((try-set-font (font)
+           (ignore-errors (set-frame-font font nil t) t)))
+ (or
+  (try-set-font "Espresso mono 9")
+  (try-set-font "DejaVu Sans mono 9")))
 
 ;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "C-c \\") "λ")
@@ -322,7 +316,8 @@
 
 (setq proof-splash-enable nil)
 (autoload 'coq-mode "coq" "Major mode for editing Coq vernacular." t)
-(load-file "~/.emacs.d/ProofGeneral/generic/proof-site.el")
+(ignore-errors
+ (load-file "~/.emacs.d/ProofGeneral/generic/proof-site.el"))
 
 (add-hook 'd-mode-hook
  (lambda ()
