@@ -22,6 +22,9 @@ case "$MACHINE_COOKIE" in
     (E4C342046B59FA82EEEE5EAA96BBFE4601CC6C60) # remus
         bg_color="$BG[052]"
         ;;
+    (46D23A97D5B7786D0CF908D1256877895475C61A) # romulus (linux)
+        bg_color="$BG[062]"
+        ;;
 esac
 
 local prompt_reset="$reset_color$bg_color$FG[231]$FX[bold]"
