@@ -1,4 +1,4 @@
-;; -*-no-byte-compile: t; -*-
+;; -*- no-byte-compile: t; lexical-binding: t -*-
 
 (setq mac-option-key-is-meta nil)
 (setq mac-command-key-is-meta t)
@@ -25,8 +25,18 @@
    (goto-char (point-max))
    (eval-print-last-sexp))))
 
+(require 'package)
+(add-to-list 'package-archives
+ '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(require 'el-get-elpa)
+;; Build the El-Get copy of the package.el packages if we have not
+;; built it before.  Will have to look into updating later ...
+(unless (file-directory-p el-get-recipe-path-elpa)
+  (el-get-elpa-build-local-recipes))
+
 (el-get 'sync
- '(auto-complete
+ '(auctex
+   auto-complete
    coffee-mode
    clojure-mode
    d-mode
@@ -37,14 +47,24 @@
    haskell-mode
    hy-mode
    markdown-mode
+   paredit
+   evil-paredit
    php-mode
+   racket-mode
    rust-mode
-   scala-mode
    sml-mode
-   swift-mode))
+   swift-mode
+   unicode-fonts))
+
+(setq racket-mode-pretty-lambda nil)
+(setq racket-program "/Applications/Racket/bin/racket")
 
 (require 'evil)
 (evil-mode 1)
+(define-key evil-motion-state-map [down-mouse-1] #'mouse-drag-region)
+(setq evil-echo-state nil)
+(setq-default evil-symbol-word-search t)
+(setq evil-mode-line-format '(before . mode-line-frame-identification))
 (global-undo-tree-mode -1)
 
 (prefer-coding-system           'utf-8)
@@ -56,7 +76,7 @@
 (setq evil-cross-lines t)
 (setq undo-limit (round (* 1 1024 1024 1024)))
 (setq undo-strong-limit (round (* 1.5 1024 1024 1024)))
-(setq transient-mark-mode nil)
+(setq-default transient-mark-mode nil)
 (setq vc-follow-symlinks t)
 (setq visible-bell t)
 (setq apropos-do-all t)
@@ -96,7 +116,7 @@
  (lambda ()
   (setq indent-tabs-mode t)))
 
-(setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 300)))
+(setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 0)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
 
 (if (x-display-list)
@@ -113,27 +133,33 @@
 
 ;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "C-c \\") "λ")
-(global-set-key (kbd "M-u") 'insert-char)
-(global-set-key (kbd "C-c s") 'query-replace-regexp)
-(global-set-key (kbd "C-c q") 'refill-mode)
-(global-set-key (kbd "C-c a") 'auto-complete-mode)
-(global-set-key (kbd "C-c w") 'fixup-whitespace)
-(global-set-key (kbd "C-c c") 'recompile)
-(global-set-key (kbd "C-c C") 'compile)
-(global-set-key (kbd "C-c C-c") 'comment-region)
-(global-set-key (kbd "C-c u") 'revert-buffer)
-(global-set-key (kbd "C-c ;") 'ispell-buffer)
-(global-set-key (kbd "M-`") 'ff-find-other-file)
-(global-set-key (kbd "M-h") 'ns-do-hide-emacs)
-(global-set-key (kbd "M-RET") 'ns-toggle-fullscreen)
-(global-set-key (kbd "RET") 'newline-and-indent)
-(global-set-key (kbd "M-s") 'save-buffer)
+(global-set-key (kbd "M-u") #'insert-char)
+(global-set-key (kbd "C-c s") #'query-replace-regexp)
+(global-set-key (kbd "C-c q") #'refill-mode)
+(global-set-key (kbd "C-c a") #'auto-complete-mode)
+(global-set-key (kbd "C-c w") #'fixup-whitespace)
+(global-set-key (kbd "C-c c") #'recompile)
+(global-set-key (kbd "C-c C") #'compile)
+(global-set-key (kbd "C-c C-c") #'comment-region)
+(global-set-key (kbd "C-c u") #'revert-buffer)
+(global-set-key (kbd "C-c ;") #'ispell-buffer)
+(global-set-key (kbd "M-`") #'ff-find-other-file)
+(global-set-key (kbd "M-h") #'ns-do-hide-emacs)
+(global-set-key (kbd "M-RET") #'ns-toggle-fullscreen)
+(global-set-key (kbd "RET") #'newline-and-indent)
+(global-set-key (kbd "M-s") #'save-buffer)
+(global-set-key (kbd " ") (lambda () (interactive) (insert ? ))) ;; nbsp
+(global-set-key (kbd "C-c C-/") #'describe-char)
 
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map "3" 'make-frame-command)
 
-(eval-after-load "tex-mode"
- '(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
+;;(eval-after-load "tex-mode"
+ ;;'(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
+
+(add-hook 'LaTeX-mode-hook
+ (lambda ()
+  (add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation))))
 
 (mapc
  (lambda (x)
@@ -288,8 +314,29 @@
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+(add-hook 'haskell-mode-hook
+ (lambda ()
+  (add-to-list 'prettify-symbols-alist
+   '("\\" . ?λ))
+  (prettify-symbols-mode t)))
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
+
+(add-hook 'python-mode-hook
+ (lambda ()
+  (add-to-list 'prettify-symbols-alist
+   '("lambda" . ?λ))
+  (prettify-symbols-mode t)))
+
+(add-hook 'emacs-lisp-mode-hook
+ (lambda ()
+  (add-to-list 'prettify-symbols-alist
+   '("lambda" . ?λ))
+  (prettify-symbols-mode t)))
+
+(add-hook 'racket-mode-hook
+ (lambda ()
+  (prettify-symbols-mode t)))
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
@@ -300,6 +347,7 @@
 (setq proof-splash-enable nil)
 (autoload 'coq-mode "coq" "Major mode for editing Coq vernacular." t)
 (load-file "~/.emacs.d/ProofGeneral/generic/proof-site.el")
+(setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
 
 (add-hook 'd-mode-hook
  (lambda ()
@@ -317,13 +365,39 @@
    (setq ido-enable-flex-matching t)
    (setq ido-everywhere t)
    (ido-mode 'both)))
-(setq safe-local-variable-values
- '((eval . (auto-fill-mode t))
-   (encoding . utf-8)))
-
-(setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
 
 (load "~/.emacs.d/el-get/dash/dash.el")
 (require 'apl-map)
 
+(setq unicode-fonts-skip-font-groups nil)
+(require 'unicode-fonts)
+(unicode-fonts-setup)
+
+(setq doc-view-resolution 200)
+
 (server-start)
+
+(load "~/programs/boxfu/boxfu.el" t)
+
+;;(load-theme 'manoj-dark)
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(describe-char-unidata-list
+   (quote
+    (name old-name general-category decomposition uppercase lowercase)))
+ '(graphviz-dot-auto-indent-on-semi nil)
+ '(safe-local-variable-values
+   (quote
+    ((eval visible-mode t)
+     (eval auto-fill-mode t)
+     (encoding . utf-8)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
