@@ -42,6 +42,7 @@
    d-mode
    evil
    fsharp-mode
+   gnu-apl-mode
    go-mode
    graphviz-dot-mode
    haskell-mode
@@ -119,17 +120,11 @@
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 0)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
 
-(if (x-display-list)
- (catch 'break
-  (dolist (font
-           '("-apple-Espresso mono-medium-r-normal--0-0-0-0-m-0-iso10646-1"
-             "-unknown-DejaVu Sans mono-normal-normal-normal-*-*-*-*-*-*-0-iso10646-1"))
-   (when (x-list-fonts font)
-    (add-to-list 'default-frame-alist (cons 'font font))
-    (throw 'break nil)))))
-;;(set-face-attribute 'default nil :height 90)
-;;(set-face-attribute 'default nil :font "Espresso Mono-10")
-;;(setq mac-allow-anti-aliasing nil)
+(cl-flet ((try-set-font (font)
+           (ignore-errors (set-frame-font font nil t) t)))
+ (or
+  (try-set-font "Espresso mono 9")
+  (try-set-font "DejaVu Sans mono 9")))
 
 ;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "C-c \\") "λ")
@@ -165,12 +160,10 @@
  (lambda (x)
   (add-to-list 'load-path (expand-file-name x)))
  '("~/.emacs.d/lisp"
-   "~/.emacs.d/lisp/gnu-apl-mode"
    "~/collab-mode"))
 
 (require 'auto-complete)
 (require 'auto-complete-config)
-(require 'gnu-apl-mode)
 
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
 (add-hook 'emacs-lisp-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-symbols)))
@@ -346,7 +339,8 @@
 
 (setq proof-splash-enable nil)
 (autoload 'coq-mode "coq" "Major mode for editing Coq vernacular." t)
-(load-file "~/.emacs.d/ProofGeneral/generic/proof-site.el")
+(ignore-errors
+ (load-file "~/.emacs.d/ProofGeneral/generic/proof-site.el"))
 (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
 
 (add-hook 'd-mode-hook
@@ -377,7 +371,8 @@
 
 (server-start)
 
-(load "~/programs/boxfu/boxfu.el" t)
+(ignore-errors
+ (load "~/programs/boxfu/boxfu.el" t))
 
 ;;(load-theme 'manoj-dark)
 
