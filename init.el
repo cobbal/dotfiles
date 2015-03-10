@@ -11,13 +11,12 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 
-(add-to-list 'exec-path "/usr/local/bin")
-
 (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
 (add-to-list 'load-path "/usr/local/opt/coq/lib/emacs/site-lisp")
 
 (setq el-get-notify-type 'message)
 (unless (require 'el-get nil 'noerror)
+ (add-to-list 'exec-path "/usr/local/bin")
  (with-current-buffer
   (url-retrieve-synchronously
    "https://raw.github.com/dimitri/el-get/master/el-get-install.el")
@@ -32,15 +31,15 @@
 ;; Build the El-Get copy of the package.el packages if we have not
 ;; built it before.  Will have to look into updating later ...
 (unless (file-directory-p el-get-recipe-path-elpa)
-  (el-get-elpa-build-local-recipes))
+ (el-get-elpa-build-local-recipes))
 
 (el-get 'sync
- '(auctex
-   auto-complete
+ '(auto-complete
    coffee-mode
    clojure-mode
    d-mode
    evil
+   exec-path-from-shell
    fsharp-mode
    gnu-apl-mode
    go-mode
@@ -57,8 +56,23 @@
    swift-mode
    unicode-fonts))
 
+(defun el-get-install-optionals ()
+ (interactive)
+ (dolist (pkg '(auctex
+                ProofGeneral))
+  (el-get-install pkg)))
+
+(when (memq window-system '(mac ns))
+ (setq frame-resize-pixelwise t)
+ (add-hook 'window-setup-hook
+  (lambda () (modify-frame-parameters nil '((fullscreen . maximized)))))
+ (exec-path-from-shell-initialize))
+
 (setq racket-mode-pretty-lambda nil)
 (setq racket-program "/Applications/Racket/bin/racket")
+(add-hook 'racket-mode-hook
+ (lambda ()
+  (setq-local eldoc-documentation-function nil)))
 
 (require 'evil)
 (evil-mode 1)
@@ -113,18 +127,16 @@
   (c-set-style "correct")
   t))
 
-(add-hook 'mixal-mode-hook
- (lambda ()
-  (setq indent-tabs-mode t)))
-
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 0)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
 
-(cl-flet ((try-set-font (font)
-           (ignore-errors (set-frame-font font nil t) t)))
- (or
-  (try-set-font "Espresso mono 9")
-  (try-set-font "DejaVu Sans mono 9")))
+(defun try-set-font (font)
+ (ignore-errors (set-frame-font font nil t) t))
+
+(or
+ (try-set-font "Menlo 10")
+ (try-set-font "DejaVu Sans mono 10")
+ (try-set-font "Espresso mono 10"))
 
 ;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "C-c \\") "λ")
@@ -140,7 +152,6 @@
 (global-set-key (kbd "C-c ;") #'ispell-buffer)
 (global-set-key (kbd "M-`") #'ff-find-other-file)
 (global-set-key (kbd "M-h") #'ns-do-hide-emacs)
-(global-set-key (kbd "M-RET") #'ns-toggle-fullscreen)
 (global-set-key (kbd "RET") #'newline-and-indent)
 (global-set-key (kbd "M-s") #'save-buffer)
 (global-set-key (kbd " ") (lambda () (interactive) (insert ? ))) ;; nbsp
@@ -151,6 +162,7 @@
 
 ;;(eval-after-load "tex-mode"
  ;;'(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
+(define-key evil-motion-state-map (kbd "K") nil)
 
 (add-hook 'LaTeX-mode-hook
  (lambda ()
@@ -248,7 +260,7 @@
              ("\\.cs\\'" . csharp-mode)
              ("\\.cl\\'" . lisp-mode)
              ("\\.fscr\\'" . smalltalk-mode)
-             ("\\.rkt\\'" . scheme-mode)
+             ("\\.rkt\\'" . racket-mode)
              ("\\.dart\\'" . dart-mode)
              ("\\.pro\\'" . qmake-mode)
              ("\\.coffee\\'" . coffee-mode)
@@ -294,6 +306,7 @@
   ;;(slime-redirect-inferior-output)))
 
 (require 'ido)
+(setq ido-auto-merge-work-directories-length -1)
 
 (defun byte-compile-all-in-emacs-d ()
  (interactive)
@@ -305,31 +318,27 @@
 ;;(load "~/.emacs.d/el-get/haskell-mode/haskell-site-file")
 (require 'hamlet-mode)
 
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 (add-hook 'haskell-mode-hook
  (lambda ()
-  (add-to-list 'prettify-symbols-alist
-   '("\\" . ?λ))
-  (prettify-symbols-mode t)))
+  ;;(local-set-key (kbd "C-c c") #'haskell-compile)
+  (require 'haskell-compile)
+  (turn-on-haskell-doc-mode)
+  (turn-on-haskell-indentation)
+  (setq compilation-error-regexp-alist haskell-compilation-error-regexp-alist)
+  '(add-to-list 'prettify-symbols-alist '("\\" . ?λ))
+  '(prettify-symbols-mode t)))
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
 
 (add-hook 'python-mode-hook
  (lambda ()
-  (add-to-list 'prettify-symbols-alist
-   '("lambda" . ?λ))
-  (prettify-symbols-mode t)))
+  '(add-to-list 'prettify-symbols-alist '("lambda" . ?λ))
+  '(prettify-symbols-mode t)))
 
 (add-hook 'emacs-lisp-mode-hook
  (lambda ()
-  (add-to-list 'prettify-symbols-alist
-   '("lambda" . ?λ))
-  (prettify-symbols-mode t)))
-
-(add-hook 'racket-mode-hook
- (lambda ()
-  (prettify-symbols-mode t)))
+  '(add-to-list 'prettify-symbols-alist '("lambda" . ?λ))
+  '(prettify-symbols-mode t)))
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
@@ -339,8 +348,7 @@
 
 (setq proof-splash-enable nil)
 (autoload 'coq-mode "coq" "Major mode for editing Coq vernacular." t)
-(ignore-errors
- (load-file "~/.emacs.d/ProofGeneral/generic/proof-site.el"))
+;;(ignore-errors (load-file "~/.emacs.d/ProofGeneral/generic/proof-site.el"))
 (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
 
 (add-hook 'd-mode-hook
@@ -369,12 +377,16 @@
 
 (setq doc-view-resolution 200)
 
+(defun set-lisp-indent-offset (n)
+ (interactive "Nlisp-indent-offset: ")
+ (set (make-local-variable 'lisp-indent-offset) n))
+
 (server-start)
 
 (ignore-errors
  (load "~/programs/boxfu/boxfu.el" t))
 
-;;(load-theme 'manoj-dark)
+;; (load-theme 'manoj-dark)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
