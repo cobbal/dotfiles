@@ -47,8 +47,6 @@
    haskell-mode
    hy-mode
    markdown-mode
-   paredit
-   evil-paredit
    php-mode
    racket-mode
    rust-mode
@@ -76,7 +74,10 @@
 
 (require 'evil)
 (evil-mode 1)
+(setq evil-cross-lines t)
 (define-key evil-motion-state-map [down-mouse-1] #'mouse-drag-region)
+(define-key evil-motion-state-map (kbd "K") nil)
+(add-to-list 'evil-intercept-maps '(compilation-mode-map))
 (setq evil-echo-state nil)
 (setq-default evil-symbol-word-search t)
 (setq evil-mode-line-format '(before . mode-line-frame-identification))
@@ -88,7 +89,6 @@
 (set-keyboard-coding-system     'utf-8)
 (setq buffer-file-coding-system 'utf-8)
 
-(setq evil-cross-lines t)
 (setq undo-limit (round (* 1 1024 1024 1024)))
 (setq undo-strong-limit (round (* 1.5 1024 1024 1024)))
 (setq-default transient-mark-mode nil)
@@ -165,7 +165,6 @@
 
 ;;(eval-after-load "tex-mode"
  ;;'(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
-(define-key evil-motion-state-map (kbd "K") nil)
 
 (add-hook 'LaTeX-mode-hook
  (lambda ()
@@ -351,7 +350,7 @@
 
 (setq proof-splash-enable nil)
 (autoload 'coq-mode "coq" "Major mode for editing Coq vernacular." t)
-;;(ignore-errors (load-file "~/.emacs.d/ProofGeneral/generic/proof-site.el"))
+(ignore-errors (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el"))
 (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
 
 (add-hook 'd-mode-hook
