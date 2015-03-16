@@ -135,8 +135,11 @@
 
 (or
  (try-set-font "Menlo 10")
+ (when (eq window-system 'w32)
+  (try-set-font "DejaVu Sans mono 8"))
  (try-set-font "DejaVu Sans mono 10")
- (try-set-font "Espresso mono 10"))
+ (try-set-font "Espresso mono 10")
+ (try-set-font "Consolas 8"))
 
 ;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "C-c \\") "λ")
