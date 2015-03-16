@@ -157,7 +157,7 @@
 (global-set-key (kbd "M-h") #'ns-do-hide-emacs)
 (global-set-key (kbd "RET") #'newline-and-indent)
 (global-set-key (kbd "M-s") #'save-buffer)
-(global-set-key (kbd " ") (lambda () (interactive) (insert ? ))) ;; nbsp
+(global-set-key (kbd " ") " ") ;; nbsp -> normal space
 (global-set-key (kbd "C-c C-/") #'describe-char)
 
 ;; bind C-x 5 3 to be same as C-x 5 2
@@ -189,11 +189,11 @@
   (run-at-time ".1 second" nil
    (lambda () (auto-complete-mode 1)))))
 
-(define-key ac-mode-map (kbd "C-M-<tab>") 'auto-complete)
+(define-key ac-menu-map (kbd "RET") nil)
+
 
 (setq ac-auto-start t)
 (setq ac-dwim t)
-
 (global-auto-complete-mode t)
 
 (set-face-background 'ac-candidate-face "lightgray")
