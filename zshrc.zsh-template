@@ -30,17 +30,16 @@ plugins=(git brew brew-cask osx android)
 
 source $ZSH/oh-my-zsh.sh
 
-test -f /usr/local/share/zsh/site-functions/_aws && source /usr/local/share/zsh/site-functions/_aws 
+test -f /usr/local/share/zsh/site-functions/_aws && source /usr/local/share/zsh/site-functions/_aws
 
 # Customize to your needs...
 source ~/.profile
 
-if [[ "$TERM" == "dumb" ]]
-then
-  unsetopt zle
-  unsetopt prompt_cr
-  unsetopt prompt_subst
-  unfunction precmd
-  unfunction preexec
-  PS1='$ '
+if [[ "$TERM" == "dumb" ]]; then
+    unsetopt zle
+    unsetopt prompt_cr
+    unsetopt prompt_subst
+    unfunction precmd
+    unfunction preexec
+    PS1='$ '
 fi
