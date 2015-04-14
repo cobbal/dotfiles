@@ -1,5 +1,4 @@
 ;; -*- no-byte-compile: t; lexical-binding: t -*-
-
 (setq mac-option-key-is-meta nil)
 (setq mac-command-key-is-meta t)
 (setq mac-command-modifier 'meta)
@@ -66,11 +65,31 @@
   (lambda () (modify-frame-parameters nil '((fullscreen . maximized)))))
  (exec-path-from-shell-initialize))
 
+(defun racket-rain-down-judgment ()
+ (interactive)
+ (goto-char (point-at-eol))
+ (let ((col (current-column)))
+  (newline-and-indent)
+  (insert
+   (make-string
+    (- col (current-column))
+    ?-))))
+
 (setq racket-mode-pretty-lambda nil)
 (setq racket-program "/Applications/Racket/bin/racket")
 (add-hook 'racket-mode-hook
  (lambda ()
-  (setq-local eldoc-documentation-function nil)))
+  (setq prettify-symbols-alist '())
+  (add-to-list 'prettify-symbols-alist '(")" . ?())
+  (add-to-list 'prettify-symbols-alist '("(" . ?)))
+  (add-to-list 'prettify-symbols-alist '("{" . ?}))
+  (add-to-list 'prettify-symbols-alist '("}" . ?{))
+  (add-to-list 'prettify-symbols-alist '("[" . ?]))
+  (add-to-list 'prettify-symbols-alist '("]" . ?[))
+  ;(prettify-symbols-mode t)
+  (setq-local eldoc-documentation-function nil)
+  (local-set-key (kbd "C-M-d") #'racket-visit-definition)
+  (local-set-key (kbd "C-c C--") #'racket-rain-down-judgment)))
 
 (require 'evil)
 (evil-mode 1)
@@ -91,7 +110,6 @@
 
 (setq undo-limit (round (* 1 1024 1024 1024)))
 (setq undo-strong-limit (round (* 1.5 1024 1024 1024)))
-(setq-default transient-mark-mode nil)
 (setq vc-follow-symlinks t)
 (setq visible-bell t)
 (setq apropos-do-all t)
@@ -134,12 +152,16 @@
  (ignore-errors (set-frame-font font nil t) t))
 
 (or
- (try-set-font "Menlo 10")
+ (try-set-font "Menlo 11")
  (when (eq window-system 'w32)
   (try-set-font "DejaVu Sans mono 8"))
- (try-set-font "DejaVu Sans mono 10")
- (try-set-font "Espresso mono 10")
- (try-set-font "Consolas 8"))
+ (try-set-font "DejaVu Sans mono 11")
+ (try-set-font "Espresso mono 11")
+ (try-set-font "Consolas 10"))
+
+(defun first-error ()
+ (interactive)
+ (next-error 1 t))
 
 ;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "C-c \\") "λ")
@@ -159,6 +181,7 @@
 (global-set-key (kbd "M-s") #'save-buffer)
 (global-set-key (kbd " ") " ") ;; nbsp -> normal space
 (global-set-key (kbd "C-c C-/") #'describe-char)
+(global-set-key (kbd "M-g M-f") #'first-error)
 
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map "3" 'make-frame-command)
@@ -390,6 +413,9 @@
 
 ;; (load-theme 'manoj-dark)
 
+;;(evil-transient-mark -1)
+;;(transient-mark-mode -1)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -399,6 +425,9 @@
    (quote
     (name old-name general-category decomposition uppercase lowercase)))
  '(graphviz-dot-auto-indent-on-semi nil)
+ '(package-selected-packages
+   (quote
+    (unicode-enbox racket-mode gnu-apl-mode evil-paredit)))
  '(safe-local-variable-values
    (quote
     ((eval visible-mode t)
