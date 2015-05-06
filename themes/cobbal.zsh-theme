@@ -8,7 +8,7 @@ local MACHINE_COOKIE="$((
 ) 2>/dev/null )"
 case "$MACHINE_COOKIE" in
     (686F22F212EF7D09BB659EF12208E8C7B4C5928B) # romulus
-        bg_color="$BG[000]"
+        bg_color="$BG[237]"
         ;;
     (E2F17D3518FE11380D190E3C69D124FF52DCE70A) # cirrus
         bg_color="$BG[022]"
@@ -34,7 +34,7 @@ local prompt_reset="$reset_color$bg_color$FG[231]$FX[bold]"
 local return_code="%{$reset_color%}%(?..%{$BG[009]%} %? ↵"$' \n)'
 
 PROMPT='${return_code}%{$prompt_reset%} %2c %{$prompt_reset$FG[046]%}%(!.#.») %{$reset_color%} '
-RPROMPT='%{$reset_color$bg_color$FG[231]%} [%*] %{$reset_color%}'
+# RPROMPT='%{$reset_color$bg_color$FG[231]%} [%*] %{$reset_color%}'
 
 ZSH_THEME_GIT_PROMPT_ADDED="%{$FG[082]%}✚%{$prompt_reset%}"
 ZSH_THEME_GIT_PROMPT_MODIFIED="%{$FG[166]%}✹%{$prompt_reset%}"
