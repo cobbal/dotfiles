@@ -1,4 +1,8 @@
 ;; -*- no-byte-compile: t; lexical-binding: t -*-
+
+;; Do this first to minimize color flash
+(load-theme 'manoj-dark)
+
 (setq mac-option-key-is-meta nil)
 (setq mac-command-key-is-meta t)
 (setq mac-command-modifier 'meta)
@@ -10,6 +14,7 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 
+(add-to-list 'load-path "~/.emacs.d/lisp")
 (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
 (add-to-list 'load-path "/usr/local/opt/coq/lib/emacs/site-lisp")
 
@@ -52,18 +57,14 @@
    sml-mode
    swift-mode
    unicode-fonts))
+(package-initialize)
+
 
 (defun el-get-install-optionals ()
  (interactive)
  (dolist (pkg '(auctex
                 ProofGeneral))
   (el-get-install pkg)))
-
-(when (memq window-system '(mac ns))
- (setq frame-resize-pixelwise t)
- (add-hook 'window-setup-hook
-  (lambda () (modify-frame-parameters nil '((fullscreen . maximized)))))
- (exec-path-from-shell-initialize))
 
 (defun racket-rain-down-judgment ()
  (interactive)
@@ -148,16 +149,32 @@
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 0)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
 
+(when (memq window-system '(mac ns))
+ (setq frame-resize-pixelwise t)
+ (let ((fullscreen-mode 'maximize))
+  (when (> (x-display-pixel-width) 1440) ;; crude test for multiple displays
+   (setq initial-frame-alist `((left . 1440) . ,initial-frame-alist))
+   (setq fullscreen-mode 'fullscreen))
+  ;;(setq ns-use-native-fullscreen nil)
+  (add-hook 'window-setup-hook
+   (lambda ()
+    (modify-frame-parameters nil `((fullscreen . ,fullscreen-mode))))))
+ (exec-path-from-shell-initialize))
+
+
 (defun try-set-font (font)
  (ignore-errors (set-frame-font font nil t) t))
 
 (or
+ (try-set-font "Menlo 13")
  (try-set-font "Menlo 11")
  (when (eq window-system 'w32)
   (try-set-font "DejaVu Sans mono 8"))
  (try-set-font "DejaVu Sans mono 11")
  (try-set-font "Espresso mono 11")
  (try-set-font "Consolas 10"))
+
+(require 'frame-focus-hints)
 
 (defun first-error ()
  (interactive)
@@ -341,7 +358,7 @@
 (put 'upcase-region 'disabled nil)
 
 ;;(load "~/.emacs.d/el-get/haskell-mode/haskell-site-file")
-(require 'hamlet-mode)
+;;(require 'hamlet-mode)
 
 (add-hook 'haskell-mode-hook
  (lambda ()
@@ -367,12 +384,17 @@
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-(require 'visible-mark)
+(defface my-visible-mark-face-1
+  `((t (:background "orange" :foreground "black")))
+  "Face for the mark."
+  :group 'visible-mark)
 
+(setq visible-mark-faces `(my-visible-mark-face-1))
+
+(require 'visible-mark)
 (global-visible-mark-mode t)
 
 (setq proof-splash-enable nil)
-(autoload 'coq-mode "coq" "Major mode for editing Coq vernacular." t)
 (ignore-errors (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el"))
 (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
 
@@ -393,7 +415,7 @@
    (setq ido-everywhere t)
    (ido-mode 'both)))
 
-(load "~/.emacs.d/el-get/dash/dash.el")
+(require 'dash)
 (require 'apl-map)
 
 (setq unicode-fonts-skip-font-groups nil)
@@ -411,10 +433,34 @@
 (ignore-errors
  (load "~/programs/boxfu/boxfu.el" t))
 
-;; (load-theme 'manoj-dark)
-
 ;;(evil-transient-mark -1)
 ;;(transient-mark-mode -1)
+
+(defun create-tags (dir-name)
+ "Create tags file."
+ (interactive "DDirectory: ")
+ (shell-command
+  (format "ctags -e -R %s" (directory-file-name dir-name))))
+
+(defadvice find-tag (around refresh-etags activate)
+ "Rerun etags and reload tags if tag not found and redo find-tag.
+   If buffer is modified, ask about save before running etags."
+ (let ((extension (file-name-extension (buffer-file-name))))
+  (condition-case err
+   ad-do-it
+   (error (and (buffer-modified-p)
+           (not (ding))
+           (y-or-n-p "Buffer is modified, save it? ")
+           (save-buffer))
+    (er-refresh-etags extension)
+    ad-do-it))))
+
+(defun er-refresh-etags (&optional extension)
+ "Run etags on all peer files in current dir and reload them silently."
+ (interactive)
+ (shell-command (format "etags *.%s" (or extension "el")))
+ (let ((tags-revert-without-query t))  ; don't query, revert silently
+  (visit-tags-table default-directory nil)))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -425,17 +471,15 @@
    (quote
     (name old-name general-category decomposition uppercase lowercase)))
  '(graphviz-dot-auto-indent-on-semi nil)
- '(package-selected-packages
-   (quote
-    (unicode-enbox racket-mode gnu-apl-mode evil-paredit)))
+ '(package-selected-packages (quote (unicode-enbox racket-mode gnu-apl-mode)))
  '(safe-local-variable-values
    (quote
     ((eval visible-mode t)
      (eval auto-fill-mode t)
      (encoding . utf-8)))))
-(custom-set-faces
+'(custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(fringe ((t (:background "dark red" :foreground "Wheat")))))
