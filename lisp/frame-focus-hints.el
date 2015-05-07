@@ -10,4 +10,6 @@
  (lambda ()
   (set-face-attribute 'fringe nil :background "grey30")))
 
+(set-face-attribute 'fringe nil :background "dark red")
+
 (provide 'frame-focus-hints)

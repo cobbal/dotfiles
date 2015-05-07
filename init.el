@@ -176,6 +176,13 @@
 
 (require 'frame-focus-hints)
 
+(defun unload-enabled-themes ()
+ (interactive)
+ (mapcar #'disable-theme custom-enabled-themes))
+
+(defadvice load-theme (before theme-dont-propagate activate)
+ (unload-enabled-themes))
+
 (defun first-error ()
  (interactive)
  (next-error 1 t))
@@ -350,9 +357,9 @@
 (require 'ido)
 (setq ido-auto-merge-work-directories-length -1)
 
-(defun byte-compile-all-in-emacs-d ()
+(defun byte-compile-all-in-emacs-d-lisp ()
  (interactive)
- (byte-recompile-directory (expand-file-name "~/.emacs.d") 0))
+ (byte-recompile-directory (expand-file-name "~/.emacs.d/lisp") 0))
 
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
@@ -430,8 +437,7 @@
 
 (server-start)
 
-(ignore-errors
- (load "~/programs/boxfu/boxfu.el" t))
+(require 'boxfu)
 
 ;;(evil-transient-mark -1)
 ;;(transient-mark-mode -1)
@@ -477,9 +483,3 @@
     ((eval visible-mode t)
      (eval auto-fill-mode t)
      (encoding . utf-8)))))
-'(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(fringe ((t (:background "dark red" :foreground "Wheat")))))

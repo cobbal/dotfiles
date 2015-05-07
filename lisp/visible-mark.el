@@ -82,9 +82,9 @@
                                 :underline t)
             (push symbol faces)))
         (setq visible-mark-non-trailing-faces (nreverse faces)))))
-                  
+
 (defun visible-mark-initialize-overlays ()
-  (mapcar 'delete-overlay visible-mark-overlays)
+  (mapc 'delete-overlay visible-mark-overlays)
   (let (overlays)
     (dotimes (i visible-mark-max)
       (let ((overlay (make-overlay (point-min) (point-min))))
@@ -116,10 +116,10 @@
 (defun visible-mark-mode-maybe ()
   (when (cond
          ((minibufferp (current-buffer)) nil)
-         ((flet ((fun (arg)
-                      (if (null arg) nil
-                        (or (string-match (car arg) (buffer-name))
-                            (fun (cdr arg))))))
+         ((cl-labels ((fun (arg)
+                           (if (null arg) nil
+                             (or (string-match (car arg) (buffer-name))
+                                 (fun (cdr arg))))))
             (fun global-visible-mark-mode-exclude-alist)) nil)
          (t t))
     (visible-mark-mode)))
@@ -133,7 +133,7 @@
         (visible-mark-initialize-faces)
         (visible-mark-initialize-overlays)
         (add-hook 'post-command-hook 'visible-mark-move-overlays nil t))
-    (mapcar 'delete-overlay visible-mark-overlays)
+    (mapc 'delete-overlay visible-mark-overlays)
     (setq visible-mark-overlays nil)
     (remove-hook 'post-command-hook 'visible-mark-move-overlays t)))
 
