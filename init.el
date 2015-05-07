@@ -29,6 +29,7 @@
    (eval-print-last-sexp))))
 
 (require 'package)
+(package-initialize)
 (add-to-list 'package-archives
  '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (require 'el-get-elpa)
@@ -45,6 +46,7 @@
    evil
    exec-path-from-shell
    fsharp-mode
+   glsl-mode
    gnu-apl-mode
    go-mode
    graphviz-dot-mode
@@ -57,7 +59,6 @@
    sml-mode
    swift-mode
    unicode-fonts))
-(package-initialize)
 
 
 (defun el-get-install-optionals ()
@@ -290,8 +291,6 @@
     (set-visited-file-name (concat "/tmp/" buffer-name)))
    nil buffer-name nil)))
 
-(autoload 'glsl-mode "glsl-mode" nil t)
-
 (dolist (a '(("\\.mm\\'" . objc-mode)
              ("\\.h\\'" . c++-mode)
              ("\\.swift\\'" . swift-mode)
@@ -326,33 +325,6 @@
    (let ((file (file-name-nondirectory buffer-file-name)))
     (concat "/usr/share/jslint/jslint " file)))))
 
-;; clojure-mode
-(require 'clojure-mode)
-
-;; slime
-;; Borrowed from http://nklein.com/2010/05/getting-started-with-clojureemacsslime/
-;;(require 'slime-autoloads)
-;;(slime-setup '(slime-repl))
-;;(setq slime-net-coding-system 'utf-8-unix)
-;;(setq slime-lisp-implementations
- ;;'((sbcl ("sbcl"))
-   ;;(ccl ("ccl"))
-   ;;(clisp ("clisp"))))
-
-;;(defmacro defslime-start (name mapping)
- ;;`(defun ,name ()
-   ;;(interactive)
-   ;;(let ((slime-default-lisp ,mapping))
-    ;;(slime))))
-
-;;(defslime-start ccl 'ccl)
-;;(defslime-start sbcl 'sbcl)
-;;(defslime-start clisp 'clisp)
-
-;;(add-hook 'slime-mode-hook
- ;;(lambda ()
-  ;;(setq slime-truncate-lines nil)
-  ;;(slime-redirect-inferior-output)))
 
 (require 'ido)
 (setq ido-auto-merge-work-directories-length -1)
