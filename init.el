@@ -29,7 +29,6 @@
    (eval-print-last-sexp))))
 
 (require 'package)
-(package-initialize)
 (add-to-list 'package-archives
  '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (require 'el-get-elpa)
@@ -43,6 +42,7 @@
    coffee-mode
    clojure-mode
    d-mode
+   dash-at-point
    evil
    exec-path-from-shell
    fsharp-mode
@@ -60,6 +60,7 @@
    swift-mode
    unicode-fonts))
 
+(package-initialize)
 
 (defun el-get-install-optionals ()
  (interactive)
@@ -152,14 +153,13 @@
 
 (when (memq window-system '(mac ns))
  (setq frame-resize-pixelwise t)
- (let ((fullscreen-mode 'maximize))
+ (let ((fullscreen-mode 'maximized))
   (when (> (x-display-pixel-width) 1440) ;; crude test for multiple displays
-   (setq initial-frame-alist `((left . 1440) . ,initial-frame-alist))
+   (setq initial-frame-alist `((left + -2000) . ,initial-frame-alist))
    (setq fullscreen-mode 'fullscreen))
   ;;(setq ns-use-native-fullscreen nil)
-  (add-hook 'window-setup-hook
-   (lambda ()
-    (modify-frame-parameters nil `((fullscreen . ,fullscreen-mode))))))
+  (setq initial-frame-alist
+   `((fullscreen . ,fullscreen-mode) . ,initial-frame-alist)))
  (exec-path-from-shell-initialize))
 
 
@@ -176,6 +176,7 @@
  (try-set-font "Consolas 10"))
 
 (require 'frame-focus-hints)
+(require 'transpose-window-splits)
 
 (defun unload-enabled-themes ()
  (interactive)
@@ -187,6 +188,15 @@
 (defun first-error ()
  (interactive)
  (next-error 1 t))
+
+(defun other-window-previous (count)
+ (interactive "p")
+ (other-window (- count)))
+
+(defun half-scroll-up ()
+ "Scrolls the window upwards by half the screen."
+ (interactive "")
+ (scroll-down (min (/ (evil-num-visible-lines) 2))))
 
 ;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "C-c \\") "λ")
@@ -207,6 +217,11 @@
 (global-set-key (kbd " ") " ") ;; nbsp -> normal space
 (global-set-key (kbd "C-c C-/") #'describe-char)
 (global-set-key (kbd "M-g M-f") #'first-error)
+(global-set-key (kbd "M-k") #'evil-scroll-up)
+(global-set-key (kbd "M-j") #'evil-scroll-down)
+(global-set-key (kbd "C-x C-o") #'other-window-previous)
+(global-set-key (kbd "C-c C-d") #'dash-at-point)
+(define-key evil-normal-state-map (kbd "C-w ;") #'transpose-window-splits)
 
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map "3" 'make-frame-command)
@@ -243,6 +258,9 @@
 (setq ac-dwim t)
 (global-auto-complete-mode t)
 
+;;(global-hl-line-mode t)
+;;(set-face-foreground 'hl-line nil)
+
 (set-face-background 'ac-candidate-face "lightgray")
 (set-face-underline-p 'ac-candidate-face "darkgray")
 (set-face-background 'ac-selection-face "steelblue")
@@ -250,9 +268,11 @@
 ;;(define-key ac-completing-map (kbd "M-p") 'ac-previous)
 (ac-linum-workaround)
 
-(require 'objc-help)
-(iphoneize)
+;;(require 'objc-help)
+;;(iphoneize)
 
+(dolist (l '((racket-mode . "racket")))
+ (add-to-list 'dash-at-point-mode-alist l))
 
 ;; borrowed from http://www.emacswiki.org/emacs/NxmlMode
 (defun nxml-where ()
@@ -403,6 +423,8 @@
 
 (setq doc-view-resolution 200)
 
+(setq graphviz-dot-auto-indent-on-semi nil)
+
 (defun set-lisp-indent-offset (n)
  (interactive "Nlisp-indent-offset: ")
  (set (make-local-variable 'lisp-indent-offset) n))
@@ -448,10 +470,17 @@
  '(describe-char-unidata-list
    (quote
     (name old-name general-category decomposition uppercase lowercase)))
- '(graphviz-dot-auto-indent-on-semi nil)
- '(package-selected-packages (quote (unicode-enbox racket-mode gnu-apl-mode)))
+ '(package-selected-packages
+   (quote
+    (hl-spotlight unicode-enbox racket-mode gnu-apl-mode)))
  '(safe-local-variable-values
    (quote
     ((eval visible-mode t)
      (eval auto-fill-mode t)
      (encoding . utf-8)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
