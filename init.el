@@ -14,9 +14,10 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 
-(add-to-list 'load-path "~/.emacs.d/lisp")
-(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
-(add-to-list 'load-path "/usr/local/opt/coq/lib/emacs/site-lisp")
+(dolist (x '("~/.emacs.d/lisp"
+             "~/.emacs.d/el-get/el-get"
+             "/usr/local/opt/coq/lib/emacs/site-lisp"))
+ (add-to-list 'load-path (expand-file-name x)))
 
 (setq el-get-notify-type 'message)
 (unless (require 'el-get nil 'noerror)
@@ -53,6 +54,7 @@
    haskell-mode
    hy-mode
    markdown-mode
+   misc-cmds
    php-mode
    racket-mode
    rust-mode
@@ -193,10 +195,16 @@
  (interactive "p")
  (other-window (- count)))
 
-(defun half-scroll-up ()
- "Scrolls the window upwards by half the screen."
- (interactive "")
- (scroll-down (min (/ (evil-num-visible-lines) 2))))
+(defun google-chrome-goto-location ()
+ (interactive)
+ (start-process "launch-browser" nil "osascript"
+  "-e"
+  (concat
+   "tell application \"System Events\" to click menu item \"Open "
+   "Location…\" of menu \"File\" of menu bar item \"File\" of "
+   "menu bar 1 of process \"Google Chrome\"")
+  "-e"
+  "tell application \"Google Chrome\" to activate"))
 
 ;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "C-c \\") "λ")
@@ -220,24 +228,21 @@
 (global-set-key (kbd "M-k") #'evil-scroll-up)
 (global-set-key (kbd "M-j") #'evil-scroll-down)
 (global-set-key (kbd "C-x C-o") #'other-window-previous)
-(global-set-key (kbd "C-c C-d") #'dash-at-point)
-(define-key evil-normal-state-map (kbd "C-w ;") #'transpose-window-splits)
+(global-set-key (kbd "M-d") #'dash-at-point)
+(global-set-key (kbd "<C-return>") #'indent-new-comment-line)
+(global-set-key (kbd "M-l") #'google-chrome-goto-location)
+(dolist (map (list evil-normal-state-map evil-motion-state-map))
+ (define-key map (kbd "C-w ;") #'transpose-window-splits))
 
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map "3" 'make-frame-command)
 
-;;(eval-after-load "tex-mode"
- ;;'(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
+;; (eval-after-load "tex-mode"
+;;  '(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
 
 (add-hook 'LaTeX-mode-hook
  (lambda ()
   (add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation))))
-
-(mapc
- (lambda (x)
-  (add-to-list 'load-path (expand-file-name x)))
- '("~/.emacs.d/lisp"
-   "~/collab-mode"))
 
 (require 'auto-complete)
 (require 'auto-complete-config)
@@ -258,8 +263,8 @@
 (setq ac-dwim t)
 (global-auto-complete-mode t)
 
-;;(global-hl-line-mode t)
-;;(set-face-foreground 'hl-line nil)
+(global-hl-line-mode t)
+(set-face-foreground 'hl-line nil)
 
 (set-face-background 'ac-candidate-face "lightgray")
 (set-face-underline-p 'ac-candidate-face "darkgray")
@@ -361,8 +366,11 @@
 
 (add-hook 'haskell-mode-hook
  (lambda ()
-  ;;(local-set-key (kbd "C-c c") #'haskell-compile)
   (require 'haskell-compile)
+  (local-set-key (kbd "C-c c") #'recompile)
+  (set (make-local-variable 'compile-command)
+   (format haskell-compile-command
+    (file-name-nondirectory buffer-file-name)))
   (turn-on-haskell-doc-mode)
   (turn-on-haskell-indentation)
   (setq compilation-error-regexp-alist haskell-compilation-error-regexp-alist)
@@ -371,20 +379,20 @@
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
 
-(add-hook 'python-mode-hook
- (lambda ()
-  '(add-to-list 'prettify-symbols-alist '("lambda" . ?λ))
-  '(prettify-symbols-mode t)))
+;; (add-hook 'python-mode-hook
+;;  (lambda ()
+;;   (add-to-list 'prettify-symbols-alist '("lambda" . ?λ))
+;;   (prettify-symbols-mode t)))
 
-(add-hook 'emacs-lisp-mode-hook
- (lambda ()
-  '(add-to-list 'prettify-symbols-alist '("lambda" . ?λ))
-  '(prettify-symbols-mode t)))
+;; (add-hook 'emacs-lisp-mode-hook
+;;  (lambda ()
+;;   (add-to-list 'prettify-symbols-alist '("lambda" . ?λ))
+;;   (prettify-symbols-mode t)))
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (defface my-visible-mark-face-1
-  `((t (:background "orange" :foreground "black")))
+  `((t (:background "plum4" :foreground "white")))
   "Face for the mark."
   :group 'visible-mark)
 
@@ -442,6 +450,8 @@
  (shell-command
   (format "ctags -e -R %s" (directory-file-name dir-name))))
 
+(define-key evil-normal-state-map (kbd "M-.") nil)
+
 (defadvice find-tag (around refresh-etags activate)
  "Rerun etags and reload tags if tag not found and redo find-tag.
    If buffer is modified, ask about save before running etags."
@@ -472,7 +482,7 @@
     (name old-name general-category decomposition uppercase lowercase)))
  '(package-selected-packages
    (quote
-    (hl-spotlight unicode-enbox racket-mode gnu-apl-mode)))
+    (misc-cmds hl-spotlight unicode-enbox racket-mode gnu-apl-mode)))
  '(safe-local-variable-values
    (quote
     ((eval visible-mode t)
