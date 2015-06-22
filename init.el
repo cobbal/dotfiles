@@ -19,6 +19,7 @@
              "/usr/local/opt/coq/lib/emacs/site-lisp"))
  (add-to-list 'load-path (expand-file-name x)))
 
+
 (setq el-get-notify-type 'message)
 (unless (require 'el-get nil 'noerror)
  (add-to-list 'exec-path "/usr/local/bin")
@@ -28,6 +29,8 @@
   (let (el-get-master-branch)
    (goto-char (point-max))
    (eval-print-last-sexp))))
+
+(add-to-list 'el-get-recipe-path "~/.emacs.d/el-get-user/recipes")
 
 (require 'package)
 (add-to-list 'package-archives
@@ -58,6 +61,7 @@
    php-mode
    racket-mode
    rust-mode
+   sexp-rewrite
    sml-mode
    swift-mode
    unicode-fonts))
