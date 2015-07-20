@@ -1,0 +1,4 @@
+(:name sexp-rewrite
+ :description "emacs package for pattern-based rewriting of sexp-structured code"
+ :type github
+ :pkgname "rmculpepper/sexp-rewrite")

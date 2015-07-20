@@ -13,10 +13,13 @@
 (blink-cursor-mode 0)
 (setq make-backup-files nil)
 (setq auto-save-default nil)
+(setq ad-redefinition-action 'accept) ;; silence advice warning about redefinition
 
 (dolist (x '("~/.emacs.d/lisp"
              "~/.emacs.d/el-get/el-get"
-             "/usr/local/opt/coq/lib/emacs/site-lisp"))
+             "~/.emacs.d/el-get/clang-complete-async"
+             "/usr/local/opt/coq/lib/emacs/site-lisp"
+             "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/"))
  (add-to-list 'load-path (expand-file-name x)))
 
 
@@ -43,12 +46,14 @@
 
 (el-get 'sync
  '(auto-complete
+   avy
+   chess
    coffee-mode
    clojure-mode
    d-mode
    dash-at-point
    evil
-   exec-path-from-shell
+   ;; exec-path-from-shell
    fsharp-mode
    glsl-mode
    gnu-apl-mode
@@ -71,7 +76,8 @@
 (defun el-get-install-optionals ()
  (interactive)
  (dolist (pkg '(auctex
-                ProofGeneral))
+                ProofGeneral
+                clang-complete-async))
   (el-get-install pkg)))
 
 (defun racket-rain-down-judgment ()
@@ -95,6 +101,8 @@
   (add-to-list 'prettify-symbols-alist '("}" . ?{))
   (add-to-list 'prettify-symbols-alist '("[" . ?]))
   (add-to-list 'prettify-symbols-alist '("]" . ?[))
+  (require 'racket-rewrites)
+  (local-set-key (kbd "C-c d") sexprw-mode-keymap)
   ;(prettify-symbols-mode t)
   (setq-local eldoc-documentation-function nil)
   (local-set-key (kbd "C-M-d") #'racket-visit-definition)
@@ -123,6 +131,7 @@
 (setq visible-bell t)
 (setq apropos-do-all t)
 (setq inhibit-startup-screen t)
+(setq inhibit-startup-echo-area-message "acobb")
 (setq inhibit-splash-screen t)
 (setq initial-scratch-message "")
 (setq-default fill-column 80)
@@ -162,11 +171,13 @@
  (let ((fullscreen-mode 'maximized))
   (when (> (x-display-pixel-width) 1440) ;; crude test for multiple displays
    (setq initial-frame-alist `((left + -2000) . ,initial-frame-alist))
-   (setq fullscreen-mode 'fullscreen))
+   '(setq fullscreen-mode 'fullscreen))
   ;;(setq ns-use-native-fullscreen nil)
   (setq initial-frame-alist
-   `((fullscreen . ,fullscreen-mode) . ,initial-frame-alist)))
- (exec-path-from-shell-initialize))
+   `((fullscreen . ,fullscreen-mode) . ,initial-frame-alist))))
+ ;; (require 'exec-path-from-shell)
+ ;; (push "GOPATH" exec-path-from-shell-variables)
+ ;; (exec-path-from-shell-initialize)
 
 
 (defun try-set-font (font)
@@ -191,6 +202,11 @@
 (defadvice load-theme (before theme-dont-propagate activate)
  (unload-enabled-themes))
 
+(defcustom compile-always-comint nil "")
+(defun my-compile-advice (orig-fun command &optional mode &rest args)
+ (apply orig-fun command (or compile-always-comint mode) args))
+(advice-add 'compilation-start :around #'my-compile-advice)
+
 (defun first-error ()
  (interactive)
  (next-error 1 t))
@@ -210,6 +226,17 @@
   "-e"
   "tell application \"Google Chrome\" to activate"))
 
+(defun inc-char-at-point (n)
+ (interactive "p")
+ (save-excursion
+  (let ((c (char-after (point))))
+   (delete-backward-char -1)
+   (insert (+ c n)))))
+
+(defun dec-char-at-point (n)
+ (interactive "p")
+ (inc-char-at-point (- n)))
+
 ;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "C-c \\") "λ")
 (global-set-key (kbd "M-u") #'insert-char)
@@ -222,6 +249,8 @@
 (global-set-key (kbd "C-c C-c") #'comment-region)
 (global-set-key (kbd "C-c u") #'revert-buffer)
 (global-set-key (kbd "C-c ;") #'ispell-buffer)
+(global-set-key (kbd "C-c C--") #'dec-char-at-point)
+(global-set-key (kbd "C-c C-=") #'inc-char-at-point)
 (global-set-key (kbd "M-`") #'ff-find-other-file)
 (global-set-key (kbd "M-h") #'ns-do-hide-emacs)
 (global-set-key (kbd "RET") #'newline-and-indent)
@@ -235,11 +264,16 @@
 (global-set-key (kbd "M-d") #'dash-at-point)
 (global-set-key (kbd "<C-return>") #'indent-new-comment-line)
 (global-set-key (kbd "M-l") #'google-chrome-goto-location)
+(global-set-key (kbd "<C-M-tab>") 'clang-format-region)
+(global-set-key (kbd "C-;") 'avy-goto-word-1)
+(global-set-key (kbd "C-'") 'avy-goto-char-2)
 (dolist (map (list evil-normal-state-map evil-motion-state-map))
  (define-key map (kbd "C-w ;") #'transpose-window-splits))
 
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map "3" 'make-frame-command)
+
+(avy-setup-default)
 
 ;; (eval-after-load "tex-mode"
 ;;  '(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
@@ -251,9 +285,20 @@
 (require 'auto-complete)
 (require 'auto-complete-config)
 
+(defun set-clang-ac-sources ()
+ (require 'auto-complete-clang-async)
+ (setq ac-clang-complete-executable "~/.emacs.d/el-get/clang-complete-async/clang-complete")
+ (setq ac-sources '(ac-source-clang-async))
+ (ac-clang-launch-completion-process))
+
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
 (add-hook 'emacs-lisp-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-symbols)))
 (add-hook 'auto-complete-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-filename)))
+(add-hook 'c-mode-hook #'set-clang-ac-sources)
+(add-hook 'c++-mode-hook #'set-clang-ac-sources)
+(add-hook 'objc-mode-hook #'set-clang-ac-sources)
+(add-hook 'c #'set-clang-ac-sources)
+
 ;;(define-key ac-complete-mode-map viper-ESC-key 'viper-intercept-ESC-key)
 (add-hook 'objc-mode-hook
  (lambda ()
@@ -267,8 +312,8 @@
 (setq ac-dwim t)
 (global-auto-complete-mode t)
 
-(global-hl-line-mode t)
-(set-face-foreground 'hl-line nil)
+;;(global-hl-line-mode t)
+;;(set-face-foreground 'hl-line nil)
 
 (set-face-background 'ac-candidate-face "lightgray")
 (set-face-underline-p 'ac-candidate-face "darkgray")
@@ -368,6 +413,8 @@
 ;;(load "~/.emacs.d/el-get/haskell-mode/haskell-site-file")
 ;;(require 'hamlet-mode)
 
+(ignore-errors (require 'lilypond-init))
+
 (add-hook 'haskell-mode-hook
  (lambda ()
   (require 'haskell-compile)
@@ -405,9 +452,14 @@
 (require 'visible-mark)
 (global-visible-mark-mode t)
 
-(setq proof-splash-enable nil)
-(ignore-errors (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el"))
-(setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
+(defun proof-load ()
+ (interactive)
+
+ (setq proof-splash-enable nil)
+ (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el")
+ (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
+ (load-file (shell-command-to-string "agda-mode locate"))
+ (setq agda2-include-dirs (list "." (expand-file-name "~/programs/agda-stdlib-0.9/src"))))
 
 (add-hook 'd-mode-hook
  (lambda ()
@@ -429,9 +481,9 @@
 (require 'dash)
 (require 'apl-map)
 
-(setq unicode-fonts-skip-font-groups nil)
-(require 'unicode-fonts)
-(unicode-fonts-setup)
+;; (setq unicode-fonts-skip-font-groups nil)
+;; (require 'unicode-fonts)
+;; (unicode-fonts-setup)
 
 (setq doc-view-resolution 200)
 
@@ -476,11 +528,28 @@
  (let ((tags-revert-without-query t))  ; don't query, revert silently
   (visit-tags-table default-directory nil)))
 
+(setq chess-default-display '(chess-plain))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(chess-plain-border-style [9484 9590 9488 9591 9591 9492 9590 9496])
+ '(chess-plain-piece-chars
+   (quote
+    (?K . ?♔)
+    (?Q . ?♕)
+    (?R . ?♖)
+    (?B . ?♗)
+    (?N . ?♘)
+    (?P . ?♙)
+    (?k . ?♚)
+    (?q . ?♛)
+    (?r . ?♜)
+    (?b . ?♝)
+    (?n . ?♞)
+    (?p . ?♟)))
  '(describe-char-unidata-list
    (quote
     (name old-name general-category decomposition uppercase lowercase)))
@@ -497,4 +566,18 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(agda2-highlight-datatype-face ((t (:inherit font-lock-type-face))))
+ '(agda2-highlight-field-face ((t (:foreground "#ad7fa8"))))
+ '(agda2-highlight-function-face ((t (:inherit font-lock-function-name-face))))
+ '(agda2-highlight-inductive-constructor-face ((t (:foreground "#ef2929"))))
+ '(agda2-highlight-keyword-face ((t (:inherit font-lock-keyword-face))))
+ '(agda2-highlight-module-face ((t (:inherit font-lock-builtin-face))))
+ '(agda2-highlight-number-face ((t (:inherit font-lock-constant-face))))
+ '(agda2-highlight-postulate-face ((t (:inherit font-lock-type-face))))
+ '(agda2-highlight-primitive-face ((t (:inherit font-lock-type-face))))
+ '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
+ '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
+ '(agda2-highlight-string-face ((t (:inherit font-lock-string-face))))
+
+ '(chess-plain-black-face ((t nil)))
+ '(chess-plain-white-face ((t nil))))
