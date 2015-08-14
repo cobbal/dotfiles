@@ -66,6 +66,7 @@
    php-mode
    racket-mode
    rust-mode
+   scala-mode2
    sexp-rewrite
    sml-mode
    swift-mode
@@ -263,7 +264,7 @@
 (global-set-key (kbd "C-x C-o") #'other-window-previous)
 (global-set-key (kbd "M-d") #'dash-at-point)
 (global-set-key (kbd "<C-return>") #'indent-new-comment-line)
-(global-set-key (kbd "M-l") #'google-chrome-goto-location)
+;; (global-set-key (kbd "M-l") #'google-chrome-goto-location)
 (global-set-key (kbd "<C-M-tab>") 'clang-format-region)
 (global-set-key (kbd "C-;") 'avy-goto-word-1)
 (global-set-key (kbd "C-'") 'avy-goto-char-2)
@@ -271,7 +272,8 @@
  (define-key map (kbd "C-w ;") #'transpose-window-splits))
 
 ;; bind C-x 5 3 to be same as C-x 5 2
-(define-key ctl-x-5-map "3" 'make-frame-command)
+(define-key ctl-x-5-map (kbd "3") 'make-frame-command)
+(define-key compilation-mode-map (kbd "g") nil)
 
 (avy-setup-default)
 
@@ -292,6 +294,7 @@
  (ac-clang-launch-completion-process))
 
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
+(define-key ac-completing-map (kbd "RET") nil)
 (add-hook 'emacs-lisp-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-symbols)))
 (add-hook 'auto-complete-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-filename)))
 (add-hook 'c-mode-hook #'set-clang-ac-sources)
@@ -312,8 +315,8 @@
 (setq ac-dwim t)
 (global-auto-complete-mode t)
 
-;;(global-hl-line-mode t)
-;;(set-face-foreground 'hl-line nil)
+(global-hl-line-mode t)
+(set-face-foreground 'hl-line nil)
 
 (set-face-background 'ac-candidate-face "lightgray")
 (set-face-underline-p 'ac-candidate-face "darkgray")
@@ -418,10 +421,11 @@
 (add-hook 'haskell-mode-hook
  (lambda ()
   (require 'haskell-compile)
+  (define-key haskell-mode-map "\C-ch" 'haskell-hoogle)
   (local-set-key (kbd "C-c c") #'recompile)
-  (set (make-local-variable 'compile-command)
-   (format haskell-compile-command
-    (file-name-nondirectory buffer-file-name)))
+  ;; (set (make-local-variable 'compile-command)
+  ;;  (format haskell-compile-command
+  ;;   (file-name-nondirectory buffer-file-name)))
   (turn-on-haskell-doc-mode)
   (turn-on-haskell-indentation)
   (setq compilation-error-regexp-alist haskell-compilation-error-regexp-alist)
@@ -535,27 +539,9 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(chess-plain-border-style [9484 9590 9488 9591 9591 9492 9590 9496])
- '(chess-plain-piece-chars
-   (quote
-    (?K . ?♔)
-    (?Q . ?♕)
-    (?R . ?♖)
-    (?B . ?♗)
-    (?N . ?♘)
-    (?P . ?♙)
-    (?k . ?♚)
-    (?q . ?♛)
-    (?r . ?♜)
-    (?b . ?♝)
-    (?n . ?♞)
-    (?p . ?♟)))
  '(describe-char-unidata-list
    (quote
     (name old-name general-category decomposition uppercase lowercase)))
- '(package-selected-packages
-   (quote
-    (misc-cmds hl-spotlight unicode-enbox racket-mode gnu-apl-mode)))
  '(safe-local-variable-values
    (quote
     ((eval visible-mode t)
@@ -578,6 +564,4 @@
  '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-string-face ((t (:inherit font-lock-string-face))))
-
- '(chess-plain-black-face ((t nil)))
- '(chess-plain-white-face ((t nil))))
+ )
