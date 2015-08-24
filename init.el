@@ -47,7 +47,6 @@
 (el-get 'sync
  '(auto-complete
    avy
-   chess
    coffee-mode
    clojure-mode
    d-mode
@@ -63,6 +62,7 @@
    hy-mode
    markdown-mode
    misc-cmds
+   nix-mode
    php-mode
    racket-mode
    rust-mode
@@ -77,6 +77,7 @@
 (defun el-get-install-optionals ()
  (interactive)
  (dolist (pkg '(auctex
+                chess
                 ProofGeneral
                 clang-complete-async))
   (el-get-install pkg)))
@@ -268,12 +269,14 @@
 (global-set-key (kbd "<C-M-tab>") 'clang-format-region)
 (global-set-key (kbd "C-;") 'avy-goto-word-1)
 (global-set-key (kbd "C-'") 'avy-goto-char-2)
+(global-set-key (kbd "C-M-e") nil)
 (dolist (map (list evil-normal-state-map evil-motion-state-map))
  (define-key map (kbd "C-w ;") #'transpose-window-splits))
+(eval-after-load "compile"
+ '(define-key compilation-mode-map (kbd "g") nil))
 
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map (kbd "3") 'make-frame-command)
-(define-key compilation-mode-map (kbd "g") nil)
 
 (avy-setup-default)
 
@@ -390,7 +393,7 @@
              ("\\.pro\\'" . qmake-mode)
              ("\\.coffee\\'" . coffee-mode)
              ("\\.ly\\'" . LilyPond-mode)
-             ("\\.v\\'" . coq-mode)))
+             ("\\.v\\'" . (lambda () (progn (proof-load) (coq-mode))))))
  (add-to-list 'auto-mode-alist a))
 
 (add-hook 'js-mode-hook
@@ -456,14 +459,19 @@
 (require 'visible-mark)
 (global-visible-mark-mode t)
 
-(defun proof-load ()
- (interactive)
+(fset 'proof-load
+ (let ((proof-loaded nil))
+  (lambda ()
+   (interactive)
 
- (setq proof-splash-enable nil)
- (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el")
- (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
- (load-file (shell-command-to-string "agda-mode locate"))
- (setq agda2-include-dirs (list "." (expand-file-name "~/programs/agda-stdlib-0.9/src"))))
+   (unless proof-loaded
+    (setq proof-splash-enable nil)
+    (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el")
+    (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
+    (load-file (shell-command-to-string "agda-mode locate"))
+    (setq agda2-include-dirs
+     (list "." (expand-file-name "~/programs/agda-stdlib-0.9/src")))
+    (setq proof-loaded t)))))
 
 (add-hook 'd-mode-hook
  (lambda ()
@@ -542,6 +550,9 @@
  '(describe-char-unidata-list
    (quote
     (name old-name general-category decomposition uppercase lowercase)))
+ '(package-selected-packages
+   (quote
+    (uncrustify-mode unicode-enbox racket-mode misc-cmds hl-spotlight gnu-apl-mode)))
  '(safe-local-variable-values
    (quote
     ((eval visible-mode t)
@@ -563,5 +574,4 @@
  '(agda2-highlight-primitive-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-string-face ((t (:inherit font-lock-string-face))))
- )
+ '(agda2-highlight-string-face ((t (:inherit font-lock-string-face)))))
