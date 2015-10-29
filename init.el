@@ -568,41 +568,6 @@
    (goto-char point)
    (message "No non-ascii characters."))))
 
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(describe-char-unidata-list
-   (quote
-    (name old-name general-category decomposition uppercase lowercase)))
- '(package-selected-packages
-   (quote
-    (uncrustify-mode unicode-enbox racket-mode misc-cmds hl-spotlight gnu-apl-mode)))
- '(safe-local-variable-values
-   (quote
-    ((eval visible-mode t)
-     (eval auto-fill-mode t)
-     (encoding . utf-8)))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(agda2-highlight-datatype-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-field-face ((t (:foreground "#ad7fa8"))))
- '(agda2-highlight-function-face ((t (:inherit font-lock-function-name-face))))
- '(agda2-highlight-inductive-constructor-face ((t (:foreground "#ef2929"))))
- '(agda2-highlight-keyword-face ((t (:inherit font-lock-keyword-face))))
- '(agda2-highlight-module-face ((t (:inherit font-lock-builtin-face))))
- '(agda2-highlight-number-face ((t (:inherit font-lock-constant-face))))
- '(agda2-highlight-postulate-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-primitive-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-string-face ((t (:inherit font-lock-string-face)))))
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
