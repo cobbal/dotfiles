@@ -47,6 +47,7 @@
 (el-get 'sync
  '(auto-complete
    avy
+   cmake-mode
    coffee-mode
    clojure-mode
    d-mode
@@ -77,7 +78,6 @@
 (defun el-get-install-optionals ()
  (interactive)
  (dolist (pkg '(auctex
-                chess
                 ProofGeneral
                 clang-complete-async))
   (el-get-install pkg)))
@@ -136,7 +136,6 @@
 (setq inhibit-startup-echo-area-message "acobb")
 (setq inhibit-splash-screen t)
 (setq initial-scratch-message "")
-(setq-default fill-column 80)
 (setq-default tab-width 4)
 (setq coffee-tab-width 4)
 (setq-default indent-tabs-mode nil)
@@ -144,8 +143,17 @@
 (setq sgml-basic-offset 1)
 (setq hamlet-basic-offset 1)
 (setq lisp-indent-offset 1)
+(setq-default fill-column 80)
 (setq fill-column 80)
 (setq sentence-end-double-space nil)
+
+(defun my-terminal-visible-bell ()
+ "A friendlier visual bell effect."
+ (invert-face 'mode-line)
+ (run-with-timer 0.1 nil 'invert-face 'mode-line))
+
+(setq visible-bell nil
+ ring-bell-function #'my-terminal-visible-bell)
 
 (show-paren-mode 1)
 
@@ -300,10 +308,10 @@
 (define-key ac-completing-map (kbd "RET") nil)
 (add-hook 'emacs-lisp-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-symbols)))
 (add-hook 'auto-complete-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-filename)))
-(add-hook 'c-mode-hook #'set-clang-ac-sources)
-(add-hook 'c++-mode-hook #'set-clang-ac-sources)
-(add-hook 'objc-mode-hook #'set-clang-ac-sources)
-(add-hook 'c #'set-clang-ac-sources)
+;; (add-hook 'c-mode-hook #'set-clang-ac-sources)
+;; (add-hook 'c++-mode-hook #'set-clang-ac-sources)
+;; (add-hook 'objc-mode-hook #'set-clang-ac-sources)
+;; (add-hook 'c #'set-clang-ac-sources)
 
 ;;(define-key ac-complete-mode-map viper-ESC-key 'viper-intercept-ESC-key)
 (add-hook 'objc-mode-hook
@@ -459,6 +467,10 @@
 (require 'visible-mark)
 (global-visible-mark-mode t)
 
+(add-hook 'coq-mode-hook
+ (lambda ()
+  (define-key coq-mode-map (kbd "C-c c") (lambda () (interactive) (ding)))))
+
 (fset 'proof-load
  (let ((proof-loaded nil))
   (lambda ()
@@ -540,7 +552,56 @@
  (let ((tags-revert-without-query t))  ; don't query, revert silently
   (visit-tags-table default-directory nil)))
 
-(setq chess-default-display '(chess-plain))
+(defun find-first-non-ascii-char ()
+ "Find the first non-ascii character from point onwards."
+ (interactive)
+ (let (point)
+  (save-excursion
+   (setq point
+    (catch 'non-ascii
+     (while (not (eobp))
+      (or (eq (char-charset (following-char))
+           'ascii)
+       (throw 'non-ascii (point)))
+      (forward-char 1)))))
+  (if point
+   (goto-char point)
+   (message "No non-ascii characters."))))
+
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(describe-char-unidata-list
+   (quote
+    (name old-name general-category decomposition uppercase lowercase)))
+ '(package-selected-packages
+   (quote
+    (uncrustify-mode unicode-enbox racket-mode misc-cmds hl-spotlight gnu-apl-mode)))
+ '(safe-local-variable-values
+   (quote
+    ((eval visible-mode t)
+     (eval auto-fill-mode t)
+     (encoding . utf-8)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(agda2-highlight-datatype-face ((t (:inherit font-lock-type-face))))
+ '(agda2-highlight-field-face ((t (:foreground "#ad7fa8"))))
+ '(agda2-highlight-function-face ((t (:inherit font-lock-function-name-face))))
+ '(agda2-highlight-inductive-constructor-face ((t (:foreground "#ef2929"))))
+ '(agda2-highlight-keyword-face ((t (:inherit font-lock-keyword-face))))
+ '(agda2-highlight-module-face ((t (:inherit font-lock-builtin-face))))
+ '(agda2-highlight-number-face ((t (:inherit font-lock-constant-face))))
+ '(agda2-highlight-postulate-face ((t (:inherit font-lock-type-face))))
+ '(agda2-highlight-primitive-face ((t (:inherit font-lock-type-face))))
+ '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
+ '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
+ '(agda2-highlight-string-face ((t (:inherit font-lock-string-face)))))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
