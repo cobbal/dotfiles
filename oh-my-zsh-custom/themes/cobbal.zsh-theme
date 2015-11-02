@@ -2,7 +2,7 @@
 
 local bg_color="$BG[009]"
 
-local MACHINE_COOKIE="$((
+local MACHINE_COOKIE="$( (
   set -e
   echo "$(ifconfig | grep -o '..:..:..:..:..:..' | head -n 1)-$(uname -s)" | openssl sha1 | tr a-f A-F | grep -Eo '[0-9A-F]{40}'
 ) 2>/dev/null )"
@@ -22,7 +22,7 @@ case "$MACHINE_COOKIE" in
     (E4C342046B59FA82EEEE5EAA96BBFE4601CC6C60) # remus
         bg_color="$BG[052]"
         ;;
-    (46D23A97D5B7786D0CF908D1256877895475C61A) # romulus (linux)
+    (55733EBCC769AFA29573A7CB93101B010CBA2081) # romulus (linux)
         bg_color="$BG[062]"
         ;;
     (41B53843D830C04F1D8C6A073EB9B87889EE9F86) # rpi
