@@ -1,14 +1,5 @@
-# Path to your oh-my-zsh configuration.
 ZSH=$HOME/.oh-my-zsh
-ZSH_CUSTOM=$HOME/.config/dotfiles/oh-my-zsh-custom
-
-# Set name of the theme to load.
-# Look in ~/.oh-my-zsh/themes/
-# Optionally, if you set this to "random", it'll load a random theme each
-# time that oh-my-zsh is loaded.
 ZSH_THEME="cobbal"
-
-# themes I like: daveverwer, jreese
 
 # Set to this to use case-sensitive completion
 # CASE_SENSITIVE="true"
@@ -27,14 +18,58 @@ ZSH_THEME="cobbal"
 
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git brew brew-cask osx android)
+plugins=(git brew brew-cask osx android nix)
 
 source $ZSH/oh-my-zsh.sh
 
+# Customize to your needs...
+
+# source ~/.launchd.conf.sh export
+
 test -f /usr/local/share/zsh/site-functions/_aws && source /usr/local/share/zsh/site-functions/_aws
 
-# Customize to your needs...
-source ~/.profile
+alias o.='open .'
+alias o,='open .' # common typo...
+alias csi='rlwrap csi'
+alias guile='rlwrap guile'
+alias ccl64='rlwrap ccl64'
+alias ccl='rlwrap ccl'
+alias lps='ps -A | grep -i'
+alias bfd='openssl bf -d -a <'
+alias ctop='top -o cpu'
+alias emacs='emacs -nw'
+alias ping='ping -c 100'
+alias iup='ping gdns'
+alias clj='rlwrap clj'
+alias ttty='tee /dev/tty'
+alias igdb='fsf-gdbtui'
+alias sl='ls'
+alias kasse='killall ScreenSaverEngine'
+alias appcode='open -a appcode'
+alias pwcopy='pwd | pbcopy'
+
+function lwhich {
+    which $1 | xargs ls -l
+}
+
+function bfe {
+    if [ -e $1 ]; then
+        echo "File exists, cowardly refusing to overwrite"
+    else
+        read -s -p "Enter new password: " pass
+        echo
+        echo $pass | openssl bf -a > $1
+        pass=''
+    fi
+}
+
+if which pyenv > /dev/null; then
+    eval "$(pyenv init -)"
+fi
+
+# if [ -e "${HOME}/.nix-profile/etc/profile.d/nix.sh" ]; then
+#     source "${HOME}/.nix-profile/etc/profile.d/nix.sh"
+# fi # added by Nix installer
 
 if [[ "$TERM" == "dumb" ]]; then
     unsetopt zle

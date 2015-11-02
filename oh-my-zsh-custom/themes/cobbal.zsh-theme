@@ -7,7 +7,7 @@ local MACHINE_COOKIE="$( (
   echo "$(ifconfig | grep -o '..:..:..:..:..:..' | head -n 1)-$(uname -s)" | openssl sha1 | tr a-f A-F | grep -Eo '[0-9A-F]{40}'
 ) 2>/dev/null )"
 case "$MACHINE_COOKIE" in
-    (686F22F212EF7D09BB659EF12208E8C7B4C5928B) # romulus
+    (686F22F212EF7D09BB659EF12208E8C7B4C5928B|0C399532FC55EA27CB568618459FA97E491B9EE3) # romulus
         bg_color="$BG[237]"
         ;;
     (E2F17D3518FE11380D190E3C69D124FF52DCE70A|BD57C2529C519948B9849A4C795F6A03A284F9AE) # cirrus
@@ -31,19 +31,7 @@ case "$MACHINE_COOKIE" in
 esac
 
 local prompt_reset="$reset_color$bg_color$FG[231]$FX[bold]"
-local return_code="%{$reset_color%}%(?..%{$BG[009]%} %? ↵"$' \n)'
+local return_code="%{$reset_color%}%(?..%{$BG[009]%} %? ↵ %{$reset_color%}"$'\n)'
 
 PROMPT='${return_code}%{$prompt_reset%} %2c %{$prompt_reset$FG[046]%}%(!.#.») %{$reset_color%} '
 # RPROMPT='%{$reset_color$bg_color$FG[231]%} [%*] %{$reset_color%}'
-
-ZSH_THEME_GIT_PROMPT_ADDED="%{$FG[082]%}✚%{$prompt_reset%}"
-ZSH_THEME_GIT_PROMPT_MODIFIED="%{$FG[166]%}✹%{$prompt_reset%}"
-ZSH_THEME_GIT_PROMPT_DELETED="%{$FG[160]%}✖%{$prompt_reset%}"
-ZSH_THEME_GIT_PROMPT_RENAMED="%{$FG[220]%}➜%{$prompt_reset%}"
-ZSH_THEME_GIT_PROMPT_UNMERGED="%{$FG[082]%}═%{$prompt_reset%}"
-ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$FG[190]%}✭%{$prompt_reset%}"
-
-ZSH_THEME_GIT_PROMPT_PREFIX=" %{$fg[green]%}±%{$fg[yellow]%}"
-ZSH_THEME_GIT_PROMPT_SUFFIX="%{$prompt_reset%}"
-ZSH_THEME_GIT_PROMPT_CLEAN=""
-ZSH_THEME_GIT_PROMPT_DIRTY="⚡"

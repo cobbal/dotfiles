@@ -2,7 +2,9 @@
 
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 WD="$(pwd -P)"
-RWD="${WD#$(cd; pwd -P)/}"
+
+# If I ever have a home folder named "*" I deserve what I get.
+RWD="${WD#$(cd $HOME; pwd -P)/}"
 
 if [[ "$WD" != "$HOME/.config/dotfiles" ]]; then
     echo
@@ -35,7 +37,6 @@ function do_git {
 function do_install {
     local SRC="$RWD/$1"
     local INSTL="$HOME/$2"
-    # If I ever have a home folder named "*" I deserve what I get.
     echo -n "Linking '$SRC' to '$INSTL'... "
     if [[ -L "$INSTL" ]]; then
         rm "$INSTL"
