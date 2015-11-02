@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-WD="$(pwd -L)"
-RWD="${WD#$(readlink -f $HOME)/}"
+WD="$(pwd -P)"
+RWD="${WD#$(cd; pwd -P)/}"
 
 if [[ "$WD" != "$HOME/.config/dotfiles" ]]; then
     echo
