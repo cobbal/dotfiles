@@ -288,11 +288,9 @@
 
 (avy-setup-default)
 
-;; (eval-after-load "tex-mode"
-;;  '(define-key tex-mode-map (kbd "C-j") #'newline-and-indent))
-
 (add-hook 'LaTeX-mode-hook
  (lambda ()
+  (set (make-local-variable 'before-save-hook) nil)
   (add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation))))
 
 (require 'auto-complete)
