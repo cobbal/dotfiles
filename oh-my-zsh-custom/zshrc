@@ -47,7 +47,8 @@ alias igdb='fsf-gdbtui'
 alias sl='ls'
 alias kasse='killall ScreenSaverEngine'
 alias appcode='open -a appcode'
-alias pwcopy='pwd | pbcopy'
+alias escape='sed -e "s/'\''/'\''\\\\'\'''\''/g; 1s/^/'\''/; \$s/\$/'\''/"'
+alias pwcopy='pwd | escape | pbcopy'
 
 function lwhich {
     which $1 | xargs ls -l
@@ -80,3 +81,5 @@ if [[ "$TERM" == "dumb" ]]; then
     unfunction preexec
     PS1='$ '
 fi
+
+test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh
