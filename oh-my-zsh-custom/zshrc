@@ -82,4 +82,6 @@ if [[ "$TERM" == "dumb" ]]; then
     PS1='$ '
 fi
 
-test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh
+test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh \
+|| echo $'iterm2 intergration not present. to install:\n  curl -L https://iterm2.com/misc/install_shell_integration.sh | bash'
+
