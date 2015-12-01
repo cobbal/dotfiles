@@ -1,0 +1,4 @@
+(:name indicate-change
+ :description "Indicate buffer modifications in fringe"
+ :type github
+ :pkgname "renard/indicate-change")

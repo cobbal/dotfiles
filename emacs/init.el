@@ -3,10 +3,8 @@
 ;; Do this first to minimize color flash
 (load-theme 'manoj-dark)
 
-(setq mac-option-key-is-meta nil)
-(setq mac-command-key-is-meta t)
 (setq mac-command-modifier 'meta)
-(setq mac-option-modifier nil)
+(setq mac-option-modifier 'super)
 (setq ns-pop-up-frames nil)
 (tool-bar-mode -1)
 
@@ -18,6 +16,7 @@
 (dolist (x '("~/.emacs.d/lisp"
              "~/.emacs.d/el-get/el-get"
              "~/.emacs.d/el-get/clang-complete-async"
+             "~/.emacs.d/el-get/auctex"
              "/usr/local/opt/coq/lib/emacs/site-lisp"
              "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/"))
  (add-to-list 'load-path (expand-file-name x)))
@@ -73,6 +72,11 @@
    swift-mode
    unicode-fonts))
 
+(defun magic-close-parens ()
+ (interactive)
+ (dolist (k '(")" "]" "}"))
+  (local-set-key (kbd k) #'racket-insert-closing)))
+
 (package-initialize)
 
 (defun el-get-install-optionals ()
@@ -92,6 +96,8 @@
     (- col (current-column))
     ?-))))
 
+(require 'window-lock)
+
 (setq racket-mode-pretty-lambda nil)
 (setq racket-program "/Applications/Racket/bin/racket")
 (add-hook 'racket-mode-hook
@@ -103,8 +109,9 @@
   (add-to-list 'prettify-symbols-alist '("}" . ?{))
   (add-to-list 'prettify-symbols-alist '("[" . ?]))
   (add-to-list 'prettify-symbols-alist '("]" . ?[))
+  (require 'sexp-rewrite)
   (require 'racket-rewrites)
-  (local-set-key (kbd "C-c d") sexprw-mode-keymap)
+  (local-set-key (kbd "C-c d") #'sexprw-mode-keymap)
   ;(prettify-symbols-mode t)
   (setq-local eldoc-documentation-function nil)
   (local-set-key (kbd "C-M-d") #'racket-visit-definition)
@@ -248,10 +255,9 @@
  (inc-char-at-point (- n)))
 
 ;;(define-key global-map [down-mouse-1] nil)
-(global-set-key (kbd "C-c \\") "λ")
 (global-set-key (kbd "M-u") #'insert-char)
 (global-set-key (kbd "C-c s") #'query-replace-regexp)
-(global-set-key (kbd "C-c q") #'refill-mode)
+(global-set-key (kbd "C-c q") #'auto-fill-mode)
 (global-set-key (kbd "C-c a") #'auto-complete-mode)
 (global-set-key (kbd "C-c w") #'fixup-whitespace)
 (global-set-key (kbd "C-c c") #'recompile)
@@ -278,6 +284,7 @@
 (global-set-key (kbd "C-;") 'avy-goto-word-1)
 (global-set-key (kbd "C-'") 'avy-goto-char-2)
 (global-set-key (kbd "C-M-e") nil)
+(global-set-key (kbd "C-`") #'toggle-window-dedicated)
 (dolist (map (list evil-normal-state-map evil-motion-state-map))
  (define-key map (kbd "C-w ;") #'transpose-window-splits))
 (eval-after-load "compile"
@@ -288,10 +295,14 @@
 
 (avy-setup-default)
 
-(add-hook 'LaTeX-mode-hook
+(load "auctex/auctex.el" t t t)
+(add-hook 'latex-mode-hook
  (lambda ()
-  (set (make-local-variable 'before-save-hook) nil)
-  (add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation))))
+  '(add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation))))
+
+(add-hook 'tex-mode-hook
+ (lambda ()
+  '(set (make-local-variable 'before-save-hook) nil)))
 
 (require 'auto-complete)
 (require 'auto-complete-config)
@@ -361,7 +372,8 @@
 
 (when (boundp 'global-linum-mode)
  (global-linum-mode t)
- (setq linum-format "%d "))
+ ;; (setq linum-format "%d ")
+ )
 (column-number-mode t)
 
 (require 'autoloaded)
@@ -394,6 +406,7 @@
              ("\\.cs\\'" . csharp-mode)
              ("\\.cl\\'" . lisp-mode)
              ("\\.fscr\\'" . smalltalk-mode)
+             ("\\.tex\\'" . LaTeX-mode)
              ("\\.rkt\\'" . racket-mode)
              ("\\.dart\\'" . dart-mode)
              ("\\.pro\\'" . qmake-mode)
