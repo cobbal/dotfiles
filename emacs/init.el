@@ -16,6 +16,7 @@
 (dolist (x '("~/.emacs.d/lisp"
              "~/.emacs.d/el-get/el-get"
              "~/.emacs.d/el-get/clang-complete-async"
+             "~/.emacs.d/el-get/ac-company"
              "~/.emacs.d/el-get/auctex"
              "/usr/local/opt/coq/lib/emacs/site-lisp"
              "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/"))
@@ -83,6 +84,8 @@
  (interactive)
  (dolist (pkg '(auctex
                 ProofGeneral
+                ac-company
+                company-sourcekit
                 clang-complete-async))
   (el-get-install pkg)))
 
@@ -192,10 +195,10 @@
   ;;(setq ns-use-native-fullscreen nil)
   (setq initial-frame-alist
    `((fullscreen . ,fullscreen-mode) . ,initial-frame-alist))))
- ;; (require 'exec-path-from-shell)
- ;; (push "GOPATH" exec-path-from-shell-variables)
- ;; (exec-path-from-shell-initialize)
 
+;; (require 'exec-path-from-shell)
+;; (push "GOPATH" exec-path-from-shell-variables)
+;; (exec-path-from-shell-initialize)
 
 (defun try-set-font (font)
  (ignore-errors (set-frame-font font nil t) t))
@@ -208,6 +211,35 @@
  (try-set-font "DejaVu Sans mono 11")
  (try-set-font "Espresso mono 11")
  (try-set-font "Consolas 10"))
+
+(defun do-ligatures ()
+ (interactive)
+ ;; from https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs
+ (when (window-system)
+  (set-default-font "Fira Code"))
+ (let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
+                (35 . ".\\(?:[(?[_{]\\)")
+                (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+                (42 . ".\\(?:\\(?:\\*\\*\\)\\|[*/]\\)")
+                (43 . ".\\(?:\\(?:\\+\\+\\)\\|\\+\\)")
+                (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+                (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=]\\)")
+                (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+                (58 . ".\\(?:[:=]\\)")
+                (59 . ".\\(?:;\\)")
+                (60 . ".\\(?:\\(?:!--\\)\\|\\(?:\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[/<=>|-]\\)")
+                (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+                (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+                (63 . ".\\(?:[:=?]\\)")
+                (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+                (94 . ".\\(?:=\\)")
+                (123 . ".\\(?:-\\)")
+                (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+                (126 . ".\\(?:[=@~-]\\)"))))
+  (dolist (char-regexp alist)
+   (set-char-table-range composition-function-table (car char-regexp)
+    `([,(cdr char-regexp) 0 font-shape-gstring])))))
+
 
 (require 'frame-focus-hints)
 (require 'transpose-window-splits)
@@ -223,6 +255,7 @@
 (defun my-compile-advice (orig-fun command &optional mode &rest args)
  (apply orig-fun command (or compile-always-comint mode) args))
 (advice-add 'compilation-start :around #'my-compile-advice)
+(setq compilation-scroll-output t)
 
 (defun first-error ()
  (interactive)
@@ -334,6 +367,14 @@
 (setq ac-auto-start t)
 (setq ac-dwim t)
 (global-auto-complete-mode t)
+
+(add-hook 'swift-mode-hook
+ (lambda ()
+  (unless (boundp 'ac-source-company-sourcekit)
+   (require 'ac-company)
+   (require 'company-sourcekit)
+   (ac-company-define-source ac-source-company-sourcekit company-sourcekit)
+   (add-to-list 'ac-sources 'ac-source-company-sourcekit))))
 
 (global-hl-line-mode t)
 (set-face-foreground 'hl-line nil)
@@ -579,22 +620,14 @@
    (goto-char point)
    (message "No non-ascii characters."))))
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(describe-char-unidata-list
-   (quote
-    (name old-name general-category decomposition uppercase lowercase)))
- '(package-selected-packages
-   (quote
-    (uncrustify-mode unicode-enbox racket-mode misc-cmds hl-spotlight gnu-apl-mode)))
- '(safe-local-variable-values
-   (quote
-    ((eval visible-mode t)
-     (eval auto-fill-mode t)
-     (encoding . utf-8)))))
+(setq safe-local-variable-values
+ '((eval . (visible-mode t))
+   (eval . (auto-fill-mode t))
+   (encoding . utf-8)))
+
+(setq describe-char-unidata-list
+ '(name old-name general-category decomposition uppercase lowercase))
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -612,3 +645,9 @@
  '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-string-face ((t (:inherit font-lock-string-face)))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages (quote (dash misc-cmds gnu-apl-mode))))
