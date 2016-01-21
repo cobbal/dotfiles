@@ -173,8 +173,8 @@
   (c-set-style "correct")
   t))
 
-(setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 0)))
-(setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
+(setq initial-frame-alist '((width . 100) (height . 53) (top . 20) (left . 0)))
+(setq default-frame-alist '((width . 100) (height . 53) (top . 20)))
 
 (when (memq window-system '(mac ns))
  (setq frame-resize-pixelwise t)
