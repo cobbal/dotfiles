@@ -86,17 +86,17 @@ the mode, `toggle' toggles the state.
         (lcol (- col 1))
         (rcol (+ col 1)))
  (pcase dir
-  ('up
+  (`up
    (beginning-of-line)
    (and (= 0 (forward-line -1)) (= (move-to-column col) col)))
-  ('down
+  (`down
    (end-of-line)
    (and (= 0 (forward-line 1)) (= (move-to-column col) col)))
-  ('left
+  (`left
    (and (>= lcol 1) (= (move-to-column lcol) lcol)))
-  ('right
+  (`right
    (= (move-to-column rcol) rcol))
-  ('here
+  (`here
    (= (move-to-column col) col)))))
 
 (defun appropriate-char-for-dirs (dirs &optional col-adjust dir-names)
