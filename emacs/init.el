@@ -22,7 +22,6 @@
              "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/"))
  (add-to-list 'load-path (expand-file-name x)))
 
-
 (setq el-get-notify-type 'message)
 (unless (require 'el-get nil 'noerror)
  (add-to-list 'exec-path "/usr/local/bin")
@@ -173,8 +172,8 @@
   (c-set-style "correct")
   t))
 
-(setq initial-frame-alist '((width . 100) (height . 53) (top . 0) (left . 0)))
-(setq default-frame-alist '((width . 100) (height . 53) (top . 0)))
+(setq initial-frame-alist '((width . 100) (height . 53) (top . 20) (left . 0)))
+(setq default-frame-alist '((width . 100) (height . 53) (top . 20)))
 
 (when (memq window-system '(mac ns))
  (setq frame-resize-pixelwise t)
@@ -196,6 +195,7 @@
 (or
  (try-set-font "Menlo 13")
  (try-set-font "Menlo 11")
+ (try-set-font "Hack 10")
  (when (eq window-system 'w32)
   (try-set-font "DejaVu Sans mono 8"))
  (try-set-font "DejaVu Sans mono 11")
@@ -278,6 +278,7 @@
 (global-set-key (kbd "C-;") 'avy-goto-word-1)
 (global-set-key (kbd "C-'") 'avy-goto-char-2)
 (global-set-key (kbd "C-M-e") nil)
+(global-set-key (kbd "C-c i") #'switch-to-agda-input)
 (dolist (map (list evil-normal-state-map evil-motion-state-map))
  (define-key map (kbd "C-w ;") #'transpose-window-splits))
 (eval-after-load "compile"
@@ -468,6 +469,12 @@
 (add-hook 'coq-mode-hook
  (lambda ()
   (define-key coq-mode-map (kbd "C-c c") (lambda () (interactive) (ding)))))
+
+(defun switch-to-agda-input ()
+ (interactive)
+ (load-file (shell-command-to-string "agda-mode locate"))
+ (require 'agda-input)
+ (set-input-method 'Agda))
 
 (fset 'proof-load
  (let ((proof-loaded nil))
