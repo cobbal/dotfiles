@@ -1,0 +1,4 @@
+(:name promela-mode
+ :description "major mode for editing PROMELA program files"
+ :type http
+ :url "http://spinroot.com/spin/Src/promela-mode.el")

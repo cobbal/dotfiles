@@ -3,10 +3,8 @@
 ;; Do this first to minimize color flash
 (load-theme 'manoj-dark)
 
-(setq mac-option-key-is-meta nil)
-(setq mac-command-key-is-meta t)
 (setq mac-command-modifier 'meta)
-(setq mac-option-modifier nil)
+(setq mac-option-modifier 'super)
 (setq ns-pop-up-frames nil)
 (tool-bar-mode -1)
 
@@ -18,7 +16,9 @@
 (dolist (x '("~/.emacs.d/lisp"
              "~/.emacs.d/el-get/el-get"
              "~/.emacs.d/el-get/clang-complete-async"
-             "/usr/local/opt/coq/lib/emacs/site-lisp"
+             "~/.emacs.d/el-get/ac-company"
+             "~/.emacs.d/el-get/auctex"
+             ;; "/usr/local/opt/coq/lib/emacs/site-lisp"
              "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/"))
  (add-to-list 'load-path (expand-file-name x)))
 
@@ -72,12 +72,19 @@
    swift-mode
    unicode-fonts))
 
+(defun magic-close-parens ()
+ (interactive)
+ (dolist (k '(")" "]" "}"))
+  (local-set-key (kbd k) #'racket-insert-closing)))
+
 (package-initialize)
 
 (defun el-get-install-optionals ()
  (interactive)
  (dolist (pkg '(auctex
                 ProofGeneral
+                ac-company
+                ;; company-sourcekit
                 clang-complete-async))
   (el-get-install pkg)))
 
@@ -91,6 +98,8 @@
     (- col (current-column))
     ?-))))
 
+(require 'window-lock)
+
 (setq racket-mode-pretty-lambda nil)
 (setq racket-program "/Applications/Racket/bin/racket")
 (add-hook 'racket-mode-hook
@@ -102,8 +111,9 @@
   (add-to-list 'prettify-symbols-alist '("}" . ?{))
   (add-to-list 'prettify-symbols-alist '("[" . ?]))
   (add-to-list 'prettify-symbols-alist '("]" . ?[))
+  (require 'sexp-rewrite)
   (require 'racket-rewrites)
-  (local-set-key (kbd "C-c d") sexprw-mode-keymap)
+  (local-set-key (kbd "C-c d") #'sexprw-mode-keymap)
   ;(prettify-symbols-mode t)
   (setq-local eldoc-documentation-function nil)
   (local-set-key (kbd "C-M-d") #'racket-visit-definition)
@@ -184,10 +194,10 @@
   ;;(setq ns-use-native-fullscreen nil)
   (setq initial-frame-alist
    `((fullscreen . ,fullscreen-mode) . ,initial-frame-alist))))
- ;; (require 'exec-path-from-shell)
- ;; (push "GOPATH" exec-path-from-shell-variables)
- ;; (exec-path-from-shell-initialize)
 
+;; (require 'exec-path-from-shell)
+;; (push "GOPATH" exec-path-from-shell-variables)
+;; (exec-path-from-shell-initialize)
 
 (defun try-set-font (font)
  (ignore-errors (set-frame-font font nil t) t))
@@ -201,6 +211,35 @@
  (try-set-font "DejaVu Sans mono 11")
  (try-set-font "Espresso mono 11")
  (try-set-font "Consolas 10"))
+
+(defun do-ligatures ()
+ (interactive)
+ ;; from https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs
+ (when (window-system)
+  (set-default-font "Fira Code"))
+ (let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
+                (35 . ".\\(?:[(?[_{]\\)")
+                (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+                (42 . ".\\(?:\\(?:\\*\\*\\)\\|[*/]\\)")
+                (43 . ".\\(?:\\(?:\\+\\+\\)\\|\\+\\)")
+                (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+                (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=]\\)")
+                (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+                (58 . ".\\(?:[:=]\\)")
+                (59 . ".\\(?:;\\)")
+                (60 . ".\\(?:\\(?:!--\\)\\|\\(?:\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[/<=>|-]\\)")
+                (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+                (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+                (63 . ".\\(?:[:=?]\\)")
+                (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+                (94 . ".\\(?:=\\)")
+                (123 . ".\\(?:-\\)")
+                (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+                (126 . ".\\(?:[=@~-]\\)"))))
+  (dolist (char-regexp alist)
+   (set-char-table-range composition-function-table (car char-regexp)
+    `([,(cdr char-regexp) 0 font-shape-gstring])))))
+
 
 (require 'frame-focus-hints)
 (require 'transpose-window-splits)
@@ -216,6 +255,7 @@
 (defun my-compile-advice (orig-fun command &optional mode &rest args)
  (apply orig-fun command (or compile-always-comint mode) args))
 (advice-add 'compilation-start :around #'my-compile-advice)
+(setq compilation-scroll-output t)
 
 (defun first-error ()
  (interactive)
@@ -248,14 +288,14 @@
  (inc-char-at-point (- n)))
 
 ;;(define-key global-map [down-mouse-1] nil)
-(global-set-key (kbd "C-c \\") "λ")
 (global-set-key (kbd "M-u") #'insert-char)
 (global-set-key (kbd "C-c s") #'query-replace-regexp)
-(global-set-key (kbd "C-c q") #'refill-mode)
+(global-set-key (kbd "C-c q") #'auto-fill-mode)
 (global-set-key (kbd "C-c a") #'auto-complete-mode)
 (global-set-key (kbd "C-c w") #'fixup-whitespace)
 (global-set-key (kbd "C-c c") #'recompile)
 (global-set-key (kbd "C-c C") #'compile)
+(global-set-key (kbd "C-c C-k") #'kill-compilation)
 (global-set-key (kbd "C-c C-c") #'comment-region)
 (global-set-key (kbd "C-c u") #'revert-buffer)
 (global-set-key (kbd "C-c ;") #'ispell-buffer)
@@ -278,6 +318,8 @@
 (global-set-key (kbd "C-;") 'avy-goto-word-1)
 (global-set-key (kbd "C-'") 'avy-goto-char-2)
 (global-set-key (kbd "C-M-e") nil)
+(global-set-key (kbd "C-`") #'toggle-window-dedicated)
+(global-set-key (kbd "C-c i") #'switch-to-agda-input)
 (dolist (map (list evil-normal-state-map evil-motion-state-map))
  (define-key map (kbd "C-w ;") #'transpose-window-splits))
 (eval-after-load "compile"
@@ -288,10 +330,14 @@
 
 (avy-setup-default)
 
-(add-hook 'LaTeX-mode-hook
+(load "auctex/auctex.el" t t t)
+(add-hook 'latex-mode-hook
  (lambda ()
-  (set (make-local-variable 'before-save-hook) nil)
-  (add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation))))
+  '(add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation))))
+
+(add-hook 'tex-mode-hook
+ (lambda ()
+  '(set (make-local-variable 'before-save-hook) nil)))
 
 (require 'auto-complete)
 (require 'auto-complete-config)
@@ -323,6 +369,14 @@
 (setq ac-auto-start t)
 (setq ac-dwim t)
 (global-auto-complete-mode t)
+
+(add-hook 'swift-mode-hook
+ (lambda ()
+  (unless (boundp 'ac-source-company-sourcekit)
+   (require 'ac-company)
+   (require 'company-sourcekit)
+   (ac-company-define-source ac-source-company-sourcekit company-sourcekit)
+   (add-to-list 'ac-sources 'ac-source-company-sourcekit))))
 
 (global-hl-line-mode t)
 (set-face-foreground 'hl-line nil)
@@ -361,7 +415,8 @@
 
 (when (boundp 'global-linum-mode)
  (global-linum-mode t)
- (setq linum-format "%d "))
+ ;; (setq linum-format "%d ")
+ )
 (column-number-mode t)
 
 (require 'autoloaded)
@@ -394,13 +449,26 @@
              ("\\.cs\\'" . csharp-mode)
              ("\\.cl\\'" . lisp-mode)
              ("\\.fscr\\'" . smalltalk-mode)
+             ("\\.tex\\'" . LaTeX-mode)
              ("\\.rkt\\'" . racket-mode)
              ("\\.dart\\'" . dart-mode)
              ("\\.pro\\'" . qmake-mode)
              ("\\.coffee\\'" . coffee-mode)
              ("\\.ly\\'" . LilyPond-mode)
+             ("\\.pml\\'" . (lambda () (promela-mode-shim)))
              ("\\.v\\'" . (lambda () (progn (proof-load) (coq-mode))))))
  (add-to-list 'auto-mode-alist a))
+
+(autoload 'promela-mode "promela-mode" "PROMELA mode" t t)
+(defun promela-mode-shim ()
+ (interactive)
+ (when (not (boundp 'font-lock-defaults-alist))
+  (set 'font-lock-defaults-alist '()))
+ (promela-mode)
+ (dolist (k '("(" "{" "[" "]" "}" ")" ";"))
+  (local-set-key k #'self-insert-command))
+ (setq font-lock-defaults promela-font-lock-defaults)
+ (font-lock-mode 1))
 
 (add-hook 'js-mode-hook
  (lambda ()
@@ -481,8 +549,9 @@
 
    (unless proof-loaded
     (setq proof-splash-enable nil)
+    (setq proof-shell-process-connection-type nil)
     (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el")
-    (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
+    ;; (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
     (load-file (shell-command-to-string "agda-mode locate"))
     (setq agda2-include-dirs
      (list "." (expand-file-name "~/programs/agda-stdlib-0.9/src")))
@@ -571,28 +640,27 @@
    (goto-char point)
    (message "No non-ascii characters."))))
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(describe-char-unidata-list
-   (quote
-    (name old-name general-category decomposition uppercase lowercase)))
- '(package-selected-packages
-   (quote
-    (uncrustify-mode unicode-enbox racket-mode misc-cmds hl-spotlight gnu-apl-mode)))
- '(safe-local-variable-values
-   (quote
-    ((eval setq org-format-latex-options
-      (plist-put org-format-latex-options :scale 3.0))
-     (eval setq org-format-latex-options
-      (plist-put org-format-latex-options :scale 5.0))
-     (eval setq org-format-latex-options
-      (plist-put org-format-latex-options :scale 2.0))
-     (eval visible-mode t)
-     (eval auto-fill-mode t)
-     (encoding . utf-8)))))
+(defun fill-sentence ()
+ (interactive)
+ (save-excursion
+  (or (eq (point) (point-max)) (forward-char))
+  (forward-sentence -1)
+  (indent-relative t)
+  (let ((beg (point))
+        (ix (string-match "LaTeX" mode-name)))
+   (forward-sentence)
+   (if (and ix (equal "LaTeX" (substring mode-name ix)))
+    (LaTeX-fill-region-as-paragraph beg (point))
+    (fill-region-as-paragraph beg (point))))))
+
+(setq safe-local-variable-values
+ '((eval . (visible-mode t))
+   (eval . (auto-fill-mode t))
+   (encoding . utf-8)))
+
+(setq describe-char-unidata-list
+ '(name old-name general-category decomposition uppercase lowercase))
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -610,3 +678,15 @@
  '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-string-face ((t (:inherit font-lock-string-face)))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(safe-local-variable-values
+   (quote
+    ((eval setq org-format-latex-options
+      (plist-put org-format-latex-options :scale 1.5))
+     (eval visible-mode t)
+     (eval auto-fill-mode t)
+     (encoding . utf-8)))))

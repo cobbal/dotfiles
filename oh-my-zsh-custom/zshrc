@@ -42,11 +42,13 @@ alias emacs='emacs -nw'
 alias ping='ping -c 100'
 alias iup='ping gdns'
 alias clj='rlwrap clj'
+alias clojure='rlwrap clojure'
 alias ttty='tee /dev/tty'
 alias igdb='fsf-gdbtui'
 alias sl='ls'
 alias kasse='killall ScreenSaverEngine'
 alias appcode='open -a appcode'
+alias skim='open -a ~/Applications/Skim.app'
 alias escape='sed -e "s/'\''/'\''\\\\'\'''\''/g; 1s/^/'\''/; \$s/\$/'\''/"'
 alias pwcopy='pwd | escape | pbcopy'
 
@@ -63,7 +65,7 @@ function bfe {
     if [ -e $1 ]; then
         echo "File exists, cowardly refusing to overwrite"
     else
-        read -s -p "Enter new password: " pass
+        read -s "pass?Enter new password: "
         echo
         echo $pass | openssl bf -a > $1
         pass=''
