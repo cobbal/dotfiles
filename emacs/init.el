@@ -22,7 +22,6 @@
              "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/"))
  (add-to-list 'load-path (expand-file-name x)))
 
-
 (setq el-get-notify-type 'message)
 (unless (require 'el-get nil 'noerror)
  (add-to-list 'exec-path "/usr/local/bin")
@@ -180,7 +179,7 @@
  (setq frame-resize-pixelwise t)
  (let ((fullscreen-mode 'maximized))
   (when (> (x-display-pixel-width) 1440) ;; crude test for multiple displays
-   (setq initial-frame-alist `((left + -2000) . ,initial-frame-alist))
+   ;(setq initial-frame-alist `((left + -2000) . ,initial-frame-alist))
    '(setq fullscreen-mode 'fullscreen))
   ;;(setq ns-use-native-fullscreen nil)
   (setq initial-frame-alist
@@ -196,6 +195,7 @@
 (or
  (try-set-font "Menlo 13")
  (try-set-font "Menlo 11")
+ (try-set-font "Hack 10")
  (when (eq window-system 'w32)
   (try-set-font "DejaVu Sans mono 8"))
  (try-set-font "DejaVu Sans mono 11")
@@ -469,6 +469,11 @@
  (lambda ()
   (define-key coq-mode-map (kbd "C-c c") (lambda () (interactive) (ding)))))
 
+(ignore-errors
+ (load-file (shell-command-to-string "agda-mode locate"))
+ (require 'agda-input)
+ (setq default-input-method 'Agda))
+
 (fset 'proof-load
  (let ((proof-loaded nil))
   (lambda ()
@@ -579,7 +584,13 @@
     (uncrustify-mode unicode-enbox racket-mode misc-cmds hl-spotlight gnu-apl-mode)))
  '(safe-local-variable-values
    (quote
-    ((eval visible-mode t)
+    ((eval setq org-format-latex-options
+      (plist-put org-format-latex-options :scale 3.0))
+     (eval setq org-format-latex-options
+      (plist-put org-format-latex-options :scale 5.0))
+     (eval setq org-format-latex-options
+      (plist-put org-format-latex-options :scale 2.0))
+     (eval visible-mode t)
      (eval auto-fill-mode t)
      (encoding . utf-8)))))
 (custom-set-faces

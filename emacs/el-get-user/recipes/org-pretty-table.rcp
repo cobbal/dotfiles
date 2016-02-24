@@ -1,0 +1,4 @@
+(:name org-pretty-table
+ :description "Replace org-table characters with box-drawing unicode glyphs."
+ :type github
+ :pkgname "Fuco1/org-pretty-table")
