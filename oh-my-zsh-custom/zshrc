@@ -35,7 +35,7 @@ alias csi='rlwrap csi'
 alias guile='rlwrap guile'
 alias ccl64='rlwrap ccl64'
 alias ccl='rlwrap ccl'
-alias lps='ps -A | grep -i'
+alias lps='ps -Af | grep -i'
 alias bfd='openssl bf -d -a <'
 alias ctop='top -o cpu'
 alias emacs='emacs -nw'
@@ -49,6 +49,11 @@ alias kasse='killall ScreenSaverEngine'
 alias appcode='open -a appcode'
 alias escape='sed -e "s/'\''/'\''\\\\'\'''\''/g; 1s/^/'\''/; \$s/\$/'\''/"'
 alias pwcopy='pwd | escape | pbcopy'
+
+if [[ "$(uname)" == "Linux" ]]; then
+    alias pbcopy='xsel --clipboard --input'
+    alias pbpaste='xsel --clipboard --output'
+fi
 
 function lwhich {
     which $1 | xargs ls -l
@@ -84,4 +89,3 @@ fi
 
 test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh \
 || echo $'iterm2 intergration not present. to install:\n  curl -L https://iterm2.com/misc/install_shell_integration.sh | bash'
-
