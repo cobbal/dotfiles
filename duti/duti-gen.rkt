@@ -11,6 +11,7 @@
                          .el
                          .scala))
        (com.SequentialX.Sequential . (.jpg))
+       (edu.ucsd.cs.mmccrack.bibdesk . (.bib))
        (org.videolan.vlc . (.mkv))))
 
 (for* ([(app exts) everything]
