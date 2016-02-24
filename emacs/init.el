@@ -18,7 +18,7 @@
              "~/.emacs.d/el-get/clang-complete-async"
              "~/.emacs.d/el-get/ac-company"
              "~/.emacs.d/el-get/auctex"
-             "/usr/local/opt/coq/lib/emacs/site-lisp"
+             ;; "/usr/local/opt/coq/lib/emacs/site-lisp"
              "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/"))
  (add-to-list 'load-path (expand-file-name x)))
 
@@ -84,7 +84,7 @@
  (dolist (pkg '(auctex
                 ProofGeneral
                 ac-company
-                company-sourcekit
+                ;; company-sourcekit
                 clang-complete-async))
   (el-get-install pkg)))
 
@@ -295,6 +295,7 @@
 (global-set-key (kbd "C-c w") #'fixup-whitespace)
 (global-set-key (kbd "C-c c") #'recompile)
 (global-set-key (kbd "C-c C") #'compile)
+(global-set-key (kbd "C-c C-k") #'kill-compilation)
 (global-set-key (kbd "C-c C-c") #'comment-region)
 (global-set-key (kbd "C-c u") #'revert-buffer)
 (global-set-key (kbd "C-c ;") #'ispell-buffer)
@@ -454,8 +455,20 @@
              ("\\.pro\\'" . qmake-mode)
              ("\\.coffee\\'" . coffee-mode)
              ("\\.ly\\'" . LilyPond-mode)
+             ("\\.pml\\'" . (lambda () (promela-mode-shim)))
              ("\\.v\\'" . (lambda () (progn (proof-load) (coq-mode))))))
  (add-to-list 'auto-mode-alist a))
+
+(autoload 'promela-mode "promela-mode" "PROMELA mode" t t)
+(defun promela-mode-shim ()
+ (interactive)
+ (when (not (boundp 'font-lock-defaults-alist))
+  (set 'font-lock-defaults-alist '()))
+ (promela-mode)
+ (dolist (k '("(" "{" "[" "]" "}" ")" ";"))
+  (local-set-key k #'self-insert-command))
+ (setq font-lock-defaults promela-font-lock-defaults)
+ (font-lock-mode 1))
 
 (add-hook 'js-mode-hook
  (lambda ()
@@ -537,8 +550,9 @@
 
    (unless proof-loaded
     (setq proof-splash-enable nil)
+    (setq proof-shell-process-connection-type nil)
     (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el")
-    (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
+    ;; (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
     (load-file (shell-command-to-string "agda-mode locate"))
     (setq agda2-include-dirs
      (list "." (expand-file-name "~/programs/agda-stdlib-0.9/src")))
@@ -627,6 +641,19 @@
    (goto-char point)
    (message "No non-ascii characters."))))
 
+(defun fill-sentence ()
+ (interactive)
+ (save-excursion
+  (or (eq (point) (point-max)) (forward-char))
+  (forward-sentence -1)
+  (indent-relative t)
+  (let ((beg (point))
+        (ix (string-match "LaTeX" mode-name)))
+   (forward-sentence)
+   (if (and ix (equal "LaTeX" (substring mode-name ix)))
+    (LaTeX-fill-region-as-paragraph beg (point))
+    (fill-region-as-paragraph beg (point))))))
+
 (setq safe-local-variable-values
  '((eval . (visible-mode t))
    (eval . (auto-fill-mode t))
@@ -657,4 +684,11 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages (quote (dash misc-cmds gnu-apl-mode))))
+ '(package-selected-packages (quote (dash misc-cmds gnu-apl-mode)))
+ '(safe-local-variable-values
+   (quote
+    ((eval setq org-format-latex-options
+      (plist-put org-format-latex-options :scale 1.5))
+     (eval visible-mode t)
+     (eval auto-fill-mode t)
+     (encoding . utf-8)))))
