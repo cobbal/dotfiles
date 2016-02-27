@@ -331,9 +331,14 @@
 (avy-setup-default)
 
 (load "auctex/auctex.el" t t t)
+;; this is insane... why are there 3 hooks???
 (add-hook 'latex-mode-hook
  (lambda ()
   '(add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation))))
+
+(add-hook 'LaTeX-mode-hook
+ (lambda ()
+  (local-set-key (kbd "M-q") #'fill-sentence)))
 
 (add-hook 'tex-mode-hook
  (lambda ()
