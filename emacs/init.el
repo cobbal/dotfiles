@@ -319,7 +319,7 @@
 (global-set-key (kbd "C-'") 'avy-goto-char-2)
 (global-set-key (kbd "C-M-e") nil)
 (global-set-key (kbd "C-`") #'toggle-window-dedicated)
-(global-set-key (kbd "C-c i") #'switch-to-agda-input)
+(global-set-key (kbd "C-c i") #'toggle-input-method)
 (dolist (map (list evil-normal-state-map evil-motion-state-map))
  (define-key map (kbd "C-w ;") #'transpose-window-splits))
 (eval-after-load "compile"
@@ -375,13 +375,13 @@
 (setq ac-dwim t)
 (global-auto-complete-mode t)
 
-(add-hook 'swift-mode-hook
- (lambda ()
-  (unless (boundp 'ac-source-company-sourcekit)
-   (require 'ac-company)
-   (require 'company-sourcekit)
-   (ac-company-define-source ac-source-company-sourcekit company-sourcekit)
-   (add-to-list 'ac-sources 'ac-source-company-sourcekit))))
+;; (add-hook 'swift-mode-hook
+;;  (lambda ()
+;;   (unless (boundp 'ac-source-company-sourcekit)
+;;    (require 'ac-company)
+;;    (require 'company-sourcekit)
+;;    (ac-company-define-source ac-source-company-sourcekit company-sourcekit)
+;;    (add-to-list 'ac-sources 'ac-source-company-sourcekit))))
 
 (global-hl-line-mode t)
 (set-face-foreground 'hl-line nil)
