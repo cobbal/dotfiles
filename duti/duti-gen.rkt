@@ -9,6 +9,8 @@
                          .py
                          .rkt
                          .el
+                         .erb .rb
+                         .drv
                          .scala))
        (com.SequentialX.Sequential . (.jpg))
        (edu.ucsd.cs.mmccrack.bibdesk . (.bib))
