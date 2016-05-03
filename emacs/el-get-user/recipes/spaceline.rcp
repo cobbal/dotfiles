@@ -1,0 +1,5 @@
+(:name spaceline
+ :description "Powerline theme from Spacemacs"
+ :type github
+ :depends powerline
+ :pkgname "TheBB/spaceline")

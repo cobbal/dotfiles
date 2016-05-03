@@ -25,12 +25,16 @@ values."
                                       auctex
                                       fsharp-mode
                                       nix-mode
+                                      ;; pdf-tools
                                       racket-mode
+                                      window-purpose
+                                      z3-mode
                                       )
    dotspacemacs-excluded-packages '(
                                     magit
                                     auto-compile
                                     exec-path-from-shell
+                                    recentf
                                     smartparens
                                     undo-tree
                                     vi-tilde-fringe
@@ -135,12 +139,25 @@ in `dotspacemacs/user-config'."
  (global-set-key (kbd "M-d") #'dash-at-point)
  (global-set-key (kbd "<C-return>") #'indent-new-comment-line)
  ;; (global-set-key (kbd "M-l") #'google-chrome-goto-location)
- (global-set-key (kbd "<C-M-tab>") 'clang-format-region)
- (global-set-key (kbd "C-;") 'avy-goto-word-1)
- (global-set-key (kbd "C-'") 'avy-goto-char-2)
- (global-set-key (kbd "C-M-e") nil)
+ (global-set-key (kbd "<C-M-tab>") #'clang-format-region)
+ (global-set-key (kbd "C-;") #'avy-goto-word-1)
+ (global-set-key (kbd "C-'") #'avy-goto-char-2)
  (global-set-key (kbd "C-`") #'toggle-window-dedicated)
- (global-set-key (kbd "C-c i") #'toggle-input-method)
+ (global-set-key (kbd "C-S-h") 'windmove-left)
+ (global-set-key (kbd "C-S-l") 'windmove-right)
+ (global-set-key (kbd "C-S-k") 'windmove-up)
+ (global-set-key (kbd "C-S-j") 'windmove-down)
+ (global-set-key (kbd "C-M-e") nil)
+ (global-set-key (kbd "M-ESC ESC") nil)
+
+
+ ;; TODO: rewrite as advice
+ (global-set-key (kbd "C-c i")
+  (lambda (&optional arg interactive)
+   (interactive "P\np")
+   (require 'agda-input)
+   (toggle-input-method arg interactive)))
+
  (eval-after-load "compile"
   (progn
    (setq compilation-scroll-output t)
@@ -157,11 +174,18 @@ in `dotspacemacs/user-config'."
  (setq fill-column 80)
  (setq sentence-end-double-space nil)
 
+ (setq evil-cross-lines t)
+
+ (setq undo-limit (round (* 1 1024 1024 1024)))
+ (setq undo-strong-limit (round (* 1.5 1024 1024 1024)))
+
+ (setq dabbrev-case-fold-search nil)
+
  (defun colorize-compilation-buffer ()
   (toggle-read-only)
   (ansi-color-apply-on-region (point-min) (point-max))
   (toggle-read-only))
- (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+ (add-hook 'compilation-filter-hook #'colorize-compilation-buffer)
 
  (eval-after-load 'latex
   (lambda ()
@@ -172,7 +196,12 @@ in `dotspacemacs/user-config'."
  (progn
   (setq el-get-notify-type 'message)
   (setq el-get-dir "~/.spacemacs.d/el-get/")
-  (add-to-list 'load-path "~/.spacemacs.d/el-get/el-get")
+  (mapc (lambda (x) (add-to-list 'load-path x))
+   '("~/.spacemacs.d/el-get/el-get"
+     "~/.spacemacs.d/lisp"
+     "~/.config/dotfiles/emacs/lisp"
+     "/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp"))
+
   (unless (require 'el-get nil 'noerror)
    (with-current-buffer
     (url-retrieve-synchronously
@@ -182,13 +211,34 @@ in `dotspacemacs/user-config'."
   (add-to-list 'el-get-recipe-path "~/.spacemacs.d/el-get-user/recipes")
   (el-get 'sync
    '(ProofGeneral
+     dash-at-point
      )))
 
- (add-hook 'haskell-mode-hook
-  (lambda ()
-   (local-unset-key (kbd "M-s"))))
+ (setq ghc-sort-key nil)
+ (setq ghc-insert-key nil)
 
+ (fset 'proof-load
+  (let ((proof-loaded nil))
+   (lambda ()
+    (interactive)
+
+    (unless proof-loaded
+     (setq proof-splash-enable nil)
+     (setq proof-shell-process-connection-type nil)
+     (load-file "~/.spacemacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el")
+     ;; (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
+     (setq proof-loaded t)))))
+
+ (dolist (a '(("\\.v\\'" . (lambda () (progn (proof-load) (coq-mode))))))
+  (add-to-list 'auto-mode-alist a))
+
+ (eval-after-load "ido"
+  (lambda () (setq ido-auto-merge-work-directories-length -1)))
  )
+
+(defun fix-save ()
+ (interactive)
+ (local-unset-key (kbd "M-s")))
 
 (defun dotspacemacs/user-config ()
  "Configuration function for user code.
@@ -198,11 +248,11 @@ layers configuration. You are free to put any user code."
  ;(scroll-bar-mode 1)
  (set-face-foreground 'hl-line nil)
  (global-linum-mode 1)
+ (setq linum-eager nil)
+ (setq linum-delay t)
  (menu-bar-mode 1)
 
- (dolist (x '("~/.config/dotfiles/emacs/lisp"))
-  (add-to-list 'load-path (expand-file-name x)))
- (require 'frame-focus-hints)
+ ;; (require 'frame-focus-hints)
  (require 'transpose-window-splits)
 
  (dolist (map (list evil-normal-state-map evil-motion-state-map))
@@ -221,6 +271,46 @@ layers configuration. You are free to put any user code."
  (global-set-key (kbd "M-h") #'ns-do-hide-emacs)
  (setq initial-buffer-choice t)
  (save-place-mode -1)
+
+ ;; Make <escape> NOT quit as much as possible, you stupid jerks
+ (define-key isearch-mode-map (kbd "<escape>") nil)
+
+ (define-key minibuffer-local-map (kbd "<escape>") nil)
+ (define-key minibuffer-local-ns-map (kbd "<escape>") nil)
+ (define-key minibuffer-local-completion-map (kbd "<escape>") nil)
+ (define-key minibuffer-local-must-match-map (kbd "<escape>") nil)
+ (define-key minibuffer-local-isearch-map (kbd "<escape>") nil)
+
+ (setq tab-always-indent t)
+
+ (purpose-mode 1)
+ (require 'purpose-color)
+ (add-hook 'after-change-major-mode-hook
+  #'purpose-color-update-fringe-color-for-current-buffer)
+ (add-hook 'purpose-display-buffer-functions
+  #'purpose-color-update-fringe-color-for-current-buffer)
+
+ ;; (defun my-undo-boundary ()
+ ;;  (when (equal (buffer-name) "*scratch*")
+ ;;   (message "before: %s (%s %s %s ...)"
+ ;;    undo-auto--last-boundary-cause
+ ;;    (car-safe buffer-undo-list)
+ ;;    (car-safe (cdr-safe buffer-undo-list))
+ ;;    (car-safe (cdr-safe (cdr-safe buffer-undo-list))))
+ ;;   (undo-boundary)
+
+ ;;   (message "after:  %s (%s %s %s ...)"
+ ;;    undo-auto--last-boundary-cause
+ ;;    (car-safe buffer-undo-list)
+ ;;    (car-safe (cdr-safe buffer-undo-list))
+ ;;    (car-safe (cdr-safe (cdr-safe buffer-undo-list))))
+ ;;   ))
+
+ ;; (remove-hook 'evil-insert-state-exit-hook
+ ;;  #'my-undo-boundary)
+
+ (setq evil-insert-state-message nil)
+ (make-*-better)
 
  )
 
@@ -244,3 +334,41 @@ layers configuration. You are free to put any user code."
 (defun make-*-better ()
  (interactive)
  (define-key evil-normal-state-map (kbd "*") #'evil-search-word-forward))
+
+(defun racket-rain-down-judgment ()
+ (interactive)
+ (goto-char (point-at-eol))
+ (let ((col (current-column)))
+  (newline-and-indent)
+  (insert
+   (make-string
+    (- col (current-column))
+    ?-))))
+
+(defun do-ligatures ()
+ (interactive)
+ ;; from https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs
+ (when (window-system)
+  (set-default-font "Fira Code"))
+ (let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
+                (35 . ".\\(?:[(?[_{]\\)")
+                (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+                (42 . ".\\(?:\\(?:\\*\\*\\)\\|[*/]\\)")
+                (43 . ".\\(?:\\(?:\\+\\+\\)\\|\\+\\)")
+                (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+                (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=]\\)")
+                (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+                (58 . ".\\(?:[:=]\\)")
+                (59 . ".\\(?:;\\)")
+                (60 . ".\\(?:\\(?:!--\\)\\|\\(?:\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[/<=>|-]\\)")
+                (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+                (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+                (63 . ".\\(?:[:=?]\\)")
+                (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+                (94 . ".\\(?:=\\)")
+                (123 . ".\\(?:-\\)")
+                (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+                (126 . ".\\(?:[=@~-]\\)"))))
+  (dolist (char-regexp alist)
+   (set-char-table-range composition-function-table (car char-regexp)
+    `([,(cdr char-regexp) 0 font-shape-gstring])))))

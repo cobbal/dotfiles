@@ -1,12 +1,19 @@
 ;; -*- no-byte-compile: t; lexical-binding: t -*-
 
 ;; Do this first to minimize color flash
-(load-theme 'manoj-dark)
+ (or
+  (ignore-errors
+   (progn
+    (load "~/.emacs.d/el-get/color-theme-sanityinc-tomorrow/color-theme-sanityinc-tomorrow.el")
+    (require 'color-theme-sanityinc-tomorrow)
+    (load-theme 'sanityinc-tomorrow-bright t)))
+  (load-theme 'manoj-dark t))
 
 (setq mac-command-modifier 'meta)
 (setq mac-option-modifier 'super)
 (setq ns-pop-up-frames nil)
 (tool-bar-mode -1)
+(scroll-bar-mode -1)
 
 (blink-cursor-mode 0)
 (setq make-backup-files nil)
@@ -54,11 +61,13 @@
    evil
    ;; exec-path-from-shell
    fsharp-mode
+   flycheck
    glsl-mode
    gnu-apl-mode
    go-mode
    graphviz-dot-mode
    haskell-mode
+   hindent
    hy-mode
    markdown-mode
    misc-cmds
@@ -66,11 +75,52 @@
    php-mode
    racket-mode
    rust-mode
+   color-theme-sanityinc-tomorrow
    scala-mode2
    sexp-rewrite
+   spaceline
    sml-mode
    swift-mode
-   unicode-fonts))
+   unicode-fonts
+   window-purpose
+   z3-mode
+   ))
+
+;; (require 'helm-config)
+;; (helm-mode 0)
+;; (define-key global-map [remap occur] 'helm-occur)
+;; (define-key global-map [remap list-buffers] 'helm-buffers-list)
+
+;; (global-set-key (kbd "M-x") 'helm-M-x)
+;; (unless (boundp 'completion-in-region-function)
+;;  (define-key lisp-interaction-mode-map
+;;   [remap completion-at-point]
+;;   'helm-lisp-completion-at-point)
+;;  (define-key emacs-lisp-mode-map
+;;   [remap completion-at-point]
+;;   'helm-lisp-completion-at-point))
+;; (add-to-list 'display-buffer-alist
+;;  `(,(rx bos "*helm" (* not-newline) "*" eos)
+;;    (display-buffer-in-side-window)
+;;    (inhibit-same-window . t)
+;;    (window-height . 0.4)))
+
+(require 'spaceline-config)
+(spaceline-toggle-version-control-off)
+(spaceline-define-segment wc-segment
+ (if (use-region-p)
+  (format "[%d %d %d]"
+   (abs (- (point) (mark)))
+   (count-words-region (point) (mark))
+   (abs (- (line-number-at-pos (point))
+         (line-number-at-pos (mark)))))
+  (format "%d %d %d"
+   (- (point-max) (point-min))
+   (count-words-region (point-min) (point-max))
+   (line-number-at-pos (point-max))))
+ :enabled nil)
+(spaceline-spacemacs-theme 'wc-segment)
+(setq spaceline-highlight-face-func #'spaceline-highlight-face-evil-state)
 
 (defun magic-close-parens ()
  (interactive)
@@ -98,7 +148,7 @@
     (- col (current-column))
     ?-))))
 
-(require 'window-lock)
+;; (require 'window-lock)
 
 (setq racket-mode-pretty-lambda nil)
 (setq racket-program "/Applications/Racket/bin/racket")
@@ -155,6 +205,7 @@
 (setq-default fill-column 80)
 (setq fill-column 80)
 (setq sentence-end-double-space nil)
+(setq window-combination-resize t)
 
 (defun my-terminal-visible-bell ()
  "A friendlier visual bell effect."
@@ -189,7 +240,7 @@
  (setq frame-resize-pixelwise t)
  (let ((fullscreen-mode 'maximized))
   (when (> (x-display-pixel-width) 1440) ;; crude test for multiple displays
-   ;(setq initial-frame-alist `((left + -2000) . ,initial-frame-alist))
+   (setq initial-frame-alist `((left + -2000) . ,initial-frame-alist))
    '(setq fullscreen-mode 'fullscreen))
   ;;(setq ns-use-native-fullscreen nil)
   (setq initial-frame-alist
@@ -241,7 +292,7 @@
     `([,(cdr char-regexp) 0 font-shape-gstring])))))
 
 
-(require 'frame-focus-hints)
+;; (require 'frame-focus-hints)
 (require 'transpose-window-splits)
 
 (defun unload-enabled-themes ()
@@ -256,6 +307,12 @@
  (apply orig-fun command (or compile-always-comint mode) args))
 (advice-add 'compilation-start :around #'my-compile-advice)
 (setq compilation-scroll-output t)
+
+(defun colorize-compilation-buffer ()
+ (toggle-read-only)
+ (ansi-color-apply-on-region (point-min) (point-max))
+ (toggle-read-only))
+(add-hook 'compilation-filter-hook #'colorize-compilation-buffer)
 
 (defun first-error ()
  (interactive)
@@ -318,8 +375,13 @@
 (global-set-key (kbd "C-;") 'avy-goto-word-1)
 (global-set-key (kbd "C-'") 'avy-goto-char-2)
 (global-set-key (kbd "C-M-e") nil)
-(global-set-key (kbd "C-`") #'toggle-window-dedicated)
-(global-set-key (kbd "C-c i") #'toggle-input-method)
+;; (global-set-key (kbd "C-`") #'toggle-window-dedicated)
+(global-set-key (kbd "C-S-h") 'windmove-left)
+(global-set-key (kbd "C-S-l") 'windmove-right)
+(global-set-key (kbd "C-S-k") 'windmove-up)
+(global-set-key (kbd "C-S-j") 'windmove-down)
+(define-key evil-normal-state-map (kbd "TAB") #'indent-for-tab-command)
+(define-key evil-normal-state-map (kbd "M-.") nil)
 (dolist (map (list evil-normal-state-map evil-motion-state-map))
  (define-key map (kbd "C-w ;") #'transpose-window-splits))
 (eval-after-load "compile"
@@ -327,6 +389,13 @@
 
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map (kbd "3") 'make-frame-command)
+
+;; TODO: rewrite as advice
+(global-set-key (kbd "C-c i")
+ (lambda (&optional arg interactive)
+  (interactive "P\np")
+  (require 'agda-input)
+  (toggle-input-method arg interactive)))
 
 (avy-setup-default)
 
@@ -383,8 +452,13 @@
 ;;    (ac-company-define-source ac-source-company-sourcekit company-sourcekit)
 ;;    (add-to-list 'ac-sources 'ac-source-company-sourcekit))))
 
+
+(setq help-window-select t)
+
 (global-hl-line-mode t)
 (set-face-foreground 'hl-line nil)
+(set-face-background 'fringe "#444444")
+(fringe-mode (cdr-safe (assoc "half-width" fringe-styles)))
 
 (set-face-background 'ac-candidate-face "lightgray")
 (set-face-underline-p 'ac-candidate-face "darkgray")
@@ -420,8 +494,20 @@
 
 (when (boundp 'global-linum-mode)
  (global-linum-mode t)
+
+ (let ((fmt ""))
+  (fset 'custom-linum-number-hook
+   (lambda ()
+    (setq fmt
+     (let ((w (length (number-to-string
+                       (count-lines (point-min) (point-max))))))
+      (concat "%" (number-to-string w) "d")))))
+  (fset 'custom-linum-formatter
+   (lambda (n)
+    (propertize (format fmt n) 'face 'linum))))
  ;; (setq linum-format "%d ")
- )
+  (add-hook 'linum-before-numbering-hook #'custom-linum-number-hook)
+  (setq linum-format #'custom-linum-formatter))
 (column-number-mode t)
 
 (require 'autoloaded)
@@ -500,6 +586,17 @@
 
 (ignore-errors (require 'lilypond-init))
 
+(defvar hindent-line-length 102)
+
+(eval-after-load 'hindent
+ (lambda ()
+  (setq hindent-style "gibiansky")
+  (defun hindent-extra-arguments-advice (fn)
+   (append
+    `("--line-length" ,(format "%d" hindent-line-length))
+    (funcall fn)))
+  (advice-add 'hindent-extra-arguments :around #'hindent-extra-arguments-advice)))
+
 (add-hook 'haskell-mode-hook
  (lambda ()
   (require 'haskell-compile)
@@ -509,7 +606,10 @@
   ;;  (format haskell-compile-command
   ;;   (file-name-nondirectory buffer-file-name)))
   (turn-on-haskell-doc-mode)
-  (turn-on-haskell-indentation)
+  ;; (turn-on-haskell-indentation)
+  (if (fboundp 'electric-indent-local-mode)
+   (electric-indent-local-mode -1))
+  (hindent-mode 1)
   (setq compilation-error-regexp-alist haskell-compilation-error-regexp-alist)
   '(add-to-list 'prettify-symbols-alist '("\\" . ?λ))
   '(prettify-symbols-mode t)))
@@ -579,6 +679,13 @@
    (setq ido-everywhere t)
    (ido-mode 'both)))
 
+(purpose-mode 1)
+(progn
+ (add-to-list 'purpose-user-mode-purposes
+  '(haskell-mode . edit))
+ (purpose-compile-user-configuration))
+(require 'purpose-color)
+
 (require 'dash)
 (require 'apl-map)
 
@@ -606,8 +713,6 @@
  (interactive "DDirectory: ")
  (shell-command
   (format "ctags -e -R %s" (directory-file-name dir-name))))
-
-(define-key evil-normal-state-map (kbd "M-.") nil)
 
 (defadvice find-tag (around refresh-etags activate)
  "Rerun etags and reload tags if tag not found and redo find-tag.
@@ -666,6 +771,14 @@
 (setq describe-char-unidata-list
  '(name old-name general-category decomposition uppercase lowercase))
 
+(setq custom-file "/dev/zero")
+
+(set-face-attribute 'show-paren-mismatch nil
+ :foreground "#000000"
+ :background "#00ff00"
+ :weight 'bold
+ )
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -683,15 +796,3 @@
  '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-string-face ((t (:inherit font-lock-string-face)))))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(safe-local-variable-values
-   (quote
-    ((eval setq org-format-latex-options
-      (plist-put org-format-latex-options :scale 1.5))
-     (eval visible-mode t)
-     (eval auto-fill-mode t)
-     (encoding . utf-8)))))
