@@ -6,13 +6,21 @@
                          .cpp .cxx .c .cc .h .hpp
                          .nix .drv
                          .sh
+                         .md
+                         .v .lean .hlean
+                         .clj
                          .py
                          .rkt
                          .el
+                         .rs
+                         .tex .dtx .sty
                          .hs .lhs .cabal
                          .erb .rb
                          .scala))
-       (com.SequentialX.Sequential . (.jpg .png))
+       (com.mothersruin.SuspiciousPackageApp . (.pkg .mpkg))
+       (com.att.graphviz . (.dot))
+       ;; (com.SequentialX.Sequential . (.jpg .png))
+       (cx.c3.Xee3 . (.jpg .png))
        (edu.ucsd.cs.mmccrack.bibdesk . (.bib))
        (org.videolan.vlc . (.mkv))))
 
