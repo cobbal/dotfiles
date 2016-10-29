@@ -49,10 +49,12 @@ alias ttty='tee /dev/tty'
 alias igdb='fsf-gdbtui'
 alias sl='ls'
 alias kasse='killall ScreenSaverEngine'
-alias appcode='open -a appcode'
+alias appcode='open -a ~/Applications/AppCode.app'
 alias skim='open -a ~/Applications/Skim.app'
-alias escape='sed -e "s/'\''/'\''\\\\'\'''\''/g; 1s/^/'\''/; \$s/\$/'\''/"'
+function escape { local in=$(cat); printf "%s\n" "${(q)in}" }
 alias pwcopy='pwd | escape | pbcopy'
+alias nix-zsh='nix-shell "<nixpkgs>" --command "exec zsh; return"'
+alias rp.='cd "$(realpath .)"'
 # from http://superuser.com/a/975878/146
 alias brewski='brew update &&'\
 'brew upgrade --all;'\
@@ -96,6 +98,13 @@ if [[ "$TERM" == "dumb" ]]; then
     unfunction precmd
     unfunction preexec
     PS1='$ '
+fi
+
+export TAG_ALIAS_FILE="${HOME}/.config/tag_aliases"
+export TAG_CMD_FMT_STRING="cemacs +{{.LineNumber}} {{.Filename}}"
+if (( $+commands[tag] )); then
+  tag() { command tag "$@"; source ${TAG_ALIAS_FILE} 2>/dev/null }
+  alias ag=tag
 fi
 
 test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh \
