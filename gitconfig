@@ -9,6 +9,7 @@
     dt = difftool
     ks = difftool
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	g = grep --break --heading --line-number
 [core]
 	excludesfile = \"$HOME\"/.gitignore_global
 [push]
@@ -35,3 +36,5 @@
 [credential]
 	helper = !aws codecommit credential-helper $@
 	UseHttpPath = true
+[grep]
+	extendRegexp = true
