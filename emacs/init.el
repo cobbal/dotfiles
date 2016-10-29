@@ -20,14 +20,28 @@
 (setq auto-save-default nil)
 (setq ad-redefinition-action 'accept) ;; silence advice warning about redefinition
 
-(dolist (x '("~/.emacs.d/lisp"
-             "~/.emacs.d/el-get/el-get"
-             "~/.emacs.d/el-get/clang-complete-async"
-             "~/.emacs.d/el-get/ac-company"
-             "~/.emacs.d/el-get/auctex"
-             ;; "/usr/local/opt/coq/lib/emacs/site-lisp"
-             "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/"))
- (add-to-list 'load-path (expand-file-name x)))
+(defun add-to-list* (list-var elements &optional append compare-fn)
+ (dolist (a elements)
+  (add-to-list list-var a append compare-fn))
+ (symbol-value list-var))
+
+
+(add-to-list* 'load-path
+ (mapcar #'expand-file-name
+  (list
+   "~/.emacs.d/lisp"
+   "~/.emacs.d/el-get/el-get"
+   "~/.emacs.d/el-get/agda-input"
+   "~/.emacs.d/el-get/clang-complete-async"
+   "~/.emacs.d/el-get/ac-company"
+   "~/.emacs.d/el-get/company-mode"
+   "~/.emacs.d/el-get/dash-functional"
+   "~/.emacs.d/el-get/auctex"
+   "~/.emacs.d/el-get/proof-general/generic"
+   "~/.nix-profile/share/emacs/site-lisp"
+   "~/.nix-profile/share/emacs/site-lisp/lean"
+   ;; "/usr/local/opt/coq/lib/emacs/site-lisp"
+   "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/")))
 
 (setq el-get-notify-type 'message)
 (unless (require 'el-get nil 'noerror)
@@ -43,7 +57,7 @@
 
 (require 'package)
 (add-to-list 'package-archives
- '("melpa" . "http://melpa.milkbox.net/packages/") t)
+ '("melpa" . "https://melpa.org/packages/") t)
 (require 'el-get-elpa)
 ;; Build the El-Get copy of the package.el packages if we have not
 ;; built it before.  Will have to look into updating later ...
@@ -51,17 +65,21 @@
  (el-get-elpa-build-local-recipes))
 
 (el-get 'sync
- '(auto-complete
+ '(agda-input
+   auto-complete
    avy
    cmake-mode
    coffee-mode
+   company
    clojure-mode
    d-mode
    dash-at-point
    evil
    ;; exec-path-from-shell
+   fill-column-indicator
    fsharp-mode
    flycheck
+   flycheck-swift
    glsl-mode
    gnu-apl-mode
    go-mode
@@ -76,7 +94,7 @@
    racket-mode
    rust-mode
    color-theme-sanityinc-tomorrow
-   scala-mode2
+   ;; scala-mode2
    sexp-rewrite
    spaceline
    sml-mode
@@ -84,6 +102,7 @@
    unicode-fonts
    window-purpose
    z3-mode
+   dash dash-functional f s ;; lean dependencies
    ))
 
 ;; (require 'helm-config)
@@ -132,9 +151,9 @@
 (defun el-get-install-optionals ()
  (interactive)
  (dolist (pkg '(auctex
-                ProofGeneral
+                proof-general
                 ac-company
-                ;; company-sourcekit
+                company-sourcekit
                 clang-complete-async))
   (el-get-install pkg)))
 
@@ -154,13 +173,6 @@
 (setq racket-program "/Applications/Racket/bin/racket")
 (add-hook 'racket-mode-hook
  (lambda ()
-  (setq prettify-symbols-alist '())
-  (add-to-list 'prettify-symbols-alist '(")" . ?())
-  (add-to-list 'prettify-symbols-alist '("(" . ?)))
-  (add-to-list 'prettify-symbols-alist '("{" . ?}))
-  (add-to-list 'prettify-symbols-alist '("}" . ?{))
-  (add-to-list 'prettify-symbols-alist '("[" . ?]))
-  (add-to-list 'prettify-symbols-alist '("]" . ?[))
   (require 'sexp-rewrite)
   (require 'racket-rewrites)
   (local-set-key (kbd "C-c d") #'sexprw-mode-keymap)
@@ -179,6 +191,7 @@
 (setq-default evil-symbol-word-search t)
 (setq evil-mode-line-format '(before . mode-line-frame-identification))
 (global-undo-tree-mode -1)
+(global-auto-revert-mode 1)
 
 (prefer-coding-system           'utf-8)
 (set-default-coding-systems     'utf-8)
@@ -301,6 +314,11 @@
 
 (defadvice load-theme (before theme-dont-propagate activate)
  (unload-enabled-themes))
+
+(defadvice proof-layout-windows (around disable-window-resize-for-pg activate)
+ (let ((window-combination-resize nil))
+  (message "hello!")
+  ad-do-it))
 
 (defcustom compile-always-comint nil "")
 (defun my-compile-advice (orig-fun command &optional mode &rest args)
@@ -444,13 +462,13 @@
 (setq ac-dwim t)
 (global-auto-complete-mode t)
 
-;; (add-hook 'swift-mode-hook
-;;  (lambda ()
-;;   (unless (boundp 'ac-source-company-sourcekit)
-;;    (require 'ac-company)
-;;    (require 'company-sourcekit)
-;;    (ac-company-define-source ac-source-company-sourcekit company-sourcekit)
-;;    (add-to-list 'ac-sources 'ac-source-company-sourcekit))))
+(add-hook 'swift-mode-hook
+ (lambda ()
+  (unless (boundp 'ac-source-company-sourcekit)
+   (require 'ac-company)
+   (require 'company-sourcekit)
+   (ac-company-define-source ac-source-company-sourcekit company-sourcekit)
+   (add-to-list 'ac-sources 'ac-source-company-sourcekit))))
 
 
 (setq help-window-select t)
@@ -510,8 +528,6 @@
   (setq linum-format #'custom-linum-formatter))
 (column-number-mode t)
 
-(require 'autoloaded)
-
 (defun http-find-file (arg url)
  (interactive "P\nsURL: ")
  (message (format "%s %s" arg url))
@@ -523,32 +539,38 @@
     (set-visited-file-name (concat "/tmp/" buffer-name)))
    nil buffer-name nil)))
 
-(dolist (a '(("\\.mm\\'" . objc-mode)
-             ("\\.h\\'" . c++-mode)
-             ("\\.swift\\'" . swift-mode)
-             ("\\.\\(v\\|f\\|tc\\|te\\)sh\\'" . glsl-mode)
-             ("\\.jsont\\'" . html-mode)
-             ("\\.ijs\\'" . j-mode)
-             ("\\.j\\'" . objj-mode)
-             ("\\.js\\'" . js-mode)
-             ("\\.julius\\'" . js-mode)
-             ("\\.clj\\'" . clojure-mode)
-             ("\\.nu\\'" .  nu-mode)
-             ("[Nn]ukefile\\'" . nu-mode)
-             ("[Mm]akefile." . makefile-mode)
-             ("\\.json\\'" . js-mode)
-             ("\\.cs\\'" . csharp-mode)
-             ("\\.cl\\'" . lisp-mode)
-             ("\\.fscr\\'" . smalltalk-mode)
-             ("\\.tex\\'" . LaTeX-mode)
-             ("\\.rkt\\'" . racket-mode)
-             ("\\.dart\\'" . dart-mode)
-             ("\\.pro\\'" . qmake-mode)
-             ("\\.coffee\\'" . coffee-mode)
-             ("\\.ly\\'" . LilyPond-mode)
-             ("\\.pml\\'" . (lambda () (promela-mode-shim)))
-             ("\\.v\\'" . (lambda () (progn (proof-load) (coq-mode))))))
- (add-to-list 'auto-mode-alist a))
+(add-to-list* 'auto-mode-alist
+ '(("\\.h\\'" . c++-mode)
+   ("\\.clj\\'" . clojure-mode)
+   ("\\.coffee\\'" . coffee-mode)
+   ("\\.v\\'" . coq-mode-shim)
+   ("\\.cs\\'" . csharp-mode)
+   ("\\.dart\\'" . dart-mode)
+   ("\\.\\(v\\|f\\|tc\\|te\\)sh\\'" . glsl-mode)
+   ("\\.jsont\\'" . html-mode)
+   ("\\.ijs\\'" . j-mode)
+   ("\\.js\\'" . js-mode)
+   ("\\.json\\'" . js-mode)
+   ("\\.julius\\'" . js-mode)
+   ("\\.tex\\'" . LaTeX-mode)
+   ("\\.ly\\'" . LilyPond-mode)
+   ("\\.cl\\'" . lisp-mode)
+   ("[Mm]akefile." . makefile-mode)
+   ("[Nn]ukefile\\'" . nu-mode)
+   ("\\.nu\\'" .  nu-mode)
+   ("\\.mm\\'" . objc-mode)
+   ("\\.j\\'" . objj-mode)
+   ("\\.pml\\'" . promela-mode-shim)
+   ("\\.pro\\'" . qmake-mode)
+   ("\\.rkt\\'" . racket-mode)
+   ("\\.fscr\\'" . smalltalk-mode)
+   ("\\.swift\\'" . swift-mode)))
+
+(defun coq-mode-shim ()
+ (interactive)
+ (proof-load)
+ (setq coq-compile-before-require t)
+ (coq-mode))
 
 (autoload 'promela-mode "promela-mode" "PROMELA mode" t t)
 (defun promela-mode-shim ()
@@ -573,6 +595,38 @@
 
 (require 'ido)
 (setq ido-auto-merge-work-directories-length -1)
+;; (setq ido-file-extensions-order '(".lean"))
+(add-to-list* 'ido-ignore-files
+ '("\\.clean\\'"
+   "\\.olean\\'"
+   "\\.ilean\\'"
+   "\\.v.d\\'"
+   ))
+
+(defun sort-lines-by (reverse beg end by)
+ "Sort lines in region using BY; argument means descending order.
+Called from a program, there are four arguments: REVERSE (non-nil
+means reverse order), BEG and END (region to sort)."
+ (interactive "P\nr\nXby: ")
+ (save-excursion
+  (save-restriction
+   (narrow-to-region beg end)
+   (goto-char (point-min))
+   (let ;; To make `end-of-line' and etc. to ignore fields.
+    ((inhibit-field-text-motion t))
+    (sort-subr reverse 'forward-line 'end-of-line nil nil
+     (lambda (a b)
+      (let ((a1 (funcall by (buffer-substring (car a) (cdr a))))
+            (b1 (funcall by (buffer-substring (car b) (cdr b)))))
+       (cond
+        ((and (number-or-marker-p a1) (number-or-marker-p b1))
+         (< a1 b1))
+        ((and (stringp a1) (stringp b1))
+         (string< a1 b1))
+        ((and (symbolp a1) (symbolp b1))
+         (string< (symbol-name a1) (symbol-name b1)))
+        (t (error "don't know how to compare %s and %s" a1 b1))))))))))
+
 
 (defun byte-compile-all-in-emacs-d-lisp ()
  (interactive)
@@ -585,6 +639,15 @@
 ;;(require 'hamlet-mode)
 
 (ignore-errors (require 'lilypond-init))
+
+(setq lean-rootdir (expand-file-name "~/.nix-profile"))
+(setq lean-server-options '("--memory=4096"))
+(ignore-errors (require 'lean-mode))
+
+(defun my-lean-hook ()
+ (setq evil-shift-width 2)
+ (local-set-key (kbd "M-RET") #'lean-show-goal-at-pos))
+(add-hook 'lean-mode-hook #'my-lean-hook)
 
 (defvar hindent-line-length 102)
 
@@ -643,7 +706,7 @@
   (define-key coq-mode-map (kbd "C-c c") (lambda () (interactive) (ding)))))
 
 (ignore-errors
- (load-file (shell-command-to-string "agda-mode locate"))
+ ;; (load-file (shell-command-to-string "agda-mode locate"))
  (require 'agda-input)
  (setq default-input-method 'Agda))
 
@@ -655,9 +718,15 @@
    (unless proof-loaded
     (setq proof-splash-enable nil)
     (setq proof-shell-process-connection-type nil)
-    (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el")
+    (setq proof-auto-action-when-deactivating-scripting 'retract)
+    (require 'proof-site)
+    ;; (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el")
     ;; (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
-    (load-file (shell-command-to-string "agda-mode locate"))
+    (or
+     (ignore-errors
+      (load-file (shell-command-to-string "agda-mode locate"))
+      t)
+     (message "%s" "couldn't locate agda-mode, continuing without"))
     (setq agda2-include-dirs
      (list "." (expand-file-name "~/programs/agda-stdlib-0.9/src")))
     (setq proof-loaded t)))))
@@ -679,10 +748,19 @@
    (setq ido-everywhere t)
    (ido-mode 'both)))
 
+(defun my-nix-hook ()
+ (local-set-key (kbd "M-`") #'find-file-at-point))
+
+(add-hook 'nix-mode-hook #'my-nix-hook)
+
+(setq purpose-layout-dirs (expand-file-name "~/.emacs.d/purpose-layouts"))
 (purpose-mode 1)
 (progn
- (add-to-list 'purpose-user-mode-purposes
-  '(haskell-mode . edit))
+ (add-to-list* 'purpose-user-mode-purposes
+  '((haskell-mode . edit)
+    (rust-mode . edit)
+    (coq-mode . edit)
+    ))
  (purpose-compile-user-configuration))
 (require 'purpose-color)
 
@@ -700,6 +778,8 @@
 (defun set-lisp-indent-offset (n)
  (interactive "Nlisp-indent-offset: ")
  (set (make-local-variable 'lisp-indent-offset) n))
+
+(add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
 
 (server-start)
 
