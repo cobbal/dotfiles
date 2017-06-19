@@ -1,13 +1,13 @@
 ;; -*- no-byte-compile: t; lexical-binding: t -*-
 
 ;; Do this first to minimize color flash
- (or
-  (ignore-errors
-   (progn
-    (load "~/.emacs.d/el-get/color-theme-sanityinc-tomorrow/color-theme-sanityinc-tomorrow.el")
-    (require 'color-theme-sanityinc-tomorrow)
-    (load-theme 'sanityinc-tomorrow-bright t)))
-  (load-theme 'manoj-dark t))
+(or
+ (ignore-errors
+  (progn
+   (load "~/.emacs.d/el-get/color-theme-sanityinc-tomorrow/color-theme-sanityinc-tomorrow.el")
+   (require 'color-theme-sanityinc-tomorrow)
+   (load-theme 'sanityinc-tomorrow-bright t)))
+ (load-theme 'manoj-dark t))
 
 (setq mac-command-modifier 'meta)
 (setq mac-option-modifier 'super)
@@ -25,7 +25,6 @@
   (add-to-list list-var a append compare-fn))
  (symbol-value list-var))
 
-
 (add-to-list* 'load-path
  (mapcar #'expand-file-name
   (list
@@ -40,7 +39,6 @@
    "~/.emacs.d/el-get/proof-general/generic"
    "~/.nix-profile/share/emacs/site-lisp"
    "~/.nix-profile/share/emacs/site-lisp/lean"
-   ;; "/usr/local/opt/coq/lib/emacs/site-lisp"
    "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/")))
 
 (setq el-get-notify-type 'message)
@@ -75,24 +73,26 @@
    d-mode
    dash-at-point
    evil
-   ;; exec-path-from-shell
    fill-column-indicator
    fsharp-mode
    flycheck
    flycheck-swift
+   framemove
    glsl-mode
    gnu-apl-mode
    go-mode
    graphviz-dot-mode
-   haskell-mode
+   ;;haskell-mode
    hindent
    hy-mode
+   ;;lsp-mode
    markdown-mode
    misc-cmds
    nix-mode
    php-mode
+   purescript-mode
    racket-mode
-   rust-mode
+   ;;rust-mode
    color-theme-sanityinc-tomorrow
    ;; scala-mode2
    sexp-rewrite
@@ -100,9 +100,11 @@
    sml-mode
    swift-mode
    unicode-fonts
+   web
    window-purpose
    z3-mode
    dash dash-functional f s ;; lean dependencies
+   tuareg-mode
    ))
 
 ;; (require 'helm-config)
@@ -167,6 +169,18 @@
     (- col (current-column))
     ?-))))
 
+(defun racket-rain-up-judgment ()
+ (interactive)
+ (goto-char (point-at-eol))
+ (let ((col (current-column)))
+  (previous-line)
+  (goto-char (point-at-eol))
+  (newline-and-indent)
+  (insert
+   (make-string
+    (- col (current-column))
+    ?-))))
+
 ;; (require 'window-lock)
 
 (setq racket-mode-pretty-lambda nil)
@@ -179,7 +193,8 @@
   ;(prettify-symbols-mode t)
   (setq-local eldoc-documentation-function nil)
   (local-set-key (kbd "C-M-d") #'racket-visit-definition)
-  (local-set-key (kbd "C-c C--") #'racket-rain-down-judgment)))
+  (local-set-key (kbd "C-c C--") #'racket-rain-down-judgment)
+  (local-set-key (kbd "C-c C-=") #'racket-rain-up-judgment)))
 
 (require 'evil)
 (evil-mode 1)
@@ -273,8 +288,9 @@
  (when (eq window-system 'w32)
   (try-set-font "DejaVu Sans mono 8"))
  (try-set-font "DejaVu Sans mono 11")
+ (try-set-font "DejaVu Sans mono 13")
  (try-set-font "Espresso mono 11")
- (try-set-font "Consolas 10"))
+ (try-set-font "Consolas 13"))
 
 (defun do-ligatures ()
  (interactive)
@@ -317,7 +333,6 @@
 
 (defadvice proof-layout-windows (around disable-window-resize-for-pg activate)
  (let ((window-combination-resize nil))
-  (message "hello!")
   ad-do-it))
 
 (defcustom compile-always-comint nil "")
@@ -372,6 +387,7 @@
 (global-set-key (kbd "C-c C") #'compile)
 (global-set-key (kbd "C-c C-k") #'kill-compilation)
 (global-set-key (kbd "C-c C-c") #'comment-region)
+(global-set-key (kbd "C-c C-e") #'toggle-debug-on-error)
 (global-set-key (kbd "C-c u") #'revert-buffer)
 (global-set-key (kbd "C-c ;") #'ispell-buffer)
 (global-set-key (kbd "C-c C--") #'dec-char-at-point)
@@ -403,7 +419,12 @@
 (dolist (map (list evil-normal-state-map evil-motion-state-map))
  (define-key map (kbd "C-w ;") #'transpose-window-splits))
 (eval-after-load "compile"
- '(define-key compilation-mode-map (kbd "g") nil))
+ '(progn
+   (define-key compilation-mode-map (kbd "h") nil)
+   (define-key compilation-mode-map (kbd "g") nil)))
+
+(require 'framemove)
+(setq framemove-hook-into-windmove t)
 
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map (kbd "3") 'make-frame-command)
@@ -443,7 +464,7 @@
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
 (define-key ac-completing-map (kbd "RET") nil)
 (add-hook 'emacs-lisp-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-symbols)))
-(add-hook 'auto-complete-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-filename)))
+(add-hook 'auto-complete-mode-hook (lambda () '(add-to-list 'ac-sources 'ac-source-filename)))
 ;; (add-hook 'c-mode-hook #'set-clang-ac-sources)
 ;; (add-hook 'c++-mode-hook #'set-clang-ac-sources)
 ;; (add-hook 'objc-mode-hook #'set-clang-ac-sources)
@@ -528,17 +549,6 @@
   (setq linum-format #'custom-linum-formatter))
 (column-number-mode t)
 
-(defun http-find-file (arg url)
- (interactive "P\nsURL: ")
- (message (format "%s %s" arg url))
- (let ((buffer-name (first (last (split-string url "/")))))
-  (http-get url nil
-   (lambda (proc message)
-    (switch-to-buffer (process-buffer proc))
-    (http-decode-buffer)
-    (set-visited-file-name (concat "/tmp/" buffer-name)))
-   nil buffer-name nil)))
-
 (add-to-list* 'auto-mode-alist
  '(("\\.h\\'" . c++-mode)
    ("\\.clj\\'" . clojure-mode)
@@ -570,6 +580,8 @@
  (interactive)
  (proof-load)
  (setq coq-compile-before-require t)
+ (setq coq-compile-auto-save 'save-coq)
+ proof-undo-last-successful-command
  (coq-mode))
 
 (autoload 'promela-mode "promela-mode" "PROMELA mode" t t)
@@ -583,15 +595,16 @@
  (setq font-lock-defaults promela-font-lock-defaults)
  (font-lock-mode 1))
 
-(add-hook 'js-mode-hook
- (lambda ()
+(defun my-js-mode-hook ()
 ;;; make emacs recognize the error format produced by jslint
-  (set (make-local-variable 'compilation-error-regexp-alist)
-   '(("^\\([a-zA-Z.0-9_/-]+\\):\\([0-9]+\\):\\([0-9]+\\)" 1 2 3)))
-  (set (make-local-variable 'compile-command)
-   (let ((file (file-name-nondirectory buffer-file-name)))
-    (concat "/usr/share/jslint/jslint " file)))))
+ (set (make-local-variable 'compilation-error-regexp-alist)
+  '(("^\\([a-zA-Z.0-9_/-]+\\):\\([0-9]+\\):\\([0-9]+\\)" 1 2 3)))
+ ;; (set (make-local-variable 'compile-command)
+ ;;  (let ((file (file-name-nondirectory buffer-file-name)))
+ ;;   (concat "/usr/share/jslint/jslint " file)))
+ )
 
+(add-hook 'js-mode-hook 'my-js-mode-hook)
 
 (require 'ido)
 (setq ido-auto-merge-work-directories-length -1)
@@ -689,6 +702,15 @@ means reverse order), BEG and END (region to sort)."
 ;;   (add-to-list 'prettify-symbols-alist '("lambda" . ?λ))
 ;;   (prettify-symbols-mode t)))
 
+(defun my-purescript-mode-hook ()
+ (require 'haskell-compile)
+ (local-set-key (kbd "C-c c") #'recompile)
+ (turn-on-purescript-indentation)
+ (if (fboundp 'electric-indent-local-mode)
+  (electric-indent-local-mode -1))
+ (hindent-mode 1))
+(add-hook 'purescript-mode-hook #'my-purescript-mode-hook)
+
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (defface my-visible-mark-face-1
@@ -701,9 +723,15 @@ means reverse order), BEG and END (region to sort)."
 (require 'visible-mark)
 (global-visible-mark-mode t)
 
-(add-hook 'coq-mode-hook
- (lambda ()
-  (define-key coq-mode-map (kbd "C-c c") (lambda () (interactive) (ding)))))
+(setq confirm-kill-processes nil)
+
+(defun interactive-ding () (interactive) (ding))
+
+(defun my-coq-hook ()
+ ;; (define-key coq-mode-map (kbd "C-c c") #'interactive-ding)
+ )
+(add-hook 'coq-mode-hook #'my-coq-hook)
+
 
 (ignore-errors
  ;; (load-file (shell-command-to-string "agda-mode locate"))
@@ -764,6 +792,31 @@ means reverse order), BEG and END (region to sort)."
  (purpose-compile-user-configuration))
 (require 'purpose-color)
 
+
+;; borrowed from https://github.com/emacs-lsp/lsp-rust/blob/master/lsp-rust.el
+;; (require 'lsp-mode)
+
+;; (defun lsp-rust--get-root ()
+;;  (let (dir)
+;;   (unless
+;;    (ignore-errors
+;;     (let* ((output (shell-command-to-string "cargo locate-project"))
+;;            (js (json-read-from-string output)))
+;;      (setq dir (cdr (assq 'root js)))))
+;;    (error "Couldn't find root for project at %s" default-directory))
+;;   (file-name-directory dir)))
+
+;; (lsp-define-stdio-client 'rust-mode "rust" 'stdio
+;;  #'lsp-rust--get-root
+;;  "Rust Language Server"
+;;  "rustup" "run" "nightly" "rls")
+
+;; (lsp-client-on-notification 'rust-mode "rustDocument/diagnosticsBegin" #'(lambda (_w _p)))
+;; (lsp-client-on-notification 'rust-mode "rustDocument/diagnosticsEnd" #'(lambda (_w _p)))
+;; end theft
+
+
+
 (require 'dash)
 (require 'apl-map)
 
@@ -793,26 +846,6 @@ means reverse order), BEG and END (region to sort)."
  (interactive "DDirectory: ")
  (shell-command
   (format "ctags -e -R %s" (directory-file-name dir-name))))
-
-(defadvice find-tag (around refresh-etags activate)
- "Rerun etags and reload tags if tag not found and redo find-tag.
-   If buffer is modified, ask about save before running etags."
- (let ((extension (file-name-extension (buffer-file-name))))
-  (condition-case err
-   ad-do-it
-   (error (and (buffer-modified-p)
-           (not (ding))
-           (y-or-n-p "Buffer is modified, save it? ")
-           (save-buffer))
-    (er-refresh-etags extension)
-    ad-do-it))))
-
-(defun er-refresh-etags (&optional extension)
- "Run etags on all peer files in current dir and reload them silently."
- (interactive)
- (shell-command (format "etags *.%s" (or extension "el")))
- (let ((tags-revert-without-query t))  ; don't query, revert silently
-  (visit-tags-table default-directory nil)))
 
 (defun find-first-non-ascii-char ()
  "Find the first non-ascii character from point onwards."
@@ -846,6 +879,17 @@ means reverse order), BEG and END (region to sort)."
 (setq safe-local-variable-values
  '((eval . (visible-mode t))
    (eval . (auto-fill-mode t))
+   (eval . (ignore-errors "Write-contents-functions is a buffer-local alternative to before-save-hook"
+            (add-hook 'write-contents-functions
+             (lambda nil
+              (delete-trailing-whitespace)
+              nil))
+            (require 'whitespace)
+            "Sometimes the mode needs to be toggled off and on."
+            (whitespace-mode 0)
+            (whitespace-mode 1)))
+   (whitespace-style . (face tabs trailing lines-tail))
+   (whitespace-line-column . 80)
    (encoding . utf-8)))
 
 (setq describe-char-unidata-list
