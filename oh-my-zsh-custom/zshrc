@@ -37,12 +37,11 @@ alias csi='rlwrap csi'
 alias guile='rlwrap guile'
 alias ccl64='rlwrap ccl64'
 alias ccl='rlwrap ccl'
-alias lps='ps -Af | grep -i'
 alias bfd='openssl bf -d -a <'
 alias ctop='top -o cpu'
 alias emacs='emacs -nw'
-alias ping='ping -c 100'
-alias iup='ping gdns'
+alias ping='ping -c 1000'
+alias iup='prettyping gdns'
 alias clj='rlwrap clj'
 alias clojure='rlwrap clojure'
 alias ttty='tee /dev/tty'
@@ -55,6 +54,7 @@ function escape { local in=$(cat); printf "%s\n" "${(q)in}" }
 alias pwcopy='pwd | escape | pbcopy'
 alias nix-zsh='nix-shell "<nixpkgs>" --command "exec zsh; return"'
 alias rp.='cd "$(realpath .)"'
+
 # from http://superuser.com/a/975878/146
 alias brewski='brew update &&'\
 'brew upgrade --all;'\
@@ -62,11 +62,15 @@ alias brewski='brew update &&'\
 'brew cask cleanup;'\
 'brew doctor'
 
-
 if [[ "$(uname)" == "Linux" ]]; then
     alias pbcopy='xsel --clipboard --input'
     alias pbpaste='xsel --clipboard --output'
 fi
+
+function lps {
+    local tmp=$(ps -Af)
+    printf "%s\n" "$tmp" | grep -i $@
+}
 
 function lwhich {
     which $1 | xargs ls -l
@@ -85,11 +89,8 @@ function bfe {
 
 if which pyenv > /dev/null; then
     eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
 fi
-
-# if [ -e "${HOME}/.nix-profile/etc/profile.d/nix.sh" ]; then
-#     source "${HOME}/.nix-profile/etc/profile.d/nix.sh"
-# fi # added by Nix installer
 
 if [[ "$TERM" == "dumb" ]]; then
     unsetopt zle
@@ -109,6 +110,8 @@ fi
 
 test -e ${HOME}/.iterm2_shell_integration.zsh && source ${HOME}/.iterm2_shell_integration.zsh \
 || echo $'iterm2 intergration not present. to install:\n  curl -L https://iterm2.com/misc/install_shell_integration.sh | bash'
+
+eval $(thefuck --alias fix)
 
 # OPAM configuration
 . /Users/acobb/.opam/opam-init/complete.zsh > /dev/null 2> /dev/null || true
