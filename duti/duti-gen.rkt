@@ -3,12 +3,15 @@
 (define everything
  #hash((org.gnu.Emacs . (public.plain-text
                          public.unix-executable
-                         .cpp .cxx .c .cc .h .hpp
+                         .cpp .cxx .c .cc .h .hpp .m .mm
+                         .ml .mli .mly .mll
                          .nix .drv
                          .sh
                          .md
                          .v .lean .hlean
                          .clj
+                         .js .jsm
+                         .idl
                          .py
                          .rkt
                          .el
