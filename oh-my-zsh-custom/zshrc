@@ -116,4 +116,4 @@ if (( $+commands[tag] )); then
   alias ag=tag
 fi
 
-eval $(thefuck --alias fix) 2>/dev/null || true
+eval $(thefuck --alias fix 2>/dev/null) 2>/dev/null || true
