@@ -570,7 +570,6 @@
    ("\\.nu\\'" .  nu-mode)
    ("\\.mm\\'" . objc-mode)
    ("\\.j\\'" . objj-mode)
-   ("\\.pml\\'" . promela-mode-shim)
    ("\\.pro\\'" . qmake-mode)
    ("\\.rkt\\'" . racket-mode)
    ("\\.fscr\\'" . smalltalk-mode)
@@ -581,19 +580,7 @@
  (proof-load)
  (setq coq-compile-before-require t)
  (setq coq-compile-auto-save 'save-coq)
- proof-undo-last-successful-command
  (coq-mode))
-
-(autoload 'promela-mode "promela-mode" "PROMELA mode" t t)
-(defun promela-mode-shim ()
- (interactive)
- (when (not (boundp 'font-lock-defaults-alist))
-  (set 'font-lock-defaults-alist '()))
- (promela-mode)
- (dolist (k '("(" "{" "[" "]" "}" ")" ";"))
-  (local-set-key k #'self-insert-command))
- (setq font-lock-defaults promela-font-lock-defaults)
- (font-lock-mode 1))
 
 (defun my-js-mode-hook ()
 ;;; make emacs recognize the error format produced by jslint
