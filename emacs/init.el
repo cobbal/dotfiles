@@ -100,6 +100,7 @@
    hindent
    hy-mode
    lsp-mode
+   magit
    markdown-mode
    misc-cmds
    nix-mode
