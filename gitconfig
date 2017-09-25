@@ -11,7 +11,7 @@
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 	g = grep --break --heading --line-number
 [core]
-	excludesfile = \"$HOME\"/.gitignore_global
+	excludesfile = /Users/acobb/.gitignore_global
 [push]
 	default = simple
 [difftool "Kaleidoscope"]
@@ -27,12 +27,14 @@
 	prompt = false
 [merge]
 	tool = Kaleidoscope
+	conflictstyle = diff3
 [help]
 	autocorrect = 1
 [filter "lfs"]
-	clean = git-lfs clean %f
-	smudge = git-lfs smudge %f
 	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
 [credential]
 	helper = !aws codecommit credential-helper $@
 	UseHttpPath = true

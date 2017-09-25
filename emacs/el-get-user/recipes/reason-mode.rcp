@@ -1,0 +1,4 @@
+(:name reason-mode
+ :description "Emacs minor mode for working with facebook/reason"
+ :type github
+ :pkgname "reasonml-editor/reason-mode")

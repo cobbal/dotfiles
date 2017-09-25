@@ -21,7 +21,7 @@ ZSH_THEME="cobbal"
 
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git brew brew-cask osx android nix)
+plugins=(git brew brew-cask osx nix)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -117,3 +117,4 @@ if (( $+commands[tag] )); then
 fi
 
 eval $(thefuck --alias fix 2>/dev/null) 2>/dev/null || true
+source "${HOME}/programs/git-subrepo/.rc" 2>/dev/null || true

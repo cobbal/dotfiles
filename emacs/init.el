@@ -20,6 +20,19 @@
 (setq auto-save-default nil)
 (setq ad-redefinition-action 'accept) ;; silence advice warning about redefinition
 
+(defmacro add-my-hook (hook-name &rest body)
+ "This will define a hook named \"my-`hook-name'\" and put the
+ contents of `body' into it. There can only be one such
+ definition, and new ones will overwrite old ones. This is
+ intentional and should only be used in the init file to preserve
+ sanity and compositionality."
+ (let* ((hook-name-str (symbol-name hook-name))
+        (my-hook-name (intern (concat "my-" hook-name-str))))
+ `(progn
+   (defun ,my-hook-name ()
+    ,@body)
+   (add-hook ',hook-name ',my-hook-name))))
+
 (defun add-to-list* (list-var elements &optional append compare-fn)
  (dolist (a elements)
   (add-to-list list-var a append compare-fn))
@@ -36,9 +49,9 @@
    "~/.emacs.d/el-get/company-mode"
    "~/.emacs.d/el-get/dash-functional"
    "~/.emacs.d/el-get/auctex"
+   "~/.emacs.d/el-get/auctex-latexmk"
    "~/.emacs.d/el-get/proof-general/generic"
    "~/.nix-profile/share/emacs/site-lisp"
-   "~/.nix-profile/share/emacs/site-lisp/lean"
    "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/")))
 
 (setq el-get-notify-type 'message)
@@ -69,6 +82,7 @@
    cmake-mode
    coffee-mode
    company
+   company-quickhelp
    clojure-mode
    d-mode
    dash-at-point
@@ -85,7 +99,7 @@
    ;;haskell-mode
    hindent
    hy-mode
-   ;;lsp-mode
+   lsp-mode
    markdown-mode
    misc-cmds
    nix-mode
@@ -99,12 +113,13 @@
    spaceline
    sml-mode
    swift-mode
-   unicode-fonts
+   ;; unicode-fonts
    web
    window-purpose
    z3-mode
    dash dash-functional f s ;; lean dependencies
    tuareg-mode
+   reason-mode
    ))
 
 ;; (require 'helm-config)
@@ -153,10 +168,13 @@
 (defun el-get-install-optionals ()
  (interactive)
  (dolist (pkg '(auctex
+                auctex-latexmk
                 proof-general
                 ac-company
                 company-sourcekit
-                clang-complete-async))
+                clang-complete-async
+                lsp-haskell
+                ))
   (el-get-install pkg)))
 
 (defun racket-rain-down-judgment ()
@@ -185,16 +203,15 @@
 
 (setq racket-mode-pretty-lambda nil)
 (setq racket-program "/Applications/Racket/bin/racket")
-(add-hook 'racket-mode-hook
- (lambda ()
-  (require 'sexp-rewrite)
-  (require 'racket-rewrites)
-  (local-set-key (kbd "C-c d") #'sexprw-mode-keymap)
-  ;(prettify-symbols-mode t)
-  (setq-local eldoc-documentation-function nil)
-  (local-set-key (kbd "C-M-d") #'racket-visit-definition)
-  (local-set-key (kbd "C-c C--") #'racket-rain-down-judgment)
-  (local-set-key (kbd "C-c C-=") #'racket-rain-up-judgment)))
+(add-my-hook racket-mode-hook
+ (require 'sexp-rewrite)
+ (require 'racket-rewrites)
+ (local-set-key (kbd "C-c d") #'sexprw-mode-keymap)
+ ;; (prettify-symbols-mode t)
+ (setq-local eldoc-documentation-function nil)
+ (local-set-key (kbd "C-M-d") #'racket-visit-definition)
+ (local-set-key (kbd "C-c C--") #'racket-rain-down-judgment)
+ (local-set-key (kbd "C-c C-=") #'racket-rain-up-judgment))
 
 (require 'evil)
 (evil-mode 1)
@@ -245,21 +262,27 @@
 
 (show-paren-mode 1)
 
-(add-hook 'c-mode-common-hook
- (lambda ()
-  (c-add-style "correct"
-   '((c-basic-offset . 4)
-     (c-offsets-alist . ((substatement-open . 0)
-                         (defun-open . 0)
-                         (innamespace . 0)
-                         (inextern-lang . 0)
-                         (case-label . 4)
-                         (statement-case-open . 4)
-                         (statement-case-intro . 4)
-                         (inline-open . 0)
-                         (brace-list-open . 0)))))
-  (c-set-style "correct")
-  t))
+(add-my-hook c-mode-common-hook
+ (c-add-style "correct"
+  '((c-basic-offset . 4)
+    (c-offsets-alist . ((substatement-open . 0)
+                        (defun-open . 0)
+                        (innamespace . 0)
+                        (inextern-lang . 0)
+                        (case-label . 4)
+                        (statement-case-open . 4)
+                        (statement-case-intro . 4)
+                        (inline-open . 0)
+                        (brace-list-open . 0)))))
+ (c-set-style "correct"))
+
+(with-eval-after-load 'lsp-mode
+ (require 'lsp-flycheck))
+(defun my-lsp-hook ()
+ (ignore-errors
+  (lsp-mode 1)))
+(add-my-hook haskell-major-mode
+ (my-lsp-hook))
 
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 20) (left . 0)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 20)))
@@ -282,6 +305,7 @@
  (ignore-errors (set-frame-font font nil t) t))
 
 (or
+ ;; (try-set-font "Input 13")
  (try-set-font "Menlo 13")
  (try-set-font "Menlo 11")
  (try-set-font "Hack 10")
@@ -341,11 +365,10 @@
 (advice-add 'compilation-start :around #'my-compile-advice)
 (setq compilation-scroll-output t)
 
-(defun colorize-compilation-buffer ()
+(add-my-hook compilation-filter-hook
  (toggle-read-only)
  (ansi-color-apply-on-region (point-min) (point-max))
  (toggle-read-only))
-(add-hook 'compilation-filter-hook #'colorize-compilation-buffer)
 
 (defun first-error ()
  (interactive)
@@ -438,19 +461,37 @@
 
 (avy-setup-default)
 
-(load "auctex/auctex.el" t t t)
+(when (load "auctex/auctex.el" t t t)
+ (require 'auctex-latexmk)
+ (setq auctex-latexmk-inherit-TeX-PDF-mode t)
+ (auctex-latexmk-setup))
+
 ;; this is insane... why are there 3 hooks???
-(add-hook 'latex-mode-hook
- (lambda ()
-  '(add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation))))
+(add-my-hook latex-mode-hook
+ (add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation)))
 
-(add-hook 'LaTeX-mode-hook
- (lambda ()
-  (local-set-key (kbd "M-q") #'fill-sentence)))
+(add-my-hook LaTeX-mode-hook
+ (local-set-key (kbd "M-q") #'fill-sentence)
 
-(add-hook 'tex-mode-hook
- (lambda ()
-  '(set (make-local-variable 'before-save-hook) nil)))
+ (TeX-source-correlate-mode 1)
+
+ ;; Apparently, some japanese extension for latex likes to override this
+ ;; variable unless this magic customize thingy is set??? ugh... it worked just
+ ;; fine before auctex-latexmk got involved...
+
+ ;; It gets weirder, tex-jp.el gets loaded on tab completion for inspecting the
+ ;; variables I'm interested in. <U+1F926 FACE PALM>.
+ (put 'TeX-view-program-selection 'saved-value t)
+ (put 'TeX-view-program-list 'saved-value t)
+
+ (add-to-list 'TeX-view-program-list
+  '("displayline" "displayline -g %n %o %b" "displayline"))
+
+ (add-to-list 'TeX-view-program-selection
+  '(output-pdf "displayline")))
+
+(add-my-hook tex-mode-hook
+ (set (make-local-variable 'before-save-hook) nil))
 
 (require 'auto-complete)
 (require 'auto-complete-config)
@@ -463,18 +504,19 @@
 
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
 (define-key ac-completing-map (kbd "RET") nil)
-(add-hook 'emacs-lisp-mode-hook (lambda () (add-to-list 'ac-sources 'ac-source-symbols)))
-(add-hook 'auto-complete-mode-hook (lambda () '(add-to-list 'ac-sources 'ac-source-filename)))
+(add-my-hook emacs-lisp-mode-hook
+ (add-to-list 'ac-sources 'ac-source-symbols))
+(add-my-hook auto-complete-mode-hook
+ (add-to-list 'ac-sources 'ac-source-filename))
 ;; (add-hook 'c-mode-hook #'set-clang-ac-sources)
 ;; (add-hook 'c++-mode-hook #'set-clang-ac-sources)
 ;; (add-hook 'objc-mode-hook #'set-clang-ac-sources)
 ;; (add-hook 'c #'set-clang-ac-sources)
 
 ;;(define-key ac-complete-mode-map viper-ESC-key 'viper-intercept-ESC-key)
-(add-hook 'objc-mode-hook
- (lambda ()
-  (run-at-time ".1 second" nil
-   (lambda () (auto-complete-mode 1)))))
+(add-my-hook objc-mode-hook
+ (run-at-time ".1 second" nil
+  (lambda () (auto-complete-mode 1))))
 
 (define-key ac-menu-map (kbd "RET") nil)
 
@@ -483,13 +525,12 @@
 (setq ac-dwim t)
 (global-auto-complete-mode t)
 
-(add-hook 'swift-mode-hook
- (lambda ()
-  (unless (boundp 'ac-source-company-sourcekit)
-   (require 'ac-company)
-   (require 'company-sourcekit)
-   (ac-company-define-source ac-source-company-sourcekit company-sourcekit)
-   (add-to-list 'ac-sources 'ac-source-company-sourcekit))))
+(add-my-hook swift-mode-hook
+ (unless (boundp 'ac-source-company-sourcekit)
+  (require 'ac-company)
+  (require 'company-sourcekit)
+  (ac-company-define-source ac-source-company-sourcekit company-sourcekit)
+  (add-to-list 'ac-sources 'ac-source-company-sourcekit)))
 
 
 (setq help-window-select t)
@@ -535,17 +576,14 @@
  (global-linum-mode t)
 
  (let ((fmt ""))
-  (fset 'custom-linum-number-hook
-   (lambda ()
-    (setq fmt
-     (let ((w (length (number-to-string
-                       (count-lines (point-min) (point-max))))))
-      (concat "%" (number-to-string w) "d")))))
-  (fset 'custom-linum-formatter
-   (lambda (n)
-    (propertize (format fmt n) 'face 'linum))))
+  (add-my-hook linum-before-numbering-hook
+   (setq fmt
+    (let ((w (length (number-to-string
+                      (count-lines (point-min) (point-max))))))
+     (concat "%" (number-to-string w) "d"))))
+  (defun custom-linum-formatter (n)
+   (propertize (format fmt n) 'face 'linum)))
  ;; (setq linum-format "%d ")
-  (add-hook 'linum-before-numbering-hook #'custom-linum-number-hook)
   (setq linum-format #'custom-linum-formatter))
 (column-number-mode t)
 
@@ -582,7 +620,7 @@
  (setq coq-compile-auto-save 'save-coq)
  (coq-mode))
 
-(defun my-js-mode-hook ()
+(add-my-hook js-mode-hook
 ;;; make emacs recognize the error format produced by jslint
  (set (make-local-variable 'compilation-error-regexp-alist)
   '(("^\\([a-zA-Z.0-9_/-]+\\):\\([0-9]+\\):\\([0-9]+\\)" 1 2 3)))
@@ -590,8 +628,6 @@
  ;;  (let ((file (file-name-nondirectory buffer-file-name)))
  ;;   (concat "/usr/share/jslint/jslint " file)))
  )
-
-(add-hook 'js-mode-hook 'my-js-mode-hook)
 
 (require 'ido)
 (setq ido-auto-merge-work-directories-length -1)
@@ -644,10 +680,9 @@ means reverse order), BEG and END (region to sort)."
 (setq lean-server-options '("--memory=4096"))
 (ignore-errors (require 'lean-mode))
 
-(defun my-lean-hook ()
+(add-my-hook lean-mode-hook
  (setq evil-shift-width 2)
  (local-set-key (kbd "M-RET") #'lean-show-goal-at-pos))
-(add-hook 'lean-mode-hook #'my-lean-hook)
 
 (defvar hindent-line-length 102)
 
@@ -660,22 +695,21 @@ means reverse order), BEG and END (region to sort)."
     (funcall fn)))
   (advice-add 'hindent-extra-arguments :around #'hindent-extra-arguments-advice)))
 
-(add-hook 'haskell-mode-hook
- (lambda ()
-  (require 'haskell-compile)
-  (define-key haskell-mode-map "\C-ch" 'haskell-hoogle)
-  (local-set-key (kbd "C-c c") #'recompile)
-  ;; (set (make-local-variable 'compile-command)
-  ;;  (format haskell-compile-command
-  ;;   (file-name-nondirectory buffer-file-name)))
-  (turn-on-haskell-doc-mode)
-  ;; (turn-on-haskell-indentation)
-  (if (fboundp 'electric-indent-local-mode)
-   (electric-indent-local-mode -1))
-  (hindent-mode 1)
-  (setq compilation-error-regexp-alist haskell-compilation-error-regexp-alist)
-  '(add-to-list 'prettify-symbols-alist '("\\" . ?λ))
-  '(prettify-symbols-mode t)))
+(add-my-hook haskell-mode-hook
+ (require 'haskell-compile)
+ (define-key haskell-mode-map "\C-ch" 'haskell-hoogle)
+ (local-set-key (kbd "C-c c") #'recompile)
+ ;; (set (make-local-variable 'compile-command)
+ ;;  (format haskell-compile-command
+ ;;   (file-name-nondirectory buffer-file-name)))
+ (turn-on-haskell-doc-mode)
+ ;; (turn-on-haskell-indentation)
+ (if (fboundp 'electric-indent-local-mode)
+  (electric-indent-local-mode -1))
+ (hindent-mode 1)
+ (setq compilation-error-regexp-alist haskell-compilation-error-regexp-alist)
+ '(add-to-list 'prettify-symbols-alist '("\\" . ?λ))
+ '(prettify-symbols-mode t))
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
 
@@ -689,14 +723,13 @@ means reverse order), BEG and END (region to sort)."
 ;;   (add-to-list 'prettify-symbols-alist '("lambda" . ?λ))
 ;;   (prettify-symbols-mode t)))
 
-(defun my-purescript-mode-hook ()
+(add-my-hook purescript-mode-hook
  (require 'haskell-compile)
  (local-set-key (kbd "C-c c") #'recompile)
  (turn-on-purescript-indentation)
  (if (fboundp 'electric-indent-local-mode)
   (electric-indent-local-mode -1))
  (hindent-mode 1))
-(add-hook 'purescript-mode-hook #'my-purescript-mode-hook)
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
@@ -714,14 +747,24 @@ means reverse order), BEG and END (region to sort)."
 
 (defun interactive-ding () (interactive) (ding))
 
-(defun my-coq-hook ()
+(add-my-hook coq-mode-hook
  ;; (define-key coq-mode-map (kbd "C-c c") #'interactive-ding)
  )
-(add-hook 'coq-mode-hook #'my-coq-hook)
 
+(defun insert-composition-symbol ()
+ (interactive)
+ (insert "⎄"))
 
 (ignore-errors
  ;; (load-file (shell-command-to-string "agda-mode locate"))
+
+ (setq agda-input-tweak-all
+  '(agda-input-compose
+    (agda-input-prepend "⎄")
+    (agda-input-nonempty)))
+
+ (global-set-key (kbd "M-\\") #'insert-composition-symbol)
+
  (require 'agda-input)
  (setq default-input-method 'Agda))
 
@@ -746,12 +789,11 @@ means reverse order), BEG and END (region to sort)."
      (list "." (expand-file-name "~/programs/agda-stdlib-0.9/src")))
     (setq proof-loaded t)))))
 
-(add-hook 'd-mode-hook
- (lambda ()
-  (add-to-list
-   'compilation-error-regexp-alist
-   '("^\\([^ \n]+\\)(\\([0-9]+\\)): \\(?:error\\|.\\|warnin\\(g\\)\\|remar\\(k\\)\\)"
-     1 2 nil (3 . 4)))))
+(add-my-hook d-mode-hook
+ (add-to-list
+  'compilation-error-regexp-alist
+  '("^\\([^ \n]+\\)(\\([0-9]+\\)): \\(?:error\\|.\\|warnin\\(g\\)\\|remar\\(k\\)\\)"
+    1 2 nil (3 . 4))))
 
 (setq emdroid-activity-creator "activityCreator.py")
 (setq emdroid-tools-dir "/Users/acobb/Desktop/programs/android/tools/")
@@ -763,10 +805,8 @@ means reverse order), BEG and END (region to sort)."
    (setq ido-everywhere t)
    (ido-mode 'both)))
 
-(defun my-nix-hook ()
+(add-my-hook nix-mode-hook
  (local-set-key (kbd "M-`") #'find-file-at-point))
-
-(add-hook 'nix-mode-hook #'my-nix-hook)
 
 (setq purpose-layout-dirs (expand-file-name "~/.emacs.d/purpose-layouts"))
 (purpose-mode 1)
@@ -803,6 +843,43 @@ means reverse order), BEG and END (region to sort)."
 ;; end theft
 
 
+;; ocaml stuff
+(add-my-hook tuareg-mode-hook
+ ;; Load merlin-mode
+ (require 'merlin)
+ (setq merlin-command "ocamlmerlin")
+ ;; Enable auto-complete
+ (setq merlin-use-auto-complete-mode 'easy)
+ (company-mode 1)
+ (require 'ocp-indent)
+ (company-quickhelp-mode 1)
+ ;; Important to note that setq-local is a macro and it needs to be
+ ;; separate calls, not like setq
+ (setq-local merlin-completion-with-doc t)
+ (setq-local indent-tabs-mode nil)
+ (setq-local show-trailing-whitespace t)
+ (setq-local indent-line-function 'ocp-indent-line)
+ (setq-local indent-region-function 'ocp-indent-region)
+ (merlin-mode 1)
+ )
+
+
+(add-my-hook reason-mode-hook
+ ;; Load merlin-mode
+ (require 'merlin)
+ (setq merlin-command "ocamlmerlin")
+
+ ;; Enable auto-complete
+ (setq merlin-use-auto-complete-mode 'easy)
+ (company-mode 1)
+ (company-quickhelp-mode 1)
+ ;; Important to note that setq-local is a macro and it needs to be
+ ;; separate calls, not like setq
+ (setq-local merlin-completion-with-doc t)
+ (setq-local indent-tabs-mode nil)
+ (setq-local show-trailing-whitespace t)
+ (merlin-mode 1)
+ )
 
 (require 'dash)
 (require 'apl-map)
