@@ -1,0 +1,5 @@
+(:name elisp-ffi
+ :type github
+ :description "Emacs Lisp Foreign Function Interface";
+ :build (("make"))
+ :pkgname "skeeto/elisp-ffi")

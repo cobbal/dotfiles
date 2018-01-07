@@ -52,6 +52,7 @@
    "~/.emacs.d/el-get/auctex-latexmk"
    "~/.emacs.d/el-get/proof-general/generic"
    "~/.nix-profile/share/emacs/site-lisp"
+   "~/.nix-profile/share/emacs/site-lisp/ProofGeneral/generic"
    "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/")))
 
 (setq el-get-notify-type 'message)
@@ -96,14 +97,16 @@
    gnu-apl-mode
    go-mode
    graphviz-dot-mode
-   ;;haskell-mode
+   haskell-mode
    hindent
    hy-mode
+   idris-mode
    lsp-mode
    magit
    markdown-mode
    misc-cmds
    nix-mode
+   ocp-indent
    php-mode
    purescript-mode
    racket-mode
@@ -142,6 +145,10 @@
 ;;    (inhibit-same-window . t)
 ;;    (window-height . 0.4)))
 
+;; fix broken colors on fancy powerline images
+(when (memq window-system '(mac ns))
+ (setq powerline-image-apple-rgb t))
+
 (require 'spaceline-config)
 (spaceline-toggle-version-control-off)
 (spaceline-define-segment wc-segment
@@ -161,6 +168,7 @@
 
 (defun magic-close-parens ()
  (interactive)
+ (require 'racket-mode)
  (dolist (k '(")" "]" "}"))
   (local-set-key (kbd k) #'racket-insert-closing)))
 
@@ -241,7 +249,7 @@
 (setq inhibit-startup-echo-area-message "acobb")
 (setq inhibit-splash-screen t)
 (setq initial-scratch-message "")
-(setq-default tab-width 4)
+(setq-default tab-width 8)
 (setq coffee-tab-width 4)
 (setq-default indent-tabs-mode nil)
 (setq-default py-indent-offset 4)
@@ -316,6 +324,9 @@
  (try-set-font "DejaVu Sans mono 13")
  (try-set-font "Espresso mono 11")
  (try-set-font "Consolas 13"))
+
+(setq org-startup-folded nil)
+(setq org-M-RET-may-split-line nil)
 
 (defun do-ligatures ()
  (interactive)
@@ -411,7 +422,8 @@
 (global-set-key (kbd "C-c C") #'compile)
 (global-set-key (kbd "C-c C-k") #'kill-compilation)
 (global-set-key (kbd "C-c C-c") #'comment-region)
-(global-set-key (kbd "C-c C-e") #'toggle-debug-on-error)
+(global-set-key (kbd "C-c C-e") #'pp-eval-last-sexp)
+(global-set-key (kbd "C-c e") #'toggle-debug-on-error)
 (global-set-key (kbd "C-c u") #'revert-buffer)
 (global-set-key (kbd "C-c ;") #'ispell-buffer)
 (global-set-key (kbd "C-c C--") #'dec-char-at-point)
@@ -433,6 +445,7 @@
 (global-set-key (kbd "C-;") 'avy-goto-word-1)
 (global-set-key (kbd "C-'") 'avy-goto-char-2)
 (global-set-key (kbd "C-M-e") nil)
+(global-set-key (kbd "C-x g") #'magit-status)
 ;; (global-set-key (kbd "C-`") #'toggle-window-dedicated)
 (global-set-key (kbd "C-S-h") 'windmove-left)
 (global-set-key (kbd "C-S-l") 'windmove-right)
@@ -446,6 +459,10 @@
  '(progn
    (define-key compilation-mode-map (kbd "h") nil)
    (define-key compilation-mode-map (kbd "g") nil)))
+
+(add-my-hook org-mode-hook
+ (define-key org-mode-map (kbd "M-h") #'ns-do-hide-emacs)
+ (linum-mode -1))
 
 (require 'framemove)
 (setq framemove-hook-into-windmove t)
@@ -551,8 +568,12 @@
 ;;(require 'objc-help)
 ;;(iphoneize)
 
-(dolist (l '((racket-mode . "racket")))
+(dolist (l '((racket-mode . "racket")
+             (scheme-mode . "racket")))
  (add-to-list 'dash-at-point-mode-alist l))
+
+(add-my-hook scheme-mode-hook
+ (magic-close-parens))
 
 ;; borrowed from http://www.emacswiki.org/emacs/NxmlMode
 (defun nxml-where ()
@@ -576,14 +597,17 @@
 (when (boundp 'global-linum-mode)
  (global-linum-mode t)
 
- (let ((fmt ""))
+ (let ((fmt nil))
   (add-my-hook linum-before-numbering-hook
    (setq fmt
-    (let ((w (length (number-to-string
-                      (count-lines (point-min) (point-max))))))
-     (concat "%" (number-to-string w) "d"))))
+    (ignore-errors
+     (let ((w (length (number-to-string
+                       (count-lines (point-min) (point-max))))))
+      (concat "%" (number-to-string w) "d")))))
+
   (defun custom-linum-formatter (n)
-   (propertize (format fmt n) 'face 'linum)))
+   (propertize (format (or fmt "%d") n) 'face 'linum)))
+
  ;; (setq linum-format "%d ")
   (setq linum-format #'custom-linum-formatter))
 (column-number-mode t)
@@ -610,13 +634,14 @@
    ("\\.mm\\'" . objc-mode)
    ("\\.j\\'" . objj-mode)
    ("\\.pro\\'" . qmake-mode)
-   ("\\.rkt\\'" . racket-mode)
+   ("\\.rkt\\'" . scheme-mode)
    ("\\.fscr\\'" . smalltalk-mode)
    ("\\.swift\\'" . swift-mode)))
 
 (defun coq-mode-shim ()
  (interactive)
  (proof-load)
+
  (setq coq-compile-before-require t)
  (setq coq-compile-auto-save 'save-coq)
  (coq-mode))
@@ -631,6 +656,10 @@
  )
 
 (require 'ido)
+(setq ido-create-new-buffer 'always)
+(setq ido-enable-flex-matching t)
+(setq ido-everywhere t)
+(ido-mode 'both)
 (setq ido-auto-merge-work-directories-length -1)
 ;; (setq ido-file-extensions-order '(".lean"))
 (add-to-list* 'ido-ignore-files
@@ -689,7 +718,7 @@ means reverse order), BEG and END (region to sort)."
 
 (eval-after-load 'hindent
  (lambda ()
-  (setq hindent-style "gibiansky")
+  ;; (setq hindent-style "gibiansky")
   (defun hindent-extra-arguments-advice (fn)
    (append
     `("--line-length" ,(format "%d" hindent-line-length))
@@ -732,7 +761,9 @@ means reverse order), BEG and END (region to sort)."
   (electric-indent-local-mode -1))
  (hindent-mode 1))
 
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+(add-my-hook before-save-hook
+ (delete-trailing-whitespace)
+ (refmt-before-save))
 
 (defface my-visible-mark-face-1
   `((t (:background "plum4" :foreground "white")))
@@ -749,22 +780,21 @@ means reverse order), BEG and END (region to sort)."
 (defun interactive-ding () (interactive) (ding))
 
 (add-my-hook coq-mode-hook
+ (make-local-variable 'evil-insert-state-exit-hook)
+ (setq evil-insert-state-exit-hook
+  (remove #'expand-abbrev evil-insert-state-exit-hook))
  ;; (define-key coq-mode-map (kbd "C-c c") #'interactive-ding)
  )
-
-(defun insert-composition-symbol ()
- (interactive)
- (insert "⎄"))
 
 (ignore-errors
  ;; (load-file (shell-command-to-string "agda-mode locate"))
 
+ ;; (define-key ...? (kbd "M-\\") "\\")
+
  (setq agda-input-tweak-all
   '(agda-input-compose
-    (agda-input-prepend "⎄")
+    (agda-input-prepend "\\")
     (agda-input-nonempty)))
-
- (global-set-key (kbd "M-\\") #'insert-composition-symbol)
 
  (require 'agda-input)
  (setq default-input-method 'Agda))
@@ -799,13 +829,6 @@ means reverse order), BEG and END (region to sort)."
 (setq emdroid-activity-creator "activityCreator.py")
 (setq emdroid-tools-dir "/Users/acobb/Desktop/programs/android/tools/")
 
-(eval-after-load "ido"
- '(progn
-   (setq ido-create-new-buffer 'always)
-   (setq ido-enable-flex-matching t)
-   (setq ido-everywhere t)
-   (ido-mode 'both)))
-
 (add-my-hook nix-mode-hook
  (local-set-key (kbd "M-`") #'find-file-at-point))
 
@@ -815,6 +838,7 @@ means reverse order), BEG and END (region to sort)."
  (add-to-list* 'purpose-user-mode-purposes
   '((haskell-mode . edit)
     (rust-mode . edit)
+    (reason-mode . edit)
     (coq-mode . edit)
     ))
  (purpose-compile-user-configuration))
@@ -897,7 +921,7 @@ means reverse order), BEG and END (region to sort)."
  (interactive "Nlisp-indent-offset: ")
  (set (make-local-variable 'lisp-indent-offset) n))
 
-(add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
+;; (add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
 
 (server-start)
 

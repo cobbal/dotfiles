@@ -1,0 +1,4 @@
+(:name nix-mode
+ :type github
+ :description "Major mode for editing Nix expressions"
+ :pkgname "nixos/nix-mode")
