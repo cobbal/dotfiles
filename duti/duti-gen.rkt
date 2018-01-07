@@ -10,7 +10,7 @@
                          .md
                          .v .lean .hlean
                          .clj
-                         .js .jsm
+                         .js .jsm .json
                          .idl
                          .py
                          .rkt
@@ -18,6 +18,8 @@
                          .rs
                          .tex .dtx .sty
                          .hs .lhs .cabal
+                         .cfg
+                         .patch
                          .erb .rb
                          .scala))
        (com.mothersruin.SuspiciousPackageApp . (.pkg .mpkg))
