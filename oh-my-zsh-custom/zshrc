@@ -21,7 +21,7 @@ ZSH_THEME="cobbal"
 
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git brew brew-cask osx nix)
+plugins=(osx nix)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -53,7 +53,7 @@ alias skim='open -a ~/Applications/Skim.app'
 function escape { local in=$(cat); printf "%s\n" "${(q)in}" }
 alias pwcopy='pwd | escape | pbcopy'
 alias nix-zsh='nix-shell "<nixpkgs>" --command "exec zsh; return"'
-alias rp.='cd "$(realpath .)"'
+alias rp.='cd "$(grealpath .)"'
 
 # from http://superuser.com/a/975878/146
 alias brewski='brew update &&'\
