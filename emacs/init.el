@@ -20,6 +20,8 @@
 (setq auto-save-default nil)
 (setq ad-redefinition-action 'accept) ;; silence advice warning about redefinition
 
+(setq evil-want-abbrev-expand-on-insert-exit nil)
+
 (defmacro add-my-hook (hook-name &rest body)
  "This will define a hook named \"my-`hook-name'\" and put the
  contents of `body' into it. There can only be one such
@@ -54,6 +56,13 @@
    "~/.nix-profile/share/emacs/site-lisp"
    "~/.nix-profile/share/emacs/site-lisp/ProofGeneral/generic"
    "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/")))
+
+(let ((opam-share (ignore-errors (car (process-lines "opam" "config" "var" "share")))))
+ (when (and opam-share (file-directory-p opam-share))
+  ;; Register Merlin
+  (add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))))
+
+(setq-default insert-directory-program (or (executable-find "gls") "ls"))
 
 (setq el-get-notify-type 'message)
 (unless (require 'el-get nil 'noerror)
@@ -101,6 +110,7 @@
    hindent
    hy-mode
    idris-mode
+   key-chord
    lsp-mode
    magit
    markdown-mode
@@ -144,6 +154,11 @@
 ;;    (display-buffer-in-side-window)
 ;;    (inhibit-same-window . t)
 ;;    (window-height . 0.4)))
+
+(require 'key-chord)
+(key-chord-mode 1)
+(key-chord-define evil-insert-state-map "jk" #'evil-normal-state)
+(key-chord-define evil-replace-state-map "jk" #'evil-normal-state)
 
 ;; fix broken colors on fancy powerline images
 (when (memq window-system '(mac ns))
@@ -375,7 +390,7 @@
 (defun my-compile-advice (orig-fun command &optional mode &rest args)
  (apply orig-fun command (or compile-always-comint mode) args))
 (advice-add 'compilation-start :around #'my-compile-advice)
-(setq compilation-scroll-output t)
+(setq compilation-scroll-output 'first-error)
 
 (add-my-hook compilation-filter-hook
  (toggle-read-only)
@@ -466,6 +481,8 @@
 
 (require 'framemove)
 (setq framemove-hook-into-windmove t)
+
+(winner-mode 1)
 
 ;; bind C-x 5 3 to be same as C-x 5 2
 (define-key ctl-x-5-map (kbd "3") 'make-frame-command)
@@ -568,6 +585,20 @@
 ;;(require 'objc-help)
 ;;(iphoneize)
 
+;; from https://stackoverflow.com/a/22074203
+(defun crazy-yank ()
+ (interactive)
+ (let ((txt (string-trim (current-kill 0))))
+  (delete-char (length txt))
+  (insert txt)))
+(global-set-key (kbd "C-M-y") #'crazy-yank)
+
+(defun copy-filename-and-line-number ()
+ (interactive)
+ (kill-new
+  (format "%s:%s" (buffer-name) (line-number-at-pos (point)))))
+(global-set-key (kbd "C-c C-p") #'copy-filename-and-line-number)
+
 (dolist (l '((racket-mode . "racket")
              (scheme-mode . "racket")))
  (add-to-list 'dash-at-point-mode-alist l))
@@ -612,6 +643,11 @@
   (setq linum-format #'custom-linum-formatter))
 (column-number-mode t)
 
+(defun eml-modoid ()
+ (fundamental-mode)
+ (setq-local fill-column 78))
+
+
 (add-to-list* 'auto-mode-alist
  '(("\\.h\\'" . c++-mode)
    ("\\.clj\\'" . clojure-mode)
@@ -636,7 +672,8 @@
    ("\\.pro\\'" . qmake-mode)
    ("\\.rkt\\'" . scheme-mode)
    ("\\.fscr\\'" . smalltalk-mode)
-   ("\\.swift\\'" . swift-mode)))
+   ("\\.swift\\'" . swift-mode)
+   ("\\.eml\\'" . eml-modoid)))
 
 (defun coq-mode-shim ()
  (interactive)
@@ -809,6 +846,7 @@ means reverse order), BEG and END (region to sort)."
     (setq proof-shell-process-connection-type nil)
     (setq proof-auto-action-when-deactivating-scripting 'retract)
     (require 'proof-site)
+
     ;; (load-file "~/.emacs.d/el-get/ProofGeneral/ProofGeneral/generic/proof-site.el")
     ;; (setq coq-prog-args '("-emacs-U" "-I" "/Users/acobb/programs/cpdt/cpdt/src"))
     (or
@@ -816,9 +854,23 @@ means reverse order), BEG and END (region to sort)."
       (load-file (shell-command-to-string "agda-mode locate"))
       t)
      (message "%s" "couldn't locate agda-mode, continuing without"))
-    (setq agda2-include-dirs
-     (list "." (expand-file-name "~/programs/agda-stdlib-0.9/src")))
+    ;; (setq agda2-include-dirs
+    ;;  (list "." (expand-file-name "~/programs/agda-stdlib-0.9/src")))
     (setq proof-loaded t)))))
+
+
+(defun enable-acl2r-mode ()
+ (interactive)
+ (proof-load)
+ ;; (add-to-list 'proof-assistant-table '(acl2 "ACL2" "acl2"))
+ ;; (add-to-list 'proof-general-configured-provers 'acl2)
+ ;; (proofgeneral "acl2")
+ (proof-ready-for-assistant 'acl2r "ACL2r")
+ (require 'acl2r)
+ (require 'proof-tree)
+ (acl2r-mode)
+ (setq indent-line-function 'lisp-indent-line)
+ )
 
 (add-my-hook d-mode-hook
  (add-to-list
@@ -870,9 +922,12 @@ means reverse order), BEG and END (region to sort)."
 
 ;; ocaml stuff
 (add-my-hook tuareg-mode-hook
+ (setq compilation-error-regexp-alist
+  (list '("[Ff]ile \\(\"\\(.*?\\)\", line \\(-?[0-9]+\\)\\(, characters \\(-?[0-9]+\\)-\\([0-9]+\\)\\)?\\)\\(:\n\\(\\(Warning .*?\\)\\|\\(Error\\)\\):\\)?"
+          2 3 (5 . 6) (9 . 11) 1 (8 compilation-message-face))))
  ;; Load merlin-mode
  (require 'merlin)
- (setq merlin-command "ocamlmerlin")
+ (setq merlin-command 'opam)
  ;; Enable auto-complete
  (setq merlin-use-auto-complete-mode 'easy)
  (company-mode 1)
@@ -881,10 +936,12 @@ means reverse order), BEG and END (region to sort)."
  ;; Important to note that setq-local is a macro and it needs to be
  ;; separate calls, not like setq
  (setq-local merlin-completion-with-doc t)
+ (setq-local merlin-error-on-single-line t)
  (setq-local indent-tabs-mode nil)
  (setq-local show-trailing-whitespace t)
  (setq-local indent-line-function 'ocp-indent-line)
  (setq-local indent-region-function 'ocp-indent-region)
+ (modify-syntax-entry ?# "." tuareg-mode-syntax-table) ;; make foo#bar multiple symbols
  (merlin-mode 1)
  )
 
@@ -906,12 +963,18 @@ means reverse order), BEG and END (region to sort)."
  (merlin-mode 1)
  )
 
+(add-my-hook sml-mode-hook
+ (require 'sml-proc)
+ (add-to-list* 'compilation-error-regexp-alist sml-error-regexp-alist))
+
 (require 'dash)
 (require 'apl-map)
 
 ;; (setq unicode-fonts-skip-font-groups nil)
 ;; (require 'unicode-fonts)
 ;; (unicode-fonts-setup)
+
+(setq ispell-program-name "aspell")
 
 (setq doc-view-resolution 200)
 
@@ -965,6 +1028,10 @@ means reverse order), BEG and END (region to sort)."
     (LaTeX-fill-region-as-paragraph beg (point))
     (fill-region-as-paragraph beg (point))))))
 
+(defun iterm-here ()
+ (interactive)
+ (call-process "iterm-newtab.applescript"))
+
 (setq safe-local-variable-values
  '((eval . (visible-mode t))
    (eval . (auto-fill-mode t))
@@ -979,6 +1046,7 @@ means reverse order), BEG and END (region to sort)."
             (whitespace-mode 1)))
    (whitespace-style . (face tabs trailing lines-tail))
    (whitespace-line-column . 80)
+   (idris-load-packages . ("contrib"))
    (encoding . utf-8)))
 
 (setq describe-char-unidata-list
