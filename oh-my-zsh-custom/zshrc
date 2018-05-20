@@ -31,19 +31,26 @@ source $ZSH/oh-my-zsh.sh
 
 test -f /usr/local/share/zsh/site-functions/_aws && source /usr/local/share/zsh/site-functions/_aws
 
+function alias_if_present {
+    if which $1 > /dev/null; then
+        alias $1="$2"
+    fi
+}
+
 alias o.='open .'
 alias o,='open .' # common typo...
-alias csi='rlwrap csi'
-alias guile='rlwrap guile'
-alias ccl64='rlwrap ccl64'
-alias ccl='rlwrap ccl'
+alias_if_present csi 'rlwrap csi'
+alias_if_present guile 'rlwrap guile'
+alias_if_present ccl64 'rlwrap ccl64'
+alias_if_present ocaml 'rlwrap ocaml'
+alias_if_present ccl 'rlwrap ccl'
 alias bfd='openssl bf -d -a <'
 alias ctop='top -o cpu'
-alias emacs='emacs -nw'
-alias ping='ping -c 1000'
+alias_if_present emacs 'emacs -nw'
+alias_if_present ping 'ping -c 1000'
 alias iup='prettyping gdns'
-alias clj='rlwrap clj'
-alias clojure='rlwrap clojure'
+alias_if_present clj 'rlwrap clj'
+alias_if_present clojure 'rlwrap clojure'
 alias ttty='tee /dev/tty'
 alias igdb='fsf-gdbtui'
 alias sl='ls'
@@ -54,6 +61,9 @@ function escape { local in=$(cat); printf "%s\n" "${(q)in}" }
 alias pwcopy='pwd | escape | pbcopy'
 alias nix-zsh='nix-shell "<nixpkgs>" --command "exec zsh; return"'
 alias rp.='cd "$(grealpath .)"'
+alias man=/usr/bin/man
+
+unset alias_if_present
 
 # from http://superuser.com/a/975878/146
 alias brewski='brew update &&'\
@@ -99,6 +109,9 @@ fi
 
 # OPAM configuration
 . /Users/acobb/.opam/opam-init/complete.zsh > /dev/null 2> /dev/null || true
+if which opam > /dev/null; then
+    eval "$(opam config env)"
+fi
 
 if [[ "$TERM" == "dumb" ]]; then
     unsetopt zle
@@ -110,7 +123,7 @@ if [[ "$TERM" == "dumb" ]]; then
 fi
 
 export TAG_ALIAS_FILE="${HOME}/.config/tag_aliases"
-export TAG_CMD_FMT_STRING="cemacs +{{.LineNumber}} {{.Filename}}"
+export TAG_CMD_FMT_STRING="cemacs +{{.LineNumber}} \"{{.Filename}}\""
 if (( $+commands[tag] )); then
   tag() { command tag "$@"; source ${TAG_ALIAS_FILE} 2>/dev/null }
   alias ag=tag
@@ -118,3 +131,5 @@ fi
 
 eval $(thefuck --alias fix 2>/dev/null) 2>/dev/null || true
 source "${HOME}/programs/git-subrepo/.rc" 2>/dev/null || true
+
+unset MANPATH
