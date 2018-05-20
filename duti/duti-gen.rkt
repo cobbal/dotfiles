@@ -4,10 +4,10 @@
  #hash((org.gnu.Emacs . (public.plain-text
                          public.unix-executable
                          .cpp .cxx .c .cc .h .hpp .m .mm
-                         .ml .mli .mly .mll
+                         .jl
+                         .sml .ml .mli .mly .mll
                          .nix .drv
                          .sh
-                         .md
                          .v .lean .hlean
                          .clj
                          .js .jsm .json
@@ -22,6 +22,7 @@
                          .patch
                          .erb .rb
                          .scala))
+       (com.brettterpstra.marked2 . (.md))
        (com.mothersruin.SuspiciousPackageApp . (.pkg .mpkg))
        (com.att.graphviz . (.dot))
        ;; (com.SequentialX.Sequential . (.jpg .png))
