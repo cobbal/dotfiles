@@ -44,6 +44,8 @@ alias_if_present guile 'rlwrap guile'
 alias_if_present ccl64 'rlwrap ccl64'
 alias_if_present ocaml 'rlwrap ocaml'
 alias_if_present ccl 'rlwrap ccl'
+alias_if_present sml 'rlwrap sml'
+alias aq='ag -Q'
 alias bfd='openssl bf -d -a <'
 alias ctop='top -o cpu'
 alias_if_present emacs 'emacs -nw'
@@ -62,15 +64,11 @@ alias pwcopy='pwd | escape | pbcopy'
 alias nix-zsh='nix-shell "<nixpkgs>" --command "exec zsh; return"'
 alias rp.='cd "$(grealpath .)"'
 alias man=/usr/bin/man
+alias instr-time="instruments -t 'Time Profiler'"
 
 unset alias_if_present
 
-# from http://superuser.com/a/975878/146
-alias brewski='brew update &&'\
-'brew upgrade --all;'\
-'brew cleanup;'\
-'brew cask cleanup;'\
-'brew doctor'
+setopt bsdecho
 
 if [[ "$(uname)" == "Linux" ]]; then
     alias pbcopy='xsel --clipboard --input'

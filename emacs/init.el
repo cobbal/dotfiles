@@ -21,17 +21,17 @@
 (setq ad-redefinition-action 'accept) ;; silence advice warning about redefinition
 
 (setq evil-want-abbrev-expand-on-insert-exit nil)
+(setq evil-regexp-search t)
 
-(defmacro add-my-hook (hook-name &rest body)
- "This will define a hook named \"my-`hook-name'\" and put the
- contents of `body' into it. There can only be one such
- definition, and new ones will overwrite old ones. This is
- intentional and should only be used in the init file to preserve
- sanity and compositionality."
+(defmacro add-my-hook (hook-name args &rest body)
+ "This will define a hook named \"my/`hook-name'\" and put the contents of
+ `body' into it. There can only be one such definition, and new ones will
+ overwrite old ones. This is intentional and should only be used in the init
+ file to preserve sanity and compositionality."
  (let* ((hook-name-str (symbol-name hook-name))
-        (my-hook-name (intern (concat "my-" hook-name-str))))
+        (my-hook-name (intern (concat "my/" hook-name-str))))
  `(progn
-   (defun ,my-hook-name ()
+   (defun ,my-hook-name ,args
     ,@body)
    (add-hook ',hook-name ',my-hook-name))))
 
@@ -52,10 +52,10 @@
    "~/.emacs.d/el-get/dash-functional"
    "~/.emacs.d/el-get/auctex"
    "~/.emacs.d/el-get/auctex-latexmk"
-   "~/.emacs.d/el-get/proof-general/generic"
+   "~/.emacs.d/PG/generic"
    "~/.nix-profile/share/emacs/site-lisp"
    "~/.nix-profile/share/emacs/site-lisp/ProofGeneral/generic"
-   "~/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/")))
+   "/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/")))
 
 (let ((opam-share (ignore-errors (car (process-lines "opam" "config" "var" "share")))))
  (when (and opam-share (file-directory-p opam-share))
@@ -95,6 +95,7 @@
    company-quickhelp
    clojure-mode
    d-mode
+   diminish
    dash-at-point
    evil
    fill-column-indicator
@@ -120,7 +121,7 @@
    php-mode
    purescript-mode
    racket-mode
-   ;;rust-mode
+   rust-mode
    color-theme-sanityinc-tomorrow
    ;; scala-mode2
    sexp-rewrite
@@ -193,13 +194,18 @@
  (interactive)
  (dolist (pkg '(auctex
                 auctex-latexmk
-                proof-general
                 ac-company
                 company-sourcekit
                 clang-complete-async
                 lsp-haskell
                 ))
   (el-get-install pkg)))
+
+;; adapted from https://emacs.stackexchange.com/a/23785
+(add-my-hook after-make-frame-functions (frame)
+ (modify-frame-parameters frame
+  '((vertical-scroll-bars . nil)
+    (horizontal-scroll-bars . nil))))
 
 (defun racket-rain-down-judgment ()
  (interactive)
@@ -227,7 +233,7 @@
 
 (setq racket-mode-pretty-lambda nil)
 (setq racket-program "/Applications/Racket/bin/racket")
-(add-my-hook racket-mode-hook
+(add-my-hook racket-mode-hook ()
  (require 'sexp-rewrite)
  (require 'racket-rewrites)
  (local-set-key (kbd "C-c d") #'sexprw-mode-keymap)
@@ -242,6 +248,7 @@
 (setq evil-cross-lines t)
 (define-key evil-motion-state-map [down-mouse-1] #'mouse-drag-region)
 (define-key evil-motion-state-map (kbd "K") nil)
+(define-key evil-visual-state-map (kbd "u") #'undo)
 (add-to-list 'evil-intercept-maps '(compilation-mode-map))
 (setq evil-echo-state nil)
 (setq-default evil-symbol-word-search t)
@@ -286,7 +293,7 @@
 
 (show-paren-mode 1)
 
-(add-my-hook c-mode-common-hook
+(add-my-hook c-mode-common-hook ()
  (c-add-style "correct"
   '((c-basic-offset . 4)
     (c-offsets-alist . ((substatement-open . 0)
@@ -305,11 +312,14 @@
 (defun my-lsp-hook ()
  (ignore-errors
   (lsp-mode 1)))
-(add-my-hook haskell-major-mode
+(add-my-hook haskell-major-mode ()
  (my-lsp-hook))
 
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 20) (left . 0)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 20)))
+
+;; (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+(add-to-list 'default-frame-alist '(ns-appearance . dark))
 
 (when (memq window-system '(mac ns))
  (setq frame-resize-pixelwise t)
@@ -329,8 +339,10 @@
  (ignore-errors (set-frame-font font nil t) t))
 
 (or
- ;; (try-set-font "Input 13")
+ (try-set-font "ProggyTiny 11")
+ (try-set-font "Crisp 16")
  (try-set-font "Menlo 13")
+ (try-set-font "Menlo 12")
  (try-set-font "Menlo 11")
  (try-set-font "Hack 10")
  (when (eq window-system 'w32)
@@ -338,14 +350,16 @@
  (try-set-font "DejaVu Sans mono 11")
  (try-set-font "DejaVu Sans mono 13")
  (try-set-font "Espresso mono 11")
- (try-set-font "Consolas 13"))
+ (try-set-font "Consolas 13")
+ (try-set-font "Input 11")
+ )
 
 (setq org-startup-folded nil)
 (setq org-M-RET-may-split-line nil)
 
 (defun do-ligatures ()
  (interactive)
- ;; from https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs
+ ;; from https://github.com/tonsky/FiraCode/wiki/Emacs-instructions
  (when (window-system)
   (set-default-font "Fira Code"))
  (let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
@@ -386,13 +400,15 @@
  (let ((window-combination-resize nil))
   ad-do-it))
 
+(setq compilation-ask-about-save nil)
+(setq compilation-always-kill t)
 (defcustom compile-always-comint nil "")
 (defun my-compile-advice (orig-fun command &optional mode &rest args)
  (apply orig-fun command (or compile-always-comint mode) args))
 (advice-add 'compilation-start :around #'my-compile-advice)
 (setq compilation-scroll-output 'first-error)
 
-(add-my-hook compilation-filter-hook
+(add-my-hook compilation-filter-hook ()
  (toggle-read-only)
  (ansi-color-apply-on-region (point-min) (point-max))
  (toggle-read-only))
@@ -427,6 +443,14 @@
  (interactive "p")
  (inc-char-at-point (- n)))
 
+(defun find-file-at-mouse (event)
+ "like find-file-at-point, but at mouse instead"
+ (interactive "e")
+ (save-excursion
+  (mouse-set-point event)
+  (find-file-at-point)))
+
+
 ;;(define-key global-map [down-mouse-1] nil)
 (global-set-key (kbd "M-u") #'insert-char)
 (global-set-key (kbd "C-c s") #'query-replace-regexp)
@@ -448,6 +472,7 @@
 (global-set-key (kbd "RET") #'newline-and-indent)
 (global-set-key (kbd "M-s") #'save-buffer)
 (global-set-key (kbd " ") " ") ;; nbsp -> normal space
+(global-set-key (kbd "C-M-g") #'keyboard-quit)
 (global-set-key (kbd "C-c C-/") #'describe-char)
 (global-set-key (kbd "M-g M-f") #'first-error)
 (global-set-key (kbd "M-k") #'evil-scroll-up)
@@ -466,18 +491,26 @@
 (global-set-key (kbd "C-S-l") 'windmove-right)
 (global-set-key (kbd "C-S-k") 'windmove-up)
 (global-set-key (kbd "C-S-j") 'windmove-down)
+(global-set-key [M-mouse-1] #'find-file-at-mouse)
 (define-key evil-normal-state-map (kbd "TAB") #'indent-for-tab-command)
 (define-key evil-normal-state-map (kbd "M-.") nil)
-(dolist (map (list evil-normal-state-map evil-motion-state-map))
+(dolist (map (list
+              ;; evil-normal-state-map
+              evil-motion-state-map))
  (define-key map (kbd "C-w ;") #'transpose-window-splits))
 (eval-after-load "compile"
  '(progn
    (define-key compilation-mode-map (kbd "h") nil)
    (define-key compilation-mode-map (kbd "g") nil)))
+(evil-set-initial-state 'compilation-mode 'normal)
 
-(add-my-hook org-mode-hook
+(add-my-hook org-mode-hook ()
  (define-key org-mode-map (kbd "M-h") #'ns-do-hide-emacs)
  (linum-mode -1))
+
+(add-my-hook c++-mode-hook ()
+ (define-key c++-mode-map (kbd "C-c C-k") nil))
+
 
 (require 'framemove)
 (setq framemove-hook-into-windmove t)
@@ -502,10 +535,10 @@
  (auctex-latexmk-setup))
 
 ;; this is insane... why are there 3 hooks???
-(add-my-hook latex-mode-hook
- (add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation)))
+;; (add-my-hook latex-mode-hook ()
+;;  (add-to-list 'LaTeX-indent-environment-list '("algorithmic" current-indentation)))
 
-(add-my-hook LaTeX-mode-hook
+(add-my-hook LaTeX-mode-hook ()
  (local-set-key (kbd "M-q") #'fill-sentence)
 
  (TeX-source-correlate-mode 1)
@@ -525,7 +558,16 @@
  (add-to-list 'TeX-view-program-selection
   '(output-pdf "displayline")))
 
-(add-my-hook tex-mode-hook
+(defun fill-by-auto-fill ()
+ (interactive)
+ (save-excursion
+  (move-end-of-line nil)
+  (funcall (or normal-auto-fill-function #'do-auto-fill))))
+
+(add-my-hook auto-fill-mode-hook ()
+ (local-set-key (kbd "M-q") #'fill-by-auto-fill))
+
+(add-my-hook tex-mode-hook ()
  (set (make-local-variable 'before-save-hook) nil))
 
 (require 'auto-complete)
@@ -539,9 +581,9 @@
 
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
 (define-key ac-completing-map (kbd "RET") nil)
-(add-my-hook emacs-lisp-mode-hook
+(add-my-hook emacs-lisp-mode-hook ()
  (add-to-list 'ac-sources 'ac-source-symbols))
-(add-my-hook auto-complete-mode-hook
+(add-my-hook auto-complete-mode-hook ()
  (add-to-list 'ac-sources 'ac-source-filename))
 ;; (add-hook 'c-mode-hook #'set-clang-ac-sources)
 ;; (add-hook 'c++-mode-hook #'set-clang-ac-sources)
@@ -549,7 +591,7 @@
 ;; (add-hook 'c #'set-clang-ac-sources)
 
 ;;(define-key ac-complete-mode-map viper-ESC-key 'viper-intercept-ESC-key)
-(add-my-hook objc-mode-hook
+(add-my-hook objc-mode-hook ()
  (run-at-time ".1 second" nil
   (lambda () (auto-complete-mode 1))))
 
@@ -560,7 +602,7 @@
 (setq ac-dwim t)
 (global-auto-complete-mode t)
 
-(add-my-hook swift-mode-hook
+(add-my-hook swift-mode-hook ()
  (unless (boundp 'ac-source-company-sourcekit)
   (require 'ac-company)
   (require 'company-sourcekit)
@@ -587,6 +629,7 @@
 
 ;; from https://stackoverflow.com/a/22074203
 (defun crazy-yank ()
+ "yank, but overwrite instead of insert"
  (interactive)
  (let ((txt (string-trim (current-kill 0))))
   (delete-char (length txt))
@@ -603,7 +646,7 @@
              (scheme-mode . "racket")))
  (add-to-list 'dash-at-point-mode-alist l))
 
-(add-my-hook scheme-mode-hook
+(add-my-hook scheme-mode-hook ()
  (magic-close-parens))
 
 ;; borrowed from http://www.emacswiki.org/emacs/NxmlMode
@@ -629,7 +672,7 @@
  (global-linum-mode t)
 
  (let ((fmt nil))
-  (add-my-hook linum-before-numbering-hook
+  (add-my-hook linum-before-numbering-hook ()
    (setq fmt
     (ignore-errors
      (let ((w (length (number-to-string
@@ -644,9 +687,13 @@
 (column-number-mode t)
 
 (defun eml-modoid ()
+ (interactive)
  (fundamental-mode)
- (setq-local fill-column 78))
+ (auto-fill-mode)
+ (setq-local fill-column 72))
 
+(autoload 'LilyPond-mode "lilypond-mode" "LilyPond Editing Mode" t)
+(add-hook 'LilyPond-mode-hook (lambda () (turn-on-font-lock)))
 
 (add-to-list* 'auto-mode-alist
  '(("\\.h\\'" . c++-mode)
@@ -659,20 +706,20 @@
    ("\\.jsont\\'" . html-mode)
    ("\\.ijs\\'" . j-mode)
    ("\\.js\\'" . js-mode)
+   ("\\.jxa\\'" . js-mode)
    ("\\.json\\'" . js-mode)
    ("\\.julius\\'" . js-mode)
    ("\\.tex\\'" . LaTeX-mode)
-   ("\\.ly\\'" . LilyPond-mode)
+   ("\\.ly$" . LilyPond-mode)
+   ("\\.ily$" . LilyPond-mode)
    ("\\.cl\\'" . lisp-mode)
    ("[Mm]akefile." . makefile-mode)
-   ("[Nn]ukefile\\'" . nu-mode)
-   ("\\.nu\\'" .  nu-mode)
    ("\\.mm\\'" . objc-mode)
-   ("\\.j\\'" . objj-mode)
    ("\\.pro\\'" . qmake-mode)
    ("\\.rkt\\'" . scheme-mode)
    ("\\.fscr\\'" . smalltalk-mode)
    ("\\.swift\\'" . swift-mode)
+   ("\\tiger.lex\\'" . sml-lex-mode)
    ("\\.eml\\'" . eml-modoid)))
 
 (defun coq-mode-shim ()
@@ -683,7 +730,7 @@
  (setq coq-compile-auto-save 'save-coq)
  (coq-mode))
 
-(add-my-hook js-mode-hook
+(add-my-hook js-mode-hook ()
 ;;; make emacs recognize the error format produced by jslint
  (set (make-local-variable 'compilation-error-regexp-alist)
   '(("^\\([a-zA-Z.0-9_/-]+\\):\\([0-9]+\\):\\([0-9]+\\)" 1 2 3)))
@@ -747,7 +794,7 @@ means reverse order), BEG and END (region to sort)."
 (setq lean-server-options '("--memory=4096"))
 (ignore-errors (require 'lean-mode))
 
-(add-my-hook lean-mode-hook
+(add-my-hook lean-mode-hook ()
  (setq evil-shift-width 2)
  (local-set-key (kbd "M-RET") #'lean-show-goal-at-pos))
 
@@ -762,7 +809,7 @@ means reverse order), BEG and END (region to sort)."
     (funcall fn)))
   (advice-add 'hindent-extra-arguments :around #'hindent-extra-arguments-advice)))
 
-(add-my-hook haskell-mode-hook
+(add-my-hook haskell-mode-hook ()
  (require 'haskell-compile)
  (define-key haskell-mode-map "\C-ch" 'haskell-hoogle)
  (local-set-key (kbd "C-c c") #'recompile)
@@ -790,7 +837,7 @@ means reverse order), BEG and END (region to sort)."
 ;;   (add-to-list 'prettify-symbols-alist '("lambda" . ?λ))
 ;;   (prettify-symbols-mode t)))
 
-(add-my-hook purescript-mode-hook
+(add-my-hook purescript-mode-hook ()
  (require 'haskell-compile)
  (local-set-key (kbd "C-c c") #'recompile)
  (turn-on-purescript-indentation)
@@ -798,7 +845,7 @@ means reverse order), BEG and END (region to sort)."
   (electric-indent-local-mode -1))
  (hindent-mode 1))
 
-(add-my-hook before-save-hook
+(add-my-hook before-save-hook ()
  (delete-trailing-whitespace)
  (refmt-before-save))
 
@@ -816,7 +863,7 @@ means reverse order), BEG and END (region to sort)."
 
 (defun interactive-ding () (interactive) (ding))
 
-(add-my-hook coq-mode-hook
+(add-my-hook coq-mode-hook ()
  (make-local-variable 'evil-insert-state-exit-hook)
  (setq evil-insert-state-exit-hook
   (remove #'expand-abbrev evil-insert-state-exit-hook))
@@ -858,7 +905,6 @@ means reverse order), BEG and END (region to sort)."
     ;;  (list "." (expand-file-name "~/programs/agda-stdlib-0.9/src")))
     (setq proof-loaded t)))))
 
-
 (defun enable-acl2r-mode ()
  (interactive)
  (proof-load)
@@ -872,7 +918,7 @@ means reverse order), BEG and END (region to sort)."
  (setq indent-line-function 'lisp-indent-line)
  )
 
-(add-my-hook d-mode-hook
+(add-my-hook d-mode-hook ()
  (add-to-list
   'compilation-error-regexp-alist
   '("^\\([^ \n]+\\)(\\([0-9]+\\)): \\(?:error\\|.\\|warnin\\(g\\)\\|remar\\(k\\)\\)"
@@ -881,7 +927,7 @@ means reverse order), BEG and END (region to sort)."
 (setq emdroid-activity-creator "activityCreator.py")
 (setq emdroid-tools-dir "/Users/acobb/Desktop/programs/android/tools/")
 
-(add-my-hook nix-mode-hook
+(add-my-hook nix-mode-hook ()
  (local-set-key (kbd "M-`") #'find-file-at-point))
 
 (setq purpose-layout-dirs (expand-file-name "~/.emacs.d/purpose-layouts"))
@@ -895,6 +941,7 @@ means reverse order), BEG and END (region to sort)."
     ))
  (purpose-compile-user-configuration))
 (require 'purpose-color)
+(diminish 'purpose-mode)
 
 
 ;; borrowed from https://github.com/emacs-lsp/lsp-rust/blob/master/lsp-rust.el
@@ -921,7 +968,7 @@ means reverse order), BEG and END (region to sort)."
 
 
 ;; ocaml stuff
-(add-my-hook tuareg-mode-hook
+(add-my-hook tuareg-mode-hook ()
  (setq compilation-error-regexp-alist
   (list '("[Ff]ile \\(\"\\(.*?\\)\", line \\(-?[0-9]+\\)\\(, characters \\(-?[0-9]+\\)-\\([0-9]+\\)\\)?\\)\\(:\n\\(\\(Warning .*?\\)\\|\\(Error\\)\\):\\)?"
           2 3 (5 . 6) (9 . 11) 1 (8 compilation-message-face))))
@@ -940,13 +987,14 @@ means reverse order), BEG and END (region to sort)."
  (setq-local indent-tabs-mode nil)
  (setq-local show-trailing-whitespace t)
  (setq-local indent-line-function 'ocp-indent-line)
- (setq-local indent-region-function 'ocp-indent-region)
+ (setq-local indent-region-function 'ocp-indent-region) (define-key tuareg-mode-map (kbd "C-c C-k") nil)
  (modify-syntax-entry ?# "." tuareg-mode-syntax-table) ;; make foo#bar multiple symbols
  (merlin-mode 1)
+ (diminish 'merlin-mode)
  )
 
 
-(add-my-hook reason-mode-hook
+(add-my-hook reason-mode-hook ()
  ;; Load merlin-mode
  (require 'merlin)
  (setq merlin-command "ocamlmerlin")
@@ -963,7 +1011,7 @@ means reverse order), BEG and END (region to sort)."
  (merlin-mode 1)
  )
 
-(add-my-hook sml-mode-hook
+(add-my-hook sml-mode-hook ()
  (require 'sml-proc)
  (add-to-list* 'compilation-error-regexp-alist sml-error-regexp-alist))
 
@@ -973,6 +1021,8 @@ means reverse order), BEG and END (region to sort)."
 ;; (setq unicode-fonts-skip-font-groups nil)
 ;; (require 'unicode-fonts)
 ;; (unicode-fonts-setup)
+
+(setq dabbrev-case-fold-search nil)
 
 (setq ispell-program-name "aspell")
 
@@ -1028,9 +1078,52 @@ means reverse order), BEG and END (region to sort)."
     (LaTeX-fill-region-as-paragraph beg (point))
     (fill-region-as-paragraph beg (point))))))
 
+;; https://sites.google.com/site/steveyegge2/my-dot-emacs-file
+(defun rename-file-and-buffer (new-name)
+ "Renames both current buffer and file it's visiting to NEW-NAME." (interactive "sNew name: ")
+ (let ((name (buffer-name))
+       (filename (buffer-file-name)))
+  (if (not filename)
+   (message "Buffer '%s' is not visiting a file!" name)
+   (if (get-buffer new-name)
+    (message "A buffer named '%s' already exists!" new-name)
+    (progn
+     (rename-file filename new-name 1)
+     (rename-buffer new-name)
+     (set-visited-file-name new-name)
+     (set-buffer-modified-p nil))))))
+
+(defun move-buffer-file (dir)
+ "Moves both current buffer and file it's visiting to DIR." (interactive "DNew directory: ")
+ (let* ((name (buffer-name))
+	 (filename (buffer-file-name))
+	 (dir
+	 (if (string-match dir "\\(?:/\\|\\\\)$")
+	 (substring dir 0 -1) dir))
+	 (newname (concat dir "/" name)))
+  (if (not filename)
+   (message "Buffer '%s' is not visiting a file!" name)
+   (progn
+    (copy-file filename newname 1)
+    (delete-file filename)
+    (set-visited-file-name newname)
+    (set-buffer-modified-p nil)
+    t))))
+
 (defun iterm-here ()
  (interactive)
  (call-process "iterm-newtab.applescript"))
+
+(advice-add 'next-error :around
+ (defun make-next-error-non-interactive (orig-fun &rest args)
+  ;; next-error is too stupid, so it lost it's interaction priveleges
+  (cl-letf (((symbol-function 'read-file-name)
+             (lambda (&rest read-args)
+              (error "file not found!"))))
+   (apply orig-fun args))))
+
+(defadvice load-theme (before theme-dont-propagate activate)
+ (unload-enabled-themes))
 
 (setq safe-local-variable-values
  '((eval . (visible-mode t))

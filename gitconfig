@@ -1,42 +1,43 @@
 [user]
-	name = Andrew Cobb
-	email = andrew.cobb@gmail.com
+    name = Andrew Cobb
+    email = andrew.cobb@gmail.com
+    signingkey = 75C2B68D4C2792AEAA7C93F306599436EE14CB4B
 [color]
-	diff = auto
-	status = auto
-	branch = auto
+    diff = auto
+    status = auto
+    branch = auto
 [alias]
     dt = difftool
     ks = difftool
-	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
-	g = grep --break --heading --line-number
+    lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    g = grep --break --heading --line-number
 [core]
-	excludesfile = /Users/acobb/.gitignore_global
+    excludesfile = /Users/acobb/.gitignore_global
 [push]
-	default = simple
+    default = simple
 [difftool "Kaleidoscope"]
-	cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
+    cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
 [diff]
-	tool = Kaleidoscope
+    tool = Kaleidoscope
 [difftool]
-	prompt = false
+    prompt = false
 [mergetool "Kaleidoscope"]
-	cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
-	trustExitCode = true
+    cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
+    trustExitCode = true
 [mergetool]
-	prompt = false
+    prompt = false
 [merge]
-	tool = Kaleidoscope
-	conflictstyle = diff3
+    tool = Kaleidoscope
+    conflictstyle = diff3
 [help]
-	autocorrect = 1
+    autocorrect = 1
 [filter "lfs"]
-	required = true
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
 [credential]
-	helper = !aws codecommit credential-helper $@
-	UseHttpPath = true
+    helper = !aws codecommit credential-helper $@
+    UseHttpPath = true
 [grep]
-	extendRegexp = true
+    extendRegexp = true

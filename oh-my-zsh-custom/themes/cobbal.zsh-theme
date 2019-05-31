@@ -34,5 +34,9 @@ local prompt_reset="$reset_color$bg_color$FG[231]$FX[bold]"
 local return_code="%{$reset_color%}%(?..%{$BG[009]%} %? ↵ %{$reset_color%}"$'\n)'
 
 PROMPT='${return_code}%{$prompt_reset%} %2c %{$prompt_reset$FG[046]%}%(!.#.») %{$reset_color%} '
-RPROMPT=''
+if (( SHLVL > 2 )); then
+    RPROMPT="[$(( SHLVL - 2 ))]"
+else
+    RPROMPT=''
+fi
 # RPROMPT='%{$reset_color$bg_color$FG[231]%} [%*] %{$reset_color%}'

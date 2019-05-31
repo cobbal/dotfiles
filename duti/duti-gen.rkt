@@ -12,6 +12,7 @@
                          .clj
                          .js .jsm .json
                          .idl
+                         .java
                          .py
                          .rkt
                          .el
