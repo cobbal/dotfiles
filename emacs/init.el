@@ -325,7 +325,7 @@
  (setq frame-resize-pixelwise t)
  (let ((fullscreen-mode 'maximized))
   (when (> (x-display-pixel-width) 1440) ;; crude test for multiple displays
-   (setq initial-frame-alist `((left + -2000) . ,initial-frame-alist))
+   (setq initial-frame-alist `((left + 4000) . ,initial-frame-alist))
    '(setq fullscreen-mode 'fullscreen))
   ;;(setq ns-use-native-fullscreen nil)
   (setq initial-frame-alist
@@ -335,13 +335,16 @@
 ;; (push "GOPATH" exec-path-from-shell-variables)
 ;; (exec-path-from-shell-initialize)
 
+
+;; Reminder: Mac antialiasing can be disabled with:
+;; defaults write org.gnu.Emacs AppleAntiAliasingThreshold 999
+
 (defun try-set-font (font)
- (ignore-errors (set-frame-font font nil t) t))
+ (ignore-errors (set-frame-font font t t) t))
 
 (or
- (try-set-font "ProggyTiny 11")
- (try-set-font "Crisp 16")
- (try-set-font "Menlo 13")
+ ;; (try-set-font "ProggyTiny 11")
+ ;; (try-set-font "Crisp 16")
  (try-set-font "Menlo 12")
  (try-set-font "Menlo 11")
  (try-set-font "Hack 10")
@@ -722,6 +725,18 @@
    ("\\tiger.lex\\'" . sml-lex-mode)
    ("\\.eml\\'" . eml-modoid)))
 
+;; https://www.emacswiki.org/emacs/MacOSXPlist
+(add-to-list 'jka-compr-compression-info-list
+             ["\\.\\(?:plist\\|strings\\|nib\\)\\'"
+              "converting text XML to binary plist"
+              "plutil"
+              ("-convert" "binary1" "-o" "-" "-")
+              "converting binary plist to text XML"
+              "plutil"
+              ("-convert" "xml1" "-o" "-" "-")
+              nil nil "bplist"])
+(jka-compr-update)
+
 (defun coq-mode-shim ()
  (interactive)
  (proof-load)
@@ -1074,7 +1089,7 @@ means reverse order), BEG and END (region to sort)."
   (let ((beg (point))
         (ix (string-match "LaTeX" mode-name)))
    (forward-sentence)
-   (if (and ix (equal "LaTeX" (substring mode-name ix)))
+   (if (and ix (equal "LaTeX" (substring mode-name ix)) nil)
     (LaTeX-fill-region-as-paragraph beg (point))
     (fill-region-as-paragraph beg (point))))))
 
