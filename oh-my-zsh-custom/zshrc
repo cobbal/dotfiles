@@ -58,6 +58,7 @@ alias igdb='fsf-gdbtui'
 alias sl='ls'
 alias kasse='killall ScreenSaverEngine'
 alias appcode='open -a ~/Applications/AppCode.app'
+alias android-studio='open -a ~/Applications/Android\ Studio.app'
 alias skim='open -a ~/Applications/Skim.app'
 function escape { local in=$(cat); printf "%s\n" "${(q)in}" }
 alias pwcopy='pwd | escape | pbcopy'
