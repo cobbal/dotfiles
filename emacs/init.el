@@ -76,6 +76,11 @@
 
 (add-to-list 'el-get-recipe-path "~/.emacs.d/el-get-user/recipes")
 
+(el-get 'sync '(use-package-el-get))
+(require 'use-package-el-get)
+(setq use-package-always-ensure nil)
+(use-package-el-get-setup)
+
 (require 'package)
 (add-to-list 'package-archives
  '("melpa" . "https://melpa.org/packages/") t)
@@ -698,6 +703,21 @@
 (autoload 'LilyPond-mode "lilypond-mode" "LilyPond Editing Mode" t)
 (add-hook 'LilyPond-mode-hook (lambda () (turn-on-font-lock)))
 
+(use-package rjsx-mode
+ :ensure t
+ :commands rjsx-mode
+ :mode "\\.jsx?$"
+ :config (progn
+          (setq js2-mode-show-parse-errors nil)
+          (setq js2-mode-show-strict-warnings nil)
+
+          ;; Keep js2 from making function params an odd green.
+          ;;(set-face-attribute 'js2-function-param nil
+          ;;  :foreground 'unspecified
+          ;; :inherit 'default))
+))
+
+
 (add-to-list* 'auto-mode-alist
  '(("\\.h\\'" . c++-mode)
    ("\\.clj\\'" . clojure-mode)
@@ -708,10 +728,10 @@
    ("\\.\\(v\\|f\\|tc\\|te\\)sh\\'" . glsl-mode)
    ("\\.jsont\\'" . html-mode)
    ("\\.ijs\\'" . j-mode)
-   ("\\.js\\'" . js-mode)
-   ("\\.jxa\\'" . js-mode)
-   ("\\.json\\'" . js-mode)
-   ("\\.julius\\'" . js-mode)
+   ;; ("\\.js\\'" . js-mode)
+   ;; ("\\.jxa\\'" . js-mode)
+   ;; ("\\.json\\'" . js-mode)
+   ;; ("\\.julius\\'" . js-mode)
    ("\\.tex\\'" . LaTeX-mode)
    ("\\.ly$" . LilyPond-mode)
    ("\\.ily$" . LilyPond-mode)
