@@ -56,5 +56,8 @@ do_git https://github.com/robbyrussell/oh-my-zsh .oh-my-zsh
 do_install oh-my-zsh-custom/zshrc .zshrc
 do_install slate .slate
 do_install slate.js .slate.js
+do_install loginitems.sh .loginitems.sh
+do_install launchd.conf.sh .launchd.conf.sh
+do_install com.cobbal.environment.plist Library/LaunchAgents/com.cobbal.environment.plist
 
 exit $PROBLEMS
