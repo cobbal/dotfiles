@@ -54,5 +54,7 @@ do_install gitconfig .gitconfig
 do_install gitignore_global .gitignore_global
 do_git https://github.com/robbyrussell/oh-my-zsh .oh-my-zsh
 do_install oh-my-zsh-custom/zshrc .zshrc
+do_install slate .slate
+do_install slate.js .slate.js
 
 exit $PROBLEMS
