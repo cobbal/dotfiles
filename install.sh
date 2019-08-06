@@ -47,6 +47,19 @@ function do_install {
     finish
 }
 
+function do_abs_install {
+    local SRC="$WD/$1"
+    local INSTL="$HOME/$2"
+    echo -n "Linking '$SRC' to '$INSTL'... "
+    if [[ -L "$INSTL" ]]; then
+        rm "$INSTL"
+    else
+        mv "$INSTL" "$INSTL~"
+    fi
+    ln -s "$SRC" "$INSTL"
+    finish
+}
+
 do_install emacs .emacs.d
 do_install screenrc .screenrc
 do_install vimrc .vimrc
@@ -54,10 +67,10 @@ do_install gitconfig .gitconfig
 do_install gitignore_global .gitignore_global
 do_git https://github.com/robbyrussell/oh-my-zsh .oh-my-zsh
 do_install oh-my-zsh-custom/zshrc .zshrc
-do_install slate .slate
-do_install slate.js .slate.js
-do_install loginitems.sh .loginitems.sh
-do_install launchd.conf.sh .launchd.conf.sh
-do_install com.cobbal.environment.plist Library/LaunchAgents/com.cobbal.environment.plist
+do_install slate/slate .slate
+do_install slate/slate.js .slate.js
+do_install env/loginitems.sh .loginitems.sh
+do_install env/launchd.conf.sh .launchd.conf.sh
+do_abs_install env/com.cobbal.environment.plist Library/LaunchAgents/com.cobbal.environment.plist
 
 exit $PROBLEMS
