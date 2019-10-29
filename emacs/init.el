@@ -46,9 +46,14 @@
    "~/.emacs.d/lisp"
    "~/.emacs.d/el-get/el-get"
    "~/.emacs.d/el-get/agda-input"
-   "~/.emacs.d/el-get/clang-complete-async"
+   "~/.emacs.d/el-get/ht"
+   "~/.emacs.d/el-get/lsp-mode"
+   "~/.emacs.d/el-get/lsp-ui"
+   "~/.emacs.d/el-get/lsp-sourcekit"
+   "~/.emacs.d/el-get/spinner"
    "~/.emacs.d/el-get/ac-company"
    "~/.emacs.d/el-get/company-mode"
+   "~/.emacs.d/el-get/company-lsp"
    "~/.emacs.d/el-get/dash-functional"
    "~/.emacs.d/el-get/auctex"
    "~/.emacs.d/el-get/auctex-latexmk"
@@ -103,21 +108,21 @@
    diminish
    dash-at-point
    evil
+   f
    fill-column-indicator
    fsharp-mode
-   flycheck
-   flycheck-swift
    framemove
    glsl-mode
    gnu-apl-mode
    go-mode
    graphviz-dot-mode
-   haskell-mode
+   ;;  haskell-mode
+   ;; haskell-emacs
    hindent
    hy-mode
    idris-mode
    key-chord
-   lsp-mode
+
    magit
    markdown-mode
    misc-cmds
@@ -132,14 +137,13 @@
    sexp-rewrite
    spaceline
    sml-mode
-   swift-mode
    ;; unicode-fonts
    web
    window-purpose
    z3-mode
-   dash dash-functional f s ;; lean dependencies
    tuareg-mode
    reason-mode
+   yaml-mode
    ))
 
 ;; (require 'helm-config)
@@ -201,8 +205,6 @@
                 auctex-latexmk
                 ac-company
                 company-sourcekit
-                clang-complete-async
-                lsp-haskell
                 ))
   (el-get-install pkg)))
 
@@ -312,14 +314,6 @@
                         (brace-list-open . 0)))))
  (c-set-style "correct"))
 
-(with-eval-after-load 'lsp-mode
- (require 'lsp-flycheck))
-(defun my-lsp-hook ()
- (ignore-errors
-  (lsp-mode 1)))
-(add-my-hook haskell-major-mode ()
- (my-lsp-hook))
-
 (setq initial-frame-alist '((width . 100) (height . 53) (top . 20) (left . 0)))
 (setq default-frame-alist '((width . 100) (height . 53) (top . 20)))
 
@@ -416,10 +410,14 @@
 (advice-add 'compilation-start :around #'my-compile-advice)
 (setq compilation-scroll-output 'first-error)
 
-(add-my-hook compilation-filter-hook ()
- (toggle-read-only)
- (ansi-color-apply-on-region (point-min) (point-max))
- (toggle-read-only))
+;; https://stackoverflow.com/a/23382008
+
+(defun display-ansi-colors ()
+  (interactive)
+  (let ((inhibit-read-only t))
+    (ansi-color-apply-on-region (point-min) (point-max))))
+
+(add-hook 'compilation-filter-hook #'display-ansi-colors)
 
 (defun first-error ()
  (interactive)
@@ -581,22 +579,12 @@
 (require 'auto-complete)
 (require 'auto-complete-config)
 
-(defun set-clang-ac-sources ()
- (require 'auto-complete-clang-async)
- (setq ac-clang-complete-executable "~/.emacs.d/el-get/clang-complete-async/clang-complete")
- (setq ac-sources '(ac-source-clang-async))
- (ac-clang-launch-completion-process))
-
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
 (define-key ac-completing-map (kbd "RET") nil)
 (add-my-hook emacs-lisp-mode-hook ()
  (add-to-list 'ac-sources 'ac-source-symbols))
 (add-my-hook auto-complete-mode-hook ()
  (add-to-list 'ac-sources 'ac-source-filename))
-;; (add-hook 'c-mode-hook #'set-clang-ac-sources)
-;; (add-hook 'c++-mode-hook #'set-clang-ac-sources)
-;; (add-hook 'objc-mode-hook #'set-clang-ac-sources)
-;; (add-hook 'c #'set-clang-ac-sources)
 
 ;;(define-key ac-complete-mode-map viper-ESC-key 'viper-intercept-ESC-key)
 (add-my-hook objc-mode-hook ()
@@ -609,13 +597,6 @@
 (setq ac-auto-start t)
 (setq ac-dwim t)
 (global-auto-complete-mode t)
-
-(add-my-hook swift-mode-hook ()
- (unless (boundp 'ac-source-company-sourcekit)
-  (require 'ac-company)
-  (require 'company-sourcekit)
-  (ac-company-define-source ac-source-company-sourcekit company-sourcekit)
-  (add-to-list 'ac-sources 'ac-source-company-sourcekit)))
 
 
 (setq help-window-select t)
@@ -703,20 +684,7 @@
 (autoload 'LilyPond-mode "lilypond-mode" "LilyPond Editing Mode" t)
 (add-hook 'LilyPond-mode-hook (lambda () (turn-on-font-lock)))
 
-(use-package rjsx-mode
- :ensure t
- :commands rjsx-mode
- :mode "\\.jsx?$"
- :config (progn
-          (setq js2-mode-show-parse-errors nil)
-          (setq js2-mode-show-strict-warnings nil)
-
-          ;; Keep js2 from making function params an odd green.
-          ;;(set-face-attribute 'js2-function-param nil
-          ;;  :foreground 'unspecified
-          ;; :inherit 'default))
-))
-
+(require 'use-packages)
 
 (add-to-list* 'auto-mode-alist
  '(("\\.h\\'" . c++-mode)
@@ -741,13 +709,12 @@
    ("\\.pro\\'" . qmake-mode)
    ("\\.rkt\\'" . scheme-mode)
    ("\\.fscr\\'" . smalltalk-mode)
-   ("\\.swift\\'" . swift-mode)
    ("\\tiger.lex\\'" . sml-lex-mode)
    ("\\.eml\\'" . eml-modoid)))
 
 ;; https://www.emacswiki.org/emacs/MacOSXPlist
 (add-to-list 'jka-compr-compression-info-list
-             ["\\.\\(?:plist\\|strings\\|nib\\)\\'"
+             ["\\.\\(?:plist\\|strings\\|nib\\|tracetemplate\\)\\'"
               "converting text XML to binary plist"
               "plutil"
               ("-convert" "binary1" "-o" "-" "-")
@@ -827,7 +794,7 @@ means reverse order), BEG and END (region to sort)."
 
 (setq lean-rootdir (expand-file-name "~/.nix-profile"))
 (setq lean-server-options '("--memory=4096"))
-(ignore-errors (require 'lean-mode))
+;; (ignore-errors (require 'lean-mode))
 
 (add-my-hook lean-mode-hook ()
  (setq evil-shift-width 2)
@@ -977,30 +944,6 @@ means reverse order), BEG and END (region to sort)."
  (purpose-compile-user-configuration))
 (require 'purpose-color)
 (diminish 'purpose-mode)
-
-
-;; borrowed from https://github.com/emacs-lsp/lsp-rust/blob/master/lsp-rust.el
-;; (require 'lsp-mode)
-
-;; (defun lsp-rust--get-root ()
-;;  (let (dir)
-;;   (unless
-;;    (ignore-errors
-;;     (let* ((output (shell-command-to-string "cargo locate-project"))
-;;            (js (json-read-from-string output)))
-;;      (setq dir (cdr (assq 'root js)))))
-;;    (error "Couldn't find root for project at %s" default-directory))
-;;   (file-name-directory dir)))
-
-;; (lsp-define-stdio-client 'rust-mode "rust" 'stdio
-;;  #'lsp-rust--get-root
-;;  "Rust Language Server"
-;;  "rustup" "run" "nightly" "rls")
-
-;; (lsp-client-on-notification 'rust-mode "rustDocument/diagnosticsBegin" #'(lambda (_w _p)))
-;; (lsp-client-on-notification 'rust-mode "rustDocument/diagnosticsEnd" #'(lambda (_w _p)))
-;; end theft
-
 
 ;; ocaml stuff
 (add-my-hook tuareg-mode-hook ()

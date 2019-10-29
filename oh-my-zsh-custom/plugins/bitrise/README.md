@@ -10,15 +10,17 @@ Configuration
 =======
 For using these functions you have to define your Bitrise token and app id. Place 2 files in your filesystem:
 * _.bitrise_token_
-    * **If you are using only one Bitrise token** 
+    * **If you are using only one Bitrise token**
         * you can put the _.bitrise_token_ file into your root directory: _~/.bitrise_token_ and this token will be used globally for your projects
-        * or you can use the BITRISE_TOKEN environmental variable to store the token 
+        * or you can put it in the file _~/.config/bitrise/token_
+        * or you can use the BITRISE_TOKEN environmental variable to store the token
     * **If you are using multiple Bitrise tokens for your projects**
         * you can have a _.bitrise_token_ file on project level
         * this option overrides the global token from the _~/.bitrise_token_ file and the BITRISE_TOKEN environmental variable
 * _.bitrise_appid_
-    * **If you only have one Bitrise app** 
+    * **If you only have one Bitrise app**
         * you can put the _.bitrise_appid_ file into your root directory: _~/.bitrise_appid_ and every time you issue a command this app id will be used
+        * or you can put it in the file _~/.config/bitrise/appid_
         * or you can use the BITRISE_APPID environmental variable to store the app id
     * **If you have multiple Bitrise apps**
         * you can have a _.bitrise_appid_ file on project level
@@ -37,7 +39,7 @@ Main Functions
         * workflows
         * builds
         * add-ons
-        * team 
+        * team
         * code
     * If an unknown page is defined the Dashboard opens up
 ## bitrise_start
@@ -50,7 +52,7 @@ Main Functions
 * **bitrise_abort** _build_slug_
     * Cancels the given build or returns an error
 
-Helper functions 
+Helper functions
 =======
 These functions are not using the configuration files, so you can build your own commands or aliases with them:
 * **_read_bitrise_appid**

@@ -19,7 +19,7 @@ function bitrise_open() {
 
 function bitrise_start() {
     emulate -L zsh
-    
+
     bitrise_token=$(_read_bitrise_token)
     if [ -z "$bitrise_token" ]; then
         echo "Bitrise token is needed to use this feature!"
@@ -31,12 +31,12 @@ function bitrise_start() {
         echo "Bitrise app id is needed to use this feature!"
         return 1
     fi
-    _bitrise_build_start $bitrise_token $bitrise_appid $1
+    _bitrise_build_start $bitrise_token $bitrise_appid $1 $2
 }
 
 function bitrise_abort() {
     emulate -L zsh
-    
+
     bitrise_token=$(_read_bitrise_token)
     if [ -z "$bitrise_token" ]; then
         echo "Bitrise token is needed to use this feature!"
@@ -63,9 +63,11 @@ function _read_bitrise_appid() {
         bitrise_appid=$(cat .bitrise_appid)
     elif [[ -f ~/.bitrise_appid ]]; then
         bitrise_appid=$(cat ~/.bitrise_appid)
+    elif [[ -f ~/.config/bitrise/appid ]]; then
+        bitrise_appid=$(cat ~/.config/bitrise/appid)
     elif [[ -n "${BITRISE_APPID}" ]]; then
         bitrise_appid=${BITRISE_APPID}
-    fi  
+    fi
     echo $bitrise_appid
 }
 
@@ -74,6 +76,8 @@ function _read_bitrise_token() {
         bitrise_token=$(cat .bitrise-token)
     elif [[ -f ~/.bitrise-token ]]; then
         bitrise_token=$(cat ~/.bitrise-token)
+    elif [[ -f ~/.config/bitrise/token ]]; then
+        bitrise_token=$(cat ~/.config/bitrise/token)
     elif [[ -n "${BITRISE_TOKEN}" ]]; then
         bitrise_token=${BITRISE_TOKEN}
     fi
@@ -103,7 +107,7 @@ function _bitrise_build_start() {
         echo 'Error: python3 is necessary to use this feature!'
         exit 1
     fi
-    result=$(curl -s -X POST -H "Authorization: $1" "$api_url/$2/builds" -d '{"hook_info":{"type":"bitrise"},"build_params":{"branch":"develop", "workflow_id": "'"$3"'" }}')
+    result=$(curl -s -X POST -H "Authorization: $1" "$api_url/$2/builds" -d '{"hook_info":{"type":"bitrise"},"build_params":{"branch":"'"$4"'", "workflow_id": "'"$3"'" }}')
     start_status=$(echo $result | python3 -c "import sys, json; print(json.load(sys.stdin)['status'])")
     if [[ $start_status == "ok" ]]; then
         message=$(echo $result | python3 -c "import sys, json; print(json.load(sys.stdin)['message'])")
