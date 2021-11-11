@@ -141,7 +141,7 @@ fi
 eval $(thefuck --alias fix 2>/dev/null) 2>/dev/null || true
 source "${HOME}/programs/git-subrepo/.rc" 2>/dev/null || true
 
-eval "$(rbenv init -)" 2>/dev/null || true
+if which rbenv > /dev/null; then eval "$(rbenv init -)" 2>/dev/null || true; fi
 
 unset MANPATH
 if which swiftenv > /dev/null; then eval "$(swiftenv init -)"; fi
