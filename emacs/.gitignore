@@ -12,3 +12,7 @@ ido.last
 session.*
 PG
 network-security.data
+quelpa
+.cache
+.lsp-session*
+eshell

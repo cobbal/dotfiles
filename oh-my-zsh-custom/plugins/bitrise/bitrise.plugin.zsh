@@ -31,7 +31,7 @@ function bitrise_start() {
         echo "Bitrise app id is needed to use this feature!"
         return 1
     fi
-    _bitrise_build_start $bitrise_token $bitrise_appid $1 $2
+    _bitrise_build_start $bitrise_token $bitrise_appid $1 ${2-$(git branch --show-current)}
 }
 
 function bitrise_abort() {
@@ -113,6 +113,7 @@ function _bitrise_build_start() {
         message=$(echo $result | python3 -c "import sys, json; print(json.load(sys.stdin)['message'])")
         build_url=$(echo $result | python3 -c "import sys, json; print(json.load(sys.stdin)['build_url'])")
         echo "$start_status - $message - $build_url"
+        open $build_url
     elif [[ $start_status == "error" ]]; then
         message=$(echo $result | python3 -c "import sys, json; print(json.load(sys.stdin)['message'])")
         echo "ERROR: $message"

@@ -48,7 +48,7 @@ config modalEscapeKey esc
 #bind down:cmd;alt focus behind
 
 # Window Hints
-bind space:backslash,ctrl hint
+# bind space:backslash,ctrl hint
 
 # Custom
 # bind tab:cmd switch

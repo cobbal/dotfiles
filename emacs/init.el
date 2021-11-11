@@ -1,13 +1,65 @@
-;; -*- no-byte-compile: t; lexical-binding: t -*-
-
 ;; Do this first to minimize color flash
-(or
- (ignore-errors
-  (progn
-   (load "~/.emacs.d/el-get/color-theme-sanityinc-tomorrow/color-theme-sanityinc-tomorrow.el")
-   (require 'color-theme-sanityinc-tomorrow)
-   (load-theme 'sanityinc-tomorrow-bright t)))
- (load-theme 'manoj-dark t))
+(load "~/.emacs.d/lisp/color-theme-sanityinc-tomorrow-backup.el")
+(ignore-errors
+ (progn
+  (require 'color-theme-sanityinc-tomorrow)
+  (load-theme 'sanityinc-tomorrow-bright t)))
+
+(ignore-errors
+(if (require 'quelpa nil t)
+    (quelpa-self-upgrade)
+  (with-temp-buffer
+    (url-insert-file-contents
+     "https://framagit.org/steckerhalter/quelpa/raw/master/bootstrap.el")
+    (eval-buffer)))
+(setq quelpa-stable-p nil)
+(quelpa
+ '(quelpa-use-package
+   :fetcher git
+   :url "https://framagit.org/steckerhalter/quelpa-use-package.git"
+   :stable nil)))
+(require 'quelpa-use-package)
+
+(global-set-key (kbd "M-u") #'insert-char)
+(global-set-key (kbd "C-c s") #'query-replace-regexp)
+(global-set-key (kbd "C-c q") #'auto-fill-mode)
+(global-set-key (kbd "C-c a") #'auto-complete-mode)
+(global-set-key (kbd "C-c w") #'fixup-whitespace)
+(global-set-key (kbd "C-c c") #'recompile)
+(global-set-key (kbd "C-c C") #'compile)
+(global-set-key (kbd "C-c C-k") #'kill-compilation)
+(global-set-key (kbd "C-c C-c") #'comment-region)
+(global-set-key (kbd "C-c C-e") #'pp-eval-last-sexp)
+(global-set-key (kbd "C-c e") #'toggle-debug-on-error)
+(global-set-key (kbd "C-c u") #'revert-buffer)
+(global-set-key (kbd "C-c ;") #'ispell-buffer)
+(global-set-key (kbd "C-c C--") #'dec-char-at-point)
+(global-set-key (kbd "C-c C-=") #'inc-char-at-point)
+(global-set-key (kbd "M-`") #'ff-find-other-file)
+(global-set-key (kbd "M-h") #'ns-do-hide-emacs)
+(global-set-key (kbd "RET") #'newline-and-indent)
+(global-set-key (kbd "M-s") #'save-buffer)
+(global-set-key (kbd " ") " ") ;; nbsp -> normal space
+(global-set-key (kbd "C-M-g") #'keyboard-quit)
+(global-set-key (kbd "C-c C-/") #'describe-char)
+(global-set-key (kbd "M-g M-f") #'first-error)
+(global-set-key (kbd "C-x C-o") #'other-window-previous)
+(global-set-key (kbd "M-d") #'dash-at-point)
+(global-set-key (kbd "<C-return>") #'indent-new-comment-line)
+;; (global-set-key (kbd "M-l") #'google-chrome-goto-location)
+(global-set-key (kbd "<C-M-tab>") #'clang-format-region)
+(global-set-key (kbd "C-;") #'avy-goto-word-1)
+(global-set-key (kbd "C-'") #'avy-goto-char-2)
+(global-set-key (kbd "C-M-e") nil)
+(global-set-key (kbd "C-x g") #'magit-status)
+;; (global-set-key (kbd "C-`") #'toggle-window-dedicated)
+(global-set-key (kbd "C-S-h") #'windmove-left)
+(global-set-key (kbd "C-S-l") #'windmove-right)
+(global-set-key (kbd "C-S-k") #'windmove-up)
+(global-set-key (kbd "C-S-j") #'windmove-down)
+(global-set-key (kbd "<M-mouse-1>") #'find-file-at-mouse)
+
+(setq-default mac-allow-anti-aliasing nil)
 
 (setq mac-command-modifier 'meta)
 (setq mac-option-modifier 'super)
@@ -20,8 +72,7 @@
 (setq auto-save-default nil)
 (setq ad-redefinition-action 'accept) ;; silence advice warning about redefinition
 
-(setq evil-want-abbrev-expand-on-insert-exit nil)
-(setq evil-regexp-search t)
+(setq initial-major-mode #'text-mode)
 
 (defmacro add-my-hook (hook-name args &rest body)
  "This will define a hook named \"my/`hook-name'\" and put the contents of
@@ -44,19 +95,7 @@
  (mapcar #'expand-file-name
   (list
    "~/.emacs.d/lisp"
-   "~/.emacs.d/el-get/el-get"
-   "~/.emacs.d/el-get/agda-input"
-   "~/.emacs.d/el-get/ht"
-   "~/.emacs.d/el-get/lsp-mode"
-   "~/.emacs.d/el-get/lsp-ui"
-   "~/.emacs.d/el-get/lsp-sourcekit"
-   "~/.emacs.d/el-get/spinner"
-   "~/.emacs.d/el-get/ac-company"
-   "~/.emacs.d/el-get/company-mode"
-   "~/.emacs.d/el-get/company-lsp"
-   "~/.emacs.d/el-get/dash-functional"
-   "~/.emacs.d/el-get/auctex"
-   "~/.emacs.d/el-get/auctex-latexmk"
+   "~/.emacs.d/lisp/from-wiki"
    "~/.emacs.d/PG/generic"
    "~/.nix-profile/share/emacs/site-lisp"
    "~/.nix-profile/share/emacs/site-lisp/ProofGeneral/generic"
@@ -69,82 +108,238 @@
 
 (setq-default insert-directory-program (or (executable-find "gls") "ls"))
 
-(setq el-get-notify-type 'message)
-(unless (require 'el-get nil 'noerror)
- (add-to-list 'exec-path "/usr/local/bin")
- (with-current-buffer
-  (url-retrieve-synchronously
-   "https://raw.github.com/dimitri/el-get/master/el-get-install.el")
-  (let (el-get-master-branch)
-   (goto-char (point-max))
-   (eval-print-last-sexp))))
+;; (el-get 'sync
+;;  '(agda-input
+;;    framemove
+;;    misc-cmds
+;;    sexp-rewrite
+;;    sml-mode
+;;    z3-mode
+;;    tuareg-mode
+;;    ))
 
-(add-to-list 'el-get-recipe-path "~/.emacs.d/el-get-user/recipes")
+(use-package evil :quelpa t
+ :demand t
+ :init
+ (setq evil-respect-visual-line-mode t)
+ (setq evil-want-abbrev-expand-on-insert-exit nil)
+ (setq evil-regexp-search t)
+ (setq evil-cross-lines t)
+ (setq evil-echo-state nil)
+ (setq evil-mode-line-format '(before . mode-line-frame-identification))
+ :config
+ (evil-define-key 'normal special-mode-map (kbd "q") #'kill-buffer-and-window)
+ (evil-mode 1)
+ (define-key evil-motion-state-map [down-mouse-1] #'mouse-drag-region)
+ (define-key evil-motion-state-map (kbd "K") nil)
+ (define-key evil-visual-state-map (kbd "u") #'undo)
+ (add-to-list 'evil-intercept-maps '(compilation-mode-map))
+ (define-key evil-normal-state-map (kbd "TAB") #'indent-for-tab-command)
+ (define-key evil-normal-state-map (kbd "M-.") nil)
+ (setq-default evil-symbol-word-search t)
+:bind (("M-k" . evil-scroll-up)
+       ("M-j" . evil-scroll-down)))
 
-(el-get 'sync '(use-package-el-get))
-(require 'use-package-el-get)
-(setq use-package-always-ensure nil)
-(use-package-el-get-setup)
+(use-package auto-complete :quelpa)
+(use-package avy :quelpa)
+(use-package clojure-mode :quelpa)
+(use-package cmake-mode :quelpa)
+(use-package coffee-mode :quelpa)
+(use-package color-theme-sanityinc-tomorrow :quelpa)
+(use-package company :quelpa)
+(use-package company-quickhelp :quelpa)
+(use-package d-mode :quelpa)
+(use-package dash-at-point :quelpa)
+(use-package diminish :quelpa)
+(use-package f :quelpa)
+(use-package fsharp-mode :quelpa)
+(use-package glsl-mode :quelpa)
+(use-package gnu-apl-mode :quelpa)
+(use-package go-mode :quelpa)
+(use-package graphviz-dot-mode :quelpa)
+(use-package haskell-mode :quelpa)
+(use-package haskell-emacs :quelpa)
+(use-package hindent :quelpa)
+(use-package hy-mode :quelpa)
+(use-package idris-mode :quelpa)
+(use-package magit :quelpa)
+(use-package markdown-mode :quelpa)
+(use-package nix-mode :quelpa)
+(use-package ocp-indent :quelpa)
+(use-package php-mode :quelpa)
+(use-package purescript-mode :quelpa)
+(use-package racket-mode :quelpa)
+(use-package reason-mode :quelpa)
+(use-package rust-mode :quelpa)
+(use-package scala-mode :quelpa)
+(use-package unicode-fonts :quelpa)
+(use-package web :quelpa)
+(use-package window-purpose :quelpa)
+(use-package yaml-mode :quelpa)
+(use-package clang-format :quelpa t
+ :bind (("<C-M-tab>" . clang-format-region)))
+(use-package typescript-mode :quelpa t)
 
-(require 'package)
-(add-to-list 'package-archives
- '("melpa" . "https://melpa.org/packages/") t)
-(require 'el-get-elpa)
-;; Build the El-Get copy of the package.el packages if we have not
-;; built it before.  Will have to look into updating later ...
-(unless (file-directory-p el-get-recipe-path-elpa)
- (el-get-elpa-build-local-recipes))
+(use-package dap-mode :quelpa)
 
-(el-get 'sync
- '(agda-input
-   auto-complete
-   avy
-   cmake-mode
-   coffee-mode
-   company
-   company-quickhelp
-   clojure-mode
-   d-mode
-   diminish
-   dash-at-point
-   evil
-   f
-   fill-column-indicator
-   fsharp-mode
-   framemove
-   glsl-mode
-   gnu-apl-mode
-   go-mode
-   graphviz-dot-mode
-   ;;  haskell-mode
-   ;; haskell-emacs
-   hindent
-   hy-mode
-   idris-mode
-   key-chord
+(use-package diff-hl :quelpa
+ :config
+ (global-diff-hl-mode))
 
-   magit
-   markdown-mode
-   misc-cmds
-   nix-mode
-   ocp-indent
-   php-mode
-   purescript-mode
-   racket-mode
-   rust-mode
-   color-theme-sanityinc-tomorrow
-   ;; scala-mode2
-   sexp-rewrite
-   spaceline
-   sml-mode
-   ;; unicode-fonts
-   web
-   window-purpose
-   z3-mode
-   tuareg-mode
-   reason-mode
-   yaml-mode
-   ))
+(use-package treemacs :quelpa t
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay      0.5
+          treemacs-directory-name-transformer    #'identity
+          treemacs-display-in-side-window        t
+          treemacs-eldoc-display                 t
+          treemacs-file-event-delay              5000
+          treemacs-file-extension-regex          treemacs-last-period-regex-value
+          treemacs-file-follow-delay             0.2
+          treemacs-file-name-transformer         #'identity
+          treemacs-follow-after-init             t
+          treemacs-git-command-pipe              ""
+          treemacs-goto-tag-strategy             'refetch-index
+          treemacs-indentation                   1
+          treemacs-indentation-string            " "
+          treemacs-is-never-other-window         nil
+          treemacs-max-git-entries               5000
+          treemacs-missing-project-action        'ask
+          treemacs-move-forward-on-expand        nil
+          treemacs-no-png-images                 nil
+          treemacs-no-delete-other-windows       t
+          treemacs-project-follow-cleanup        nil
+          treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                      'left
+          treemacs-read-string-input             'from-child-frame
+          treemacs-recenter-distance             0.1
+          treemacs-recenter-after-file-follow    nil
+          treemacs-recenter-after-tag-follow     nil
+          treemacs-recenter-after-project-jump   'always
+          treemacs-recenter-after-project-expand 'on-distance
+          treemacs-show-cursor                   t
+          treemacs-show-hidden-files             t
+          treemacs-silent-filewatch              nil
+          treemacs-silent-refresh                nil
+          treemacs-sorting                       'alphabetic-asc
+          treemacs-space-between-root-nodes      t
+          treemacs-tag-follow-cleanup            t
+          treemacs-tag-follow-delay              1.5
+          treemacs-user-mode-line-format         nil
+          treemacs-user-header-line-format       nil
+          treemacs-width                         35
+          treemacs-workspace-switch-cleanup      nil)
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple))))
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
+
+(use-package treemacs-evil :quelpa t
+  :after (treemacs evil)
+  :ensure t)
+
+(use-package free-keys :quelpa t
+ :ensure t
+ :bind
+ (:map global-map
+  ("C-h C-k" . free-keys)))
+
+(use-package treemacs-projectile :quelpa t
+  :after (treemacs projectile)
+  :ensure t)
+
+(use-package treemacs-icons-dired :quelpa t
+  :after (treemacs dired)
+  :ensure t
+  :config (treemacs-icons-dired-mode))
+
+(use-package treemacs-magit :quelpa t
+  :after (treemacs magit)
+  :ensure t)
+
+(use-package zoom-frm
+ :bind (("<s-wheel-down>" . zoom-out)
+        ("<s-mouse-2>" . zoom-frm-unzoom)
+        ("<s-next>" . zoom-out)
+        ("<s-wheel-up>" . zoom-in)
+        ("<s-prior>" . zoom-in)))
+
+(use-package framemove
+ :init
+ (setq framemove-hook-into-windmove t))
+
+(use-package rjsx-mode :quelpa t
+ :commands rjsx-mode
+ :mode "\\.jsx?$"
+ :config
+ (setq js2-mode-show-parse-errors nil)
+ (setq js2-mode-show-strict-warnings nil)
+ (setq js-indent-level 2))
+
+(use-package swift-mode :quelpa t
+ :commands swift-mode
+ :mode "\\.swift\\'"
+ :config
+ (setq swift-mode:parenthesized-expression-offset 4)
+ (setq swift-mode:multiline-statement-offset 4))
+
+(use-package spinner :quelpa)
+(use-package lsp-mode :quelpa t
+ :hook (swift-mode . #'lsp)
+ :commands lsp
+ :after spinner
+ :config
+ (setq lsp-enable-snippet nil))
+'(use-package lsp-ui :quelpa t
+ :hook (lsp-mode . lsp-ui-mode)
+ :commands lsp-ui-mode)
+
+(use-package lsp-treemacs :quelpa t
+ :commands lsp-treemacs-errors-list)
+
+(use-package lsp-sourcekit :quelpa t
+ :after lsp-mode
+ :config
+ (setq lsp-sourcekit-executable (string-trim (shell-command-to-string "xcrun --find sourcekit-lsp"))))
+
+(use-package json-mode
+ :quelpa t
+ :mode "\\.json\\'")
+
+(use-package jq-mode
+ :quelpa t
+ :after json-mode
+ :config
+ (define-key json-mode-map (kbd "C-c C-j") #'jq-interactively))
+
+(use-package kotlin-mode
+ :quelpa t
+ :mode "\\.kts?\\'")
+
 
 ;; (require 'helm-config)
 ;; (helm-mode 0)
@@ -165,39 +360,41 @@
 ;;    (inhibit-same-window . t)
 ;;    (window-height . 0.4)))
 
-(require 'key-chord)
-(key-chord-mode 1)
-(key-chord-define evil-insert-state-map "jk" #'evil-normal-state)
-(key-chord-define evil-replace-state-map "jk" #'evil-normal-state)
+(use-package key-chord :quelpa t
+ :after (evil)
+ :config
+ (key-chord-mode 1)
+ (key-chord-define evil-insert-state-map "jk" #'evil-normal-state)
+ (key-chord-define evil-replace-state-map "jk" #'evil-normal-state))
 
 ;; fix broken colors on fancy powerline images
 (when (memq window-system '(mac ns))
  (setq powerline-image-apple-rgb t))
 
-(require 'spaceline-config)
-(spaceline-toggle-version-control-off)
-(spaceline-define-segment wc-segment
- (if (use-region-p)
-  (format "[%d %d %d]"
-   (abs (- (point) (mark)))
-   (count-words-region (point) (mark))
-   (abs (- (line-number-at-pos (point))
-         (line-number-at-pos (mark)))))
-  (format "%d %d %d"
-   (- (point-max) (point-min))
-   (count-words-region (point-min) (point-max))
-   (line-number-at-pos (point-max))))
- :enabled nil)
-(spaceline-spacemacs-theme 'wc-segment)
-(setq spaceline-highlight-face-func #'spaceline-highlight-face-evil-state)
+(use-package spaceline :quelpa t
+ :config
+ (require 'spaceline-config)
+ (spaceline-toggle-version-control-off)
+ (spaceline-define-segment wc-segment
+  (if (use-region-p)
+   (format "[%d %d %d]"
+    (abs (- (point) (mark)))
+    (count-words-region (point) (mark))
+    (abs (- (line-number-at-pos (point))
+          (line-number-at-pos (mark)))))
+   (format "%d %d %d"
+    (- (point-max) (point-min))
+    (count-words-region (point-min) (point-max))
+    (line-number-at-pos (point-max))))
+  :enabled nil)
+ (spaceline-spacemacs-theme 'wc-segment)
+ (setq spaceline-highlight-face-func #'spaceline-highlight-face-evil-state))
 
 (defun magic-close-parens ()
  (interactive)
  (require 'racket-mode)
  (dolist (k '(")" "]" "}"))
   (local-set-key (kbd k) #'racket-insert-closing)))
-
-(package-initialize)
 
 (defun el-get-install-optionals ()
  (interactive)
@@ -250,18 +447,13 @@
  (local-set-key (kbd "C-c C--") #'racket-rain-down-judgment)
  (local-set-key (kbd "C-c C-=") #'racket-rain-up-judgment))
 
-(require 'evil)
-(evil-mode 1)
-(setq evil-cross-lines t)
-(define-key evil-motion-state-map [down-mouse-1] #'mouse-drag-region)
-(define-key evil-motion-state-map (kbd "K") nil)
-(define-key evil-visual-state-map (kbd "u") #'undo)
-(add-to-list 'evil-intercept-maps '(compilation-mode-map))
-(setq evil-echo-state nil)
-(setq-default evil-symbol-word-search t)
-(setq evil-mode-line-format '(before . mode-line-frame-identification))
-(global-undo-tree-mode -1)
+(add-my-hook yaml-mode-hook ()
+ (local-set-key (kbd "|") nil)
+ (local-set-key (kbd ">") nil))
+
+;(global-undo-tree-mode -1)
 (global-auto-revert-mode 1)
+(global-display-fill-column-indicator-mode t)
 
 (prefer-coding-system           'utf-8)
 (set-default-coding-systems     'utf-8)
@@ -282,11 +474,10 @@
 (setq coffee-tab-width 4)
 (setq-default indent-tabs-mode nil)
 (setq-default py-indent-offset 4)
-(setq sgml-basic-offset 1)
+(setq sgml-basic-offset 2)
 (setq hamlet-basic-offset 1)
 (setq lisp-indent-offset 1)
-(setq-default fill-column 80)
-(setq fill-column 80)
+(setq-default fill-column 140)
 (setq sentence-end-double-space nil)
 (setq window-combination-resize t)
 
@@ -324,7 +515,7 @@
  (setq frame-resize-pixelwise t)
  (let ((fullscreen-mode 'maximized))
   (when (> (x-display-pixel-width) 1440) ;; crude test for multiple displays
-   (setq initial-frame-alist `((left + 4000) . ,initial-frame-alist))
+   (setq initial-frame-alist `((left - 2000) . ,initial-frame-alist))
    '(setq fullscreen-mode 'fullscreen))
   ;;(setq ns-use-native-fullscreen nil)
   (setq initial-frame-alist
@@ -345,7 +536,6 @@
  ;; (try-set-font "ProggyTiny 11")
  ;; (try-set-font "Crisp 16")
  (try-set-font "Menlo 12")
- (try-set-font "Menlo 11")
  (try-set-font "Hack 10")
  (when (eq window-system 'w32)
   (try-set-font "DejaVu Sans mono 8"))
@@ -353,7 +543,7 @@
  (try-set-font "DejaVu Sans mono 13")
  (try-set-font "Espresso mono 11")
  (try-set-font "Consolas 13")
- (try-set-font "Input 11")
+ (try-set-font "Input mono 12")
  )
 
 (setq org-startup-folded nil)
@@ -411,7 +601,6 @@
 (setq compilation-scroll-output 'first-error)
 
 ;; https://stackoverflow.com/a/23382008
-
 (defun display-ansi-colors ()
   (interactive)
   (let ((inhibit-read-only t))
@@ -451,55 +640,20 @@
 
 (defun find-file-at-mouse (event)
  "like find-file-at-point, but at mouse instead"
- (interactive "e")
+ (interactive "@e")
  (save-excursion
   (mouse-set-point event)
   (find-file-at-point)))
 
+;; death to secondary selection
+(global-unset-key (kbd "<M-drag-mouse-1>"))   ; was mouse-set-secondary
+(global-unset-key (kbd "<M-down-mouse-1>"))   ; was mouse-drag-secondary
+(global-unset-key (kbd "<M-mouse-1>"))	  ; was mouse-start-secondary
+(global-unset-key (kbd "<M-mouse-2>"))	  ; was mouse-yank-secondary
+(global-unset-key (kbd "<M-mouse-3>"))	  ; was mouse-secondary-save-then-kill
 
-;;(define-key global-map [down-mouse-1] nil)
-(global-set-key (kbd "M-u") #'insert-char)
-(global-set-key (kbd "C-c s") #'query-replace-regexp)
-(global-set-key (kbd "C-c q") #'auto-fill-mode)
-(global-set-key (kbd "C-c a") #'auto-complete-mode)
-(global-set-key (kbd "C-c w") #'fixup-whitespace)
-(global-set-key (kbd "C-c c") #'recompile)
-(global-set-key (kbd "C-c C") #'compile)
-(global-set-key (kbd "C-c C-k") #'kill-compilation)
-(global-set-key (kbd "C-c C-c") #'comment-region)
-(global-set-key (kbd "C-c C-e") #'pp-eval-last-sexp)
-(global-set-key (kbd "C-c e") #'toggle-debug-on-error)
-(global-set-key (kbd "C-c u") #'revert-buffer)
-(global-set-key (kbd "C-c ;") #'ispell-buffer)
-(global-set-key (kbd "C-c C--") #'dec-char-at-point)
-(global-set-key (kbd "C-c C-=") #'inc-char-at-point)
-(global-set-key (kbd "M-`") #'ff-find-other-file)
-(global-set-key (kbd "M-h") #'ns-do-hide-emacs)
-(global-set-key (kbd "RET") #'newline-and-indent)
-(global-set-key (kbd "M-s") #'save-buffer)
-(global-set-key (kbd " ") " ") ;; nbsp -> normal space
-(global-set-key (kbd "C-M-g") #'keyboard-quit)
-(global-set-key (kbd "C-c C-/") #'describe-char)
-(global-set-key (kbd "M-g M-f") #'first-error)
-(global-set-key (kbd "M-k") #'evil-scroll-up)
-(global-set-key (kbd "M-j") #'evil-scroll-down)
-(global-set-key (kbd "C-x C-o") #'other-window-previous)
-(global-set-key (kbd "M-d") #'dash-at-point)
-(global-set-key (kbd "<C-return>") #'indent-new-comment-line)
-;; (global-set-key (kbd "M-l") #'google-chrome-goto-location)
-(global-set-key (kbd "<C-M-tab>") 'clang-format-region)
-(global-set-key (kbd "C-;") 'avy-goto-word-1)
-(global-set-key (kbd "C-'") 'avy-goto-char-2)
-(global-set-key (kbd "C-M-e") nil)
-(global-set-key (kbd "C-x g") #'magit-status)
-;; (global-set-key (kbd "C-`") #'toggle-window-dedicated)
-(global-set-key (kbd "C-S-h") 'windmove-left)
-(global-set-key (kbd "C-S-l") 'windmove-right)
-(global-set-key (kbd "C-S-k") 'windmove-up)
-(global-set-key (kbd "C-S-j") 'windmove-down)
-(global-set-key [M-mouse-1] #'find-file-at-mouse)
-(define-key evil-normal-state-map (kbd "TAB") #'indent-for-tab-command)
-(define-key evil-normal-state-map (kbd "M-.") nil)
+(global-unset-key (kbd "C-x C-z"))	  ; was suspend-frame
+
 (dolist (map (list
               ;; evil-normal-state-map
               evil-motion-state-map))
@@ -516,10 +670,6 @@
 
 (add-my-hook c++-mode-hook ()
  (define-key c++-mode-map (kbd "C-c C-k") nil))
-
-
-(require 'framemove)
-(setq framemove-hook-into-windmove t)
 
 (winner-mode 1)
 
@@ -604,7 +754,7 @@
 (global-hl-line-mode t)
 (set-face-foreground 'hl-line nil)
 (set-face-background 'fringe "#444444")
-(fringe-mode (cdr-safe (assoc "half-width" fringe-styles)))
+;; (fringe-mode (cdr-safe (assoc "half-width" fringe-styles)))
 
 (set-face-background 'ac-candidate-face "lightgray")
 (set-face-underline-p 'ac-candidate-face "darkgray")
@@ -684,7 +834,7 @@
 (autoload 'LilyPond-mode "lilypond-mode" "LilyPond Editing Mode" t)
 (add-hook 'LilyPond-mode-hook (lambda () (turn-on-font-lock)))
 
-(require 'use-packages)
+;; (require 'use-packages)
 
 (add-to-list* 'auto-mode-alist
  '(("\\.h\\'" . c++-mode)
@@ -800,7 +950,7 @@ means reverse order), BEG and END (region to sort)."
  (setq evil-shift-width 2)
  (local-set-key (kbd "M-RET") #'lean-show-goal-at-pos))
 
-(defvar hindent-line-length 102)
+(defvar hindent-line-length 140)
 
 (eval-after-load 'hindent
  (lambda ()
@@ -1070,6 +1220,7 @@ means reverse order), BEG and END (region to sort)."
      (rename-buffer new-name)
      (set-visited-file-name new-name)
      (set-buffer-modified-p nil))))))
+(global-set-key (kbd "M-R") #'rename-file-and-buffer)
 
 (defun move-buffer-file (dir)
  "Moves both current buffer and file it's visiting to DIR." (interactive "DNew directory: ")
@@ -1087,6 +1238,19 @@ means reverse order), BEG and END (region to sort)."
     (set-visited-file-name newname)
     (set-buffer-modified-p nil)
     t))))
+
+;; https://everything2.com/index.pl?node_id=1038451
+(defun scratch ()
+ "create a new scratch buffer to work in. (could be *scratch* - *scratchX*)"
+ (interactive)
+ (let ((n 0)
+       bufname)
+  (while (progn
+          (setq bufname (format "*scratch%s*" (if (= n 0) "" (int-to-string n))))
+          (setq n (1+ n))
+          (get-buffer bufname)))
+  (switch-to-buffer (get-buffer-create bufname))
+  (funcall initial-major-mode)))
 
 (defun iterm-here ()
  (interactive)
@@ -1123,7 +1287,18 @@ means reverse order), BEG and END (region to sort)."
 (setq describe-char-unidata-list
  '(name old-name general-category decomposition uppercase lowercase))
 
+(defun cancel-minibuffer-first (sub-read &rest args)
+    (let ((active (active-minibuffer-window)))
+        (if active
+                (progn
+                    ;; we have to trampoline, since we're IN the minibuffer right now.
+                    (apply 'run-at-time 0 nil sub-read args)
+                    (abort-recursive-edit))
+            (apply sub-read args))))
+(advice-add 'read-from-minibuffer :around #'cancel-minibuffer-first)
+
 (setq custom-file "/dev/zero")
+
 
 (set-face-attribute 'show-paren-mismatch nil
  :foreground "#000000"

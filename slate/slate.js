@@ -70,14 +70,13 @@ S.bindAll({
 
     "pad1:ctrl" : throwTo(0),
     "pad2:ctrl" : throwTo(1),
-    "pad3:ctrl" : throwToHalf(2, D.left),
-    "pad4:ctrl" : throwToHalf(2, D.right),
-    "pad0:ctrl" : throwTo(3),
+    "pad3:ctrl" : throwTo(2),
+    "pad4:ctrl" : throwTo(3),
 
     "1:backslash,ctrl" : throwTo(0),
     "2:backslash,ctrl" : throwTo(1),
-    "3:backslash,ctrl" : throwToHalf(2, D.left),
-    "4:backslash,ctrl" : throwToHalf(2, D.right),
+    "3:backslash,ctrl" : throwTo(2, "", "-20"),
+    "4:backslash,ctrl" : throwTo(3),
     "0:backslash,ctrl" : throwTo(3),
 
     "pad9:ctrl": mouseToScreen(3),

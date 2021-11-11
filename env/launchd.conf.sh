@@ -35,10 +35,10 @@ function {
     local lpath
     lpath=()
     lpath+="/run/current-system/sw/bin"
-    lpath+="${nix_link}/bin"
-    lpath+="${nix_link}/sbin"
-    lpath+="/nix/var/nix/profiles/default/bin"
-    lpath+="/nix/var/nix/profiles/default/sbin"
+    # lpath+="${nix_link}/bin"
+    # lpath+="${nix_link}/sbin"
+    # lpath+="/nix/var/nix/profiles/default/bin"
+    # lpath+="/nix/var/nix/profiles/default/sbin"
     lpath+="${HOME}/Library/Haskell/bin"
     lpath+="${HOME}/bin"
     lpath+="${HOME}/.local/bin"
@@ -63,6 +63,7 @@ function {
     lpath+="${HOME}/.cargo/bin"
     lpath+="${HOME}/.perl5/bin"
     lpath+="${HOME}/Desktop/programs/esp/xtensa-esp32-elf/bin"
+    lpath+="${HOME}/.swiftenv/shims"
     varset PATH ${(j.:.)lpath}
     # typeset -U path
 
@@ -86,13 +87,13 @@ function {
     varset HOMEBREW_CASK_OPTS "--appdir=${HOME}/Applications"
 
     # EC2 stuff
-    varset JAVA_HOME "$(/usr/libexec/java_home)"
-    varset EC2_PRIVATE_KEY "$(/bin/ls ${HOME}/.ec2/pk-*.pem | /usr/bin/head -1)"
-    varset EC2_CERT "$(/bin/ls ${HOME}/.ec2/cert-*.pem | /usr/bin/head -1)"
-    varset AWS_CREDENTIAL_FILE "${HOME}/.ec2/credentials"
-    varset EC2_AMITOOL_HOME "/usr/local/Library/LinkedKegs/ec2-ami-tools/libexec"
-    varset EC2_HOME "/usr/local/Library/LinkedKegs/ec2-api-tools/libexec"
-    varset AWS_SNS_HOME "/usr/local/Library/LinkedKegs/aws-sns-cli/jars"
+    # varset JAVA_HOME "$(/usr/libexec/java_home)"
+    # varset EC2_PRIVATE_KEY "$(/bin/ls ${HOME}/.ec2/pk-*.pem | /usr/bin/head -1)"
+    # varset EC2_CERT "$(/bin/ls ${HOME}/.ec2/cert-*.pem | /usr/bin/head -1)"
+    # varset AWS_CREDENTIAL_FILE "${HOME}/.ec2/credentials"
+    # varset EC2_AMITOOL_HOME "/usr/local/Library/LinkedKegs/ec2-ami-tools/libexec"
+    # varset EC2_HOME "/usr/local/Library/LinkedKegs/ec2-api-tools/libexec"
+    # varset AWS_SNS_HOME "/usr/local/Library/LinkedKegs/aws-sns-cli/jars"
 
     #export CLICOLOR=1
     #export LSCOLORS=ExFxCxDxBxegedabagacad
@@ -117,7 +118,7 @@ function {
     varset RUST_SRC_PATH "$HOME/.multirust/toolchains/nightly-x86_64-apple-darwin/lib/rustlib/src/rust/src"
 
     # nix stuff
-    varset NIX_PATH "nixpkgs=${HOME}/.nix-defexpr/channels/nixpkgs"
+    # varset NIX_PATH "nixpkgs=${HOME}/.nix-defexpr/channels/nixpkgs"
     # varset NIX_PATH "nixpkgs=${HOME}/programs/nixpkgs"
     # local nixpath
     # nixpath=()
@@ -126,12 +127,12 @@ function {
     # nixpath+="${HOME}/.nix-defexpr/channels"
     # varset NIX_PATH ${(j.:.)nixpath}
 
-    varset NIX_SSL_CERT_FILE "${HOME}/.nix-profile/etc/ssl/certs/ca-bundle.crt"
-    varset SSL_CERT_FILE "${HOME}/.nix-profile/etc/ssl/certs/ca-bundle.crt"
-    varset CURL_CA_BUNDLE "${HOME}/.nix-profile/etc/ssl/certs/ca-bundle.crt"
+    # varset NIX_SSL_CERT_FILE "${HOME}/.nix-profile/etc/ssl/certs/ca-bundle.crt"
+    # varset SSL_CERT_FILE "${HOME}/.nix-profile/etc/ssl/certs/ca-bundle.crt"
+    # varset CURL_CA_BUNDLE "${HOME}/.nix-profile/etc/ssl/certs/ca-bundle.crt"
     # varset SSL_CERT_FILE "/nix/store/kllhf4y7haqindwzrsx8hwv4ji41mpns-nss-cacert-3.26/etc/ssl/certs/ca-bundle.crt"
     # varset CURL_CA_BUNDLE "/nix/store/kllhf4y7haqindwzrsx8hwv4ji41mpns-nss-cacert-3.26/etc/ssl/certs/ca-bundle.crt"
-    varset NIX_BUILD_CORES "8"
+    # varset NIX_BUILD_CORES "8"
 
     # SUPER HACKY NIX GHC STUFF
     # varset NIX_CFLAGS_COMPILE "-idirafter /usr/include -F/System/Library/Frameworks"
