@@ -40,5 +40,5 @@
 	helper = osxkeychain
 [grep]
     extendRegexp = true
-[init]
-	defaultBranch = main
+[pull]
+	ff = only
