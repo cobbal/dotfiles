@@ -19,6 +19,7 @@
    :url "https://framagit.org/steckerhalter/quelpa-use-package.git"
    :stable nil)))
 (require 'quelpa-use-package)
+(setq use-package-ensure-function 'quelpa)
 
 (global-set-key (kbd "M-u") #'insert-char)
 (global-set-key (kbd "C-c s") #'query-replace-regexp)
@@ -58,6 +59,16 @@
 (global-set-key (kbd "C-S-k") #'windmove-up)
 (global-set-key (kbd "C-S-j") #'windmove-down)
 (global-set-key (kbd "<M-mouse-1>") #'find-file-at-mouse)
+
+(if (>= emacs-major-version 27)
+ (set-fontset-font t '(#x1f600 . #x1faff)
+  (font-spec :family "Apple Color Emoji")))
+
+(global-set-key (kbd "C-x C")
+ (lambda ()
+  (interactive)
+  (let ((confirm-kill-emacs nil))
+   (save-buffers-kill-terminal))))
 
 (setq-default mac-allow-anti-aliasing nil)
 
@@ -118,7 +129,7 @@
 ;;    tuareg-mode
 ;;    ))
 
-(use-package evil :quelpa t
+(use-package evil
  :demand t
  :init
  (setq evil-respect-visual-line-mode t)
@@ -140,53 +151,69 @@
 :bind (("M-k" . evil-scroll-up)
        ("M-j" . evil-scroll-down)))
 
-(use-package auto-complete :quelpa)
-(use-package avy :quelpa)
-(use-package clojure-mode :quelpa)
-(use-package cmake-mode :quelpa)
-(use-package coffee-mode :quelpa)
-(use-package color-theme-sanityinc-tomorrow :quelpa)
-(use-package company :quelpa)
-(use-package company-quickhelp :quelpa)
-(use-package d-mode :quelpa)
-(use-package dash-at-point :quelpa)
-(use-package diminish :quelpa)
-(use-package f :quelpa)
-(use-package fsharp-mode :quelpa)
-(use-package glsl-mode :quelpa)
-(use-package gnu-apl-mode :quelpa)
-(use-package go-mode :quelpa)
-(use-package graphviz-dot-mode :quelpa)
-(use-package haskell-mode :quelpa)
-(use-package haskell-emacs :quelpa)
-(use-package hindent :quelpa)
-(use-package hy-mode :quelpa)
-(use-package idris-mode :quelpa)
-(use-package magit :quelpa)
-(use-package markdown-mode :quelpa)
-(use-package nix-mode :quelpa)
-(use-package ocp-indent :quelpa)
-(use-package php-mode :quelpa)
-(use-package purescript-mode :quelpa)
-(use-package racket-mode :quelpa)
-(use-package reason-mode :quelpa)
-(use-package rust-mode :quelpa)
-(use-package scala-mode :quelpa)
-(use-package unicode-fonts :quelpa)
-(use-package web :quelpa)
-(use-package window-purpose :quelpa)
-(use-package yaml-mode :quelpa)
-(use-package clang-format :quelpa t
+(use-package auto-complete)
+(use-package avy)
+(use-package clojure-mode)
+(use-package cmake-mode)
+(use-package coffee-mode)
+(use-package color-theme-sanityinc-tomorrow)
+(use-package company-quickhelp)
+(use-package d-mode)
+(use-package dash-at-point)
+(use-package diminish)
+(use-package f)
+(use-package fsharp-mode)
+(use-package glsl-mode)
+(use-package gnu-apl-mode)
+(use-package go-mode)
+(use-package graphviz-dot-mode)
+(use-package haskell-mode)
+(use-package haskell-emacs)
+(use-package hindent)
+(use-package hy-mode)
+(use-package idris-mode)
+(use-package magit)
+(use-package markdown-mode)
+(use-package nix-mode)
+(use-package ocp-indent)
+(use-package php-mode)
+(use-package purescript-mode)
+(use-package racket-mode)
+(use-package reason-mode)
+(use-package rust-mode)
+(use-package scala-mode)
+(use-package unicode-fonts)
+(use-package web)
+(use-package window-purpose)
+(use-package yaml-mode)
+(use-package clang-format
  :bind (("<C-M-tab>" . clang-format-region)))
-(use-package typescript-mode :quelpa t)
+(use-package typescript-mode)
 
-(use-package dap-mode :quelpa)
+(use-package string-inflection
+ :bind
+ (:map global-map
+  ("C-c _" . string-inflection-underscore)
+  ("C-c -" . string-inflection-kebab-case)
+  ("C-c l" . string-inflection-lower-camelcase)
+  ("C-c L" . string-inflection-camelcase)))
 
-(use-package diff-hl :quelpa
+(use-package csharp-mode
+ :quelpa)
+
+(use-package dedent
+ :quelpa
+ (dedent
+  :fetcher url
+  :url "https://raw.githubusercontent.com/deactivated/dedent-el/master/dedent.el"))
+
+(use-package dap-mode)
+
+(use-package diff-hl
  :config
  (global-diff-hl-mode))
 
-(use-package treemacs :quelpa t
+(use-package treemacs
   :ensure t
   :defer t
   :init
@@ -258,26 +285,26 @@
         ("C-x t C-t" . treemacs-find-file)
         ("C-x t M-t" . treemacs-find-tag)))
 
-(use-package treemacs-evil :quelpa t
+(use-package treemacs-evil
   :after (treemacs evil)
   :ensure t)
 
-(use-package free-keys :quelpa t
+(use-package free-keys
  :ensure t
  :bind
  (:map global-map
   ("C-h C-k" . free-keys)))
 
-(use-package treemacs-projectile :quelpa t
+(use-package treemacs-projectile
   :after (treemacs projectile)
   :ensure t)
 
-(use-package treemacs-icons-dired :quelpa t
+(use-package treemacs-icons-dired
   :after (treemacs dired)
   :ensure t
   :config (treemacs-icons-dired-mode))
 
-(use-package treemacs-magit :quelpa t
+(use-package treemacs-magit
   :after (treemacs magit)
   :ensure t)
 
@@ -292,7 +319,7 @@
  :init
  (setq framemove-hook-into-windmove t))
 
-(use-package rjsx-mode :quelpa t
+(use-package rjsx-mode
  :commands rjsx-mode
  :mode "\\.jsx?$"
  :config
@@ -300,46 +327,51 @@
  (setq js2-mode-show-strict-warnings nil)
  (setq js-indent-level 2))
 
-(use-package swift-mode :quelpa t
+(use-package swift-mode
  :commands swift-mode
  :mode "\\.swift\\'"
  :config
  (setq swift-mode:parenthesized-expression-offset 4)
  (setq swift-mode:multiline-statement-offset 4))
 
-(use-package spinner :quelpa)
-(use-package lsp-mode :quelpa t
+(use-package spinner)
+(use-package lsp-mode
  :hook (swift-mode . #'lsp)
  :commands lsp
  :after spinner
  :config
- (setq lsp-enable-snippet nil))
-'(use-package lsp-ui :quelpa t
+ (setq lsp-enable-snippet nil)
+ :ensure)
+(use-package lsp-ui
  :hook (lsp-mode . lsp-ui-mode)
- :commands lsp-ui-mode)
+ :commands lsp-ui-mode
+ :ensure)
 
-(use-package lsp-treemacs :quelpa t
+(use-package lsp-treemacs
  :commands lsp-treemacs-errors-list)
 
-(use-package lsp-sourcekit :quelpa t
+(use-package lsp-sourcekit
  :after lsp-mode
  :config
  (setq lsp-sourcekit-executable (string-trim (shell-command-to-string "xcrun --find sourcekit-lsp"))))
 
 (use-package json-mode
- :quelpa t
  :mode "\\.json\\'")
 
 (use-package jq-mode
- :quelpa t
  :after json-mode
  :config
  (define-key json-mode-map (kbd "C-c C-j") #'jq-interactively))
 
 (use-package kotlin-mode
- :quelpa t
  :mode "\\.kts?\\'")
 
+(use-package dart-mode :ensure)
+(use-package lsp-dart :ensure)
+(use-package flycheck :ensure)
+(use-package company :ensure)
+
+(use-package hover :ensure)
 
 ;; (require 'helm-config)
 ;; (helm-mode 0)
@@ -360,7 +392,7 @@
 ;;    (inhibit-same-window . t)
 ;;    (window-height . 0.4)))
 
-(use-package key-chord :quelpa t
+(use-package key-chord
  :after (evil)
  :config
  (key-chord-mode 1)
@@ -371,7 +403,7 @@
 (when (memq window-system '(mac ns))
  (setq powerline-image-apple-rgb t))
 
-(use-package spaceline :quelpa t
+(use-package spaceline
  :config
  (require 'spaceline-config)
  (spaceline-toggle-version-control-off)
@@ -651,6 +683,7 @@
 (global-unset-key (kbd "<M-mouse-1>"))	  ; was mouse-start-secondary
 (global-unset-key (kbd "<M-mouse-2>"))	  ; was mouse-yank-secondary
 (global-unset-key (kbd "<M-mouse-3>"))	  ; was mouse-secondary-save-then-kill
+(global-unset-key (kbd "M-'")) ; was abbrev-prefix-mark
 
 (global-unset-key (kbd "C-x C-z"))	  ; was suspend-frame
 
@@ -781,9 +814,14 @@
   (format "%s:%s" (buffer-name) (line-number-at-pos (point)))))
 (global-set-key (kbd "C-c C-p") #'copy-filename-and-line-number)
 
-(dolist (l '((racket-mode . "racket")
-             (scheme-mode . "racket")))
- (add-to-list 'dash-at-point-mode-alist l))
+(defun dash-at-point-add-mode (mode sets)
+ (let* ((old-sets (alist-get mode dash-at-point-mode-alist))
+        (new-sets (string-join (cons sets (when old-sets (list old-sets))) ",")))
+  (setf (alist-get mode dash-at-point-mode-alist) new-sets)))
+
+(dash-at-point-add-mode 'swift-mode "nodejs")
+(dash-at-point-add-mode 'racket-mode "racket")
+(dash-at-point-add-mode 'scheme-mode "racket")
 
 (add-my-hook scheme-mode-hook ()
  (magic-close-parens))
@@ -842,7 +880,6 @@
    ("\\.coffee\\'" . coffee-mode)
    ("\\.v\\'" . coq-mode-shim)
    ("\\.cs\\'" . csharp-mode)
-   ("\\.dart\\'" . dart-mode)
    ("\\.\\(v\\|f\\|tc\\|te\\)sh\\'" . glsl-mode)
    ("\\.jsont\\'" . html-mode)
    ("\\.ijs\\'" . j-mode)
@@ -1001,6 +1038,9 @@ means reverse order), BEG and END (region to sort)."
  (delete-trailing-whitespace)
  (refmt-before-save))
 
+(add-my-hook after-save-hook ()
+ (executable-make-buffer-file-executable-if-script-p))
+
 (defface my-visible-mark-face-1
   `((t (:background "plum4" :foreground "white")))
   "Face for the mark."
@@ -1012,6 +1052,7 @@ means reverse order), BEG and END (region to sort)."
 (global-visible-mark-mode t)
 
 (setq confirm-kill-processes nil)
+(setq confirm-kill-emacs #'yes-or-no-p)
 
 (defun interactive-ding () (interactive) (ding))
 

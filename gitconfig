@@ -11,6 +11,9 @@
     lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
     g = grep --break --heading --line-number
     addnw = !zsh -c 'git -c diff.noprefix=false diff -U0 -w --no-color "$@" | git apply --cached --ignore-whitespace --unidiff-zero -'
+    main-count = !zsh -c 'git fetch --all >/dev/null 2>&1 && git rev-list --left-right --count origin/main...$(git branch --show-current)'
+    master-count = !zsh -c 'git fetch --all >/dev/null 2>&1 && git rev-list --left-right --count origin/master...$(git branch --show-current)'
+    mc = main-count
 [core]
     excludesfile = /Users/acobb/.gitignore_global
 [push]
@@ -40,5 +43,6 @@
 	helper = osxkeychain
 [grep]
     extendRegexp = true
+    lineNumber = true
 [pull]
 	ff = only

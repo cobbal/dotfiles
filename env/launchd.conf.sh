@@ -58,6 +58,9 @@ function {
     lpath+="${HOME}/Library/Python/3.7/bin"
     lpath+="${HOME}/Library/Python/2.7/bin"
     lpath+="${HOME}/Library/Android/sdk/platform-tools"
+    lpath+="${HOME}/go/bin"
+    lpath+="${HOME}/.mint/bin"
+    lpath+="${HOME}/.dotnet/tools"
 
     lpath+="${OPAM}/bin"
     lpath+="${HOME}/.cargo/bin"
