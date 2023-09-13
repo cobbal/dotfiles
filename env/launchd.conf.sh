@@ -39,10 +39,11 @@ function {
     # lpath+="${nix_link}/sbin"
     # lpath+="/nix/var/nix/profiles/default/bin"
     # lpath+="/nix/var/nix/profiles/default/sbin"
-    lpath+="${HOME}/Library/Haskell/bin"
+    lpath+="${HOME}/.ghcup/bin"
     lpath+="${HOME}/bin"
     lpath+="${HOME}/.local/bin"
     lpath+="/usr/local/bin"
+    lpath+="/opt/homebrew/bin"
     lpath+="/usr/local/sbin"
     lpath+="/usr/bin"
     lpath+="/bin"
@@ -56,11 +57,13 @@ function {
     lpath+="${HOME}/Applications/Skim.app/Contents/SharedSupport"
     lpath+="${HOME}/.gem/ruby/latest/bin"
     lpath+="${HOME}/Library/Python/3.7/bin"
+    lpath+="${HOME}/Library/Python/3.9/bin"
     lpath+="${HOME}/Library/Python/2.7/bin"
     lpath+="${HOME}/Library/Android/sdk/platform-tools"
     lpath+="${HOME}/go/bin"
     lpath+="${HOME}/.mint/bin"
     lpath+="${HOME}/.dotnet/tools"
+    lpath+="${HOME}/.rd/bin"
 
     lpath+="${OPAM}/bin"
     lpath+="${HOME}/.cargo/bin"
@@ -88,6 +91,7 @@ function {
     varset HOMEBREW_EDITOR "${HOME}/bin/cemacs"
     varset HOMEBREW_NO_ANALYTICS 1
     varset HOMEBREW_CASK_OPTS "--appdir=${HOME}/Applications"
+    varset DOTNET_ROOT "/opt/homebrew/opt/dotnet/libexec"
 
     # EC2 stuff
     # varset JAVA_HOME "$(/usr/libexec/java_home)"

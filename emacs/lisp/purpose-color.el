@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'phi-color)
+(require 'cl-lib)
 
 (defvar purpose-color--fixed-color-assignments
  '((edit . 0)
@@ -16,7 +17,7 @@
   tbl))
 
 (defun purpose-color--color-for-purpose (purpose)
- (check-type purpose symbolp)
+ (cl-check-type purpose symbolp)
  (let ((n nil))
   (setq n (gethash purpose purpose-color--color-assignments))
   (unless n

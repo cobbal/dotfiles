@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; Do this first to minimize color flash
 (load "~/.emacs.d/lisp/color-theme-sanityinc-tomorrow-backup.el")
 (ignore-errors
@@ -5,19 +6,23 @@
   (require 'color-theme-sanityinc-tomorrow)
   (load-theme 'sanityinc-tomorrow-bright t)))
 
-(ignore-errors
-(if (require 'quelpa nil t)
-    (quelpa-self-upgrade)
-  (with-temp-buffer
-    (url-insert-file-contents
-     "https://framagit.org/steckerhalter/quelpa/raw/master/bootstrap.el")
-    (eval-buffer)))
+(require 'package)
+(unless (package-installed-p 'quelpa)
+ (with-temp-buffer
+  (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+  (eval-buffer)
+  (quelpa-self-upgrade)))
+(setq quelpa-upgrade-interval 30)
+(require 'quelpa)
+(ignore-error
+ (quelpa-upgrade-all-maybe)
+ nil)
 (setq quelpa-stable-p nil)
 (quelpa
  '(quelpa-use-package
    :fetcher git
    :url "https://framagit.org/steckerhalter/quelpa-use-package.git"
-   :stable nil)))
+   :stable nil))
 (require 'quelpa-use-package)
 (setq use-package-ensure-function 'quelpa)
 
@@ -52,7 +57,7 @@
 (global-set-key (kbd "C-;") #'avy-goto-word-1)
 (global-set-key (kbd "C-'") #'avy-goto-char-2)
 (global-set-key (kbd "C-M-e") nil)
-(global-set-key (kbd "C-x g") #'magit-status)
+;; (global-set-key (kbd "C-x g") #'magit-status)
 ;; (global-set-key (kbd "C-`") #'toggle-window-dedicated)
 (global-set-key (kbd "C-S-h") #'windmove-left)
 (global-set-key (kbd "C-S-l") #'windmove-right)
@@ -130,6 +135,7 @@
 ;;    ))
 
 (use-package evil
+ :ensure t
  :demand t
  :init
  (setq evil-respect-visual-line-mode t)
@@ -151,46 +157,80 @@
 :bind (("M-k" . evil-scroll-up)
        ("M-j" . evil-scroll-down)))
 
-(use-package auto-complete)
-(use-package avy)
-(use-package clojure-mode)
-(use-package cmake-mode)
-(use-package coffee-mode)
-(use-package color-theme-sanityinc-tomorrow)
-(use-package company-quickhelp)
-(use-package d-mode)
-(use-package dash-at-point)
-(use-package diminish)
-(use-package f)
-(use-package fsharp-mode)
-(use-package glsl-mode)
-(use-package gnu-apl-mode)
-(use-package go-mode)
-(use-package graphviz-dot-mode)
-(use-package haskell-mode)
-(use-package haskell-emacs)
-(use-package hindent)
-(use-package hy-mode)
-(use-package idris-mode)
-(use-package magit)
-(use-package markdown-mode)
-(use-package nix-mode)
-(use-package ocp-indent)
-(use-package php-mode)
-(use-package purescript-mode)
-(use-package racket-mode)
-(use-package reason-mode)
-(use-package rust-mode)
-(use-package scala-mode)
-(use-package unicode-fonts)
-(use-package web)
-(use-package window-purpose)
-(use-package yaml-mode)
+;; magit is always using a too-new version of compat for elpa
+(quelpa '(compat :repo "phikal/compat.el" :fetcher github))
+
+(use-package auto-complete :ensure t)
+(use-package avy :ensure t)
+(use-package clojure-mode :ensure t)
+(use-package cmake-mode :ensure t)
+(use-package coffee-mode :ensure t)
+(use-package color-theme-sanityinc-tomorrow :ensure t)
+(use-package d-mode :ensure t)
+(use-package dash-at-point :ensure t)
+(use-package diminish :ensure t)
+(use-package f :ensure t)
+(use-package fsharp-mode :ensure t)
+(use-package glsl-mode :ensure t)
+(use-package gnu-apl-mode :ensure t)
+(use-package go-mode :ensure t)
+(use-package graphviz-dot-mode :ensure t)
+(use-package haskell-mode :ensure t)
+(use-package haskell-emacs :ensure t)
+(use-package hindent :ensure t)
+(use-package hy-mode :ensure t)
+(use-package idris-mode :ensure t)
+(use-package magit :ensure t)
+(use-package markdown-mode :ensure t)
+;; (use-package nix-mode :ensure t)
+(use-package ocp-indent :ensure t)
+;; (use-package php-mode :ensure t)
+;; (use-package purescript-mode :ensure t)
+(use-package racket-mode :ensure t)
+(use-package reason-mode :ensure t)
+(use-package rust-mode :ensure t)
+(use-package scala-mode :ensure t)
+(use-package unicode-fonts :ensure t)
+(use-package web :ensure t)
+(use-package window-purpose :ensure t)
+(use-package yaml-mode :ensure t)
 (use-package clang-format
+ :ensure t
  :bind (("<C-M-tab>" . clang-format-region)))
-(use-package typescript-mode)
+(use-package typescript-mode :ensure t)
+(use-package lua-mode :ensure t)
+(use-package julia-mode :ensure t)
+(use-package dockerfile-mode :ensure t)
+(use-package eglot :ensure t
+ :config
+ (add-to-list 'eglot-server-programs
+  '(swift-mode . ("xcrun" "sourcekit-lsp"))))
+'(use-package ts-movement
+  :ensure t
+  :quelpa (ts-movement :repo "haritkapadia/ts-movement" :fetcher github))
+
+(defun filter-company-explicit-actions (cmd)
+ (when (company-explicit-action-p) cmd))
+
+(use-package company
+ :ensure t
+ :bind
+ (:map company-active-map
+  ("<tab>" . company-complete-common-or-cycle)
+  ("<return>" . nil) ;;(menu-item nil company-complete :filter filter-company-explicit-actions)
+  ("RET" . nil) ;; (menu-item nil company-complete :filter filter-company-explicit-actions)
+  ("M-<return>" . company-complete-selection)
+  ("SPC" . nil)
+  )
+ :custom
+ (company-auto-complete-chars nil)
+ (company-minimum-prefix-length 1)
+ (company-idle-delay 0.0))
+(use-package company-quickhelp :ensure t)
+(global-company-mode)
 
 (use-package string-inflection
+ :ensure t
  :bind
  (:map global-map
   ("C-c _" . string-inflection-underscore)
@@ -199,17 +239,20 @@
   ("C-c L" . string-inflection-camelcase)))
 
 (use-package csharp-mode
+ :ensure t
  :quelpa)
 
 (use-package dedent
+ :ensure t
  :quelpa
  (dedent
   :fetcher url
   :url "https://raw.githubusercontent.com/deactivated/dedent-el/master/dedent.el"))
 
-(use-package dap-mode)
+;; (use-package dap-mode :ensure t)
 
 (use-package diff-hl
+ :ensure t
  :config
  (global-diff-hl-mode))
 
@@ -286,8 +329,8 @@
         ("C-x t M-t" . treemacs-find-tag)))
 
 (use-package treemacs-evil
-  :after (treemacs evil)
-  :ensure t)
+ :ensure t
+ :after (treemacs evil))
 
 (use-package free-keys
  :ensure t
@@ -296,19 +339,20 @@
   ("C-h C-k" . free-keys)))
 
 (use-package treemacs-projectile
-  :after (treemacs projectile)
-  :ensure t)
+ :ensure t
+ :after (treemacs projectile))
 
 (use-package treemacs-icons-dired
-  :after (treemacs dired)
   :ensure t
+  :after (treemacs dired)
   :config (treemacs-icons-dired-mode))
 
-(use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
+;; (use-package treemacs-magit
+;;   :after (treemacs magit)
+;;   :ensure t)
 
 (use-package zoom-frm
+ :ensure t
  :bind (("<s-wheel-down>" . zoom-out)
         ("<s-mouse-2>" . zoom-frm-unzoom)
         ("<s-next>" . zoom-out)
@@ -316,10 +360,12 @@
         ("<s-prior>" . zoom-in)))
 
 (use-package framemove
+ :ensure t
  :init
  (setq framemove-hook-into-windmove t))
 
 (use-package rjsx-mode
+ :ensure t
  :commands rjsx-mode
  :mode "\\.jsx?$"
  :config
@@ -328,50 +374,52 @@
  (setq js-indent-level 2))
 
 (use-package swift-mode
+ :ensure t
  :commands swift-mode
- :mode "\\.swift\\'"
+ :mode "\\.swift\\(interface\\)?\\'"
  :config
  (setq swift-mode:parenthesized-expression-offset 4)
  (setq swift-mode:multiline-statement-offset 4))
 
-(use-package spinner)
-(use-package lsp-mode
- :hook (swift-mode . #'lsp)
- :commands lsp
- :after spinner
- :config
- (setq lsp-enable-snippet nil)
- :ensure)
-(use-package lsp-ui
- :hook (lsp-mode . lsp-ui-mode)
- :commands lsp-ui-mode
- :ensure)
+;; (use-package spinner)
+;; (use-package lsp-mode
+;;  :hook (swift-mode . #'lsp)
+;;  :commands lsp
+;;  :after spinner
+;;  :config
+;;  (setq lsp-enable-snippet nil)
+;;  :ensure)
+;; (use-package lsp-ui
+;;  :hook (lsp-mode . lsp-ui-mode)
+;;  :commands lsp-ui-mode
+;;  :ensure)
 
-(use-package lsp-treemacs
- :commands lsp-treemacs-errors-list)
+;; (use-package lsp-treemacs
+;;  :commands lsp-treemacs-errors-list)
 
-(use-package lsp-sourcekit
- :after lsp-mode
- :config
- (setq lsp-sourcekit-executable (string-trim (shell-command-to-string "xcrun --find sourcekit-lsp"))))
+;; (use-package lsp-sourcekit
+;;  :after lsp-mode
+;;  :config
+;;  (setq lsp-sourcekit-executable (string-trim (shell-command-to-string "xcrun --find sourcekit-lsp"))))
 
-(use-package json-mode
- :mode "\\.json\\'")
+;; (use-package json-mode
+;;  :mode "\\.json\\'")
 
 (use-package jq-mode
+ :ensure t
  :after json-mode
  :config
  (define-key json-mode-map (kbd "C-c C-j") #'jq-interactively))
 
 (use-package kotlin-mode
+ :ensure t
  :mode "\\.kts?\\'")
 
-(use-package dart-mode :ensure)
-(use-package lsp-dart :ensure)
-(use-package flycheck :ensure)
-(use-package company :ensure)
+(use-package dart-mode :ensure t)
+;; (use-package lsp-dart :ensure t)
+;; (use-package flycheck :ensure)
 
-(use-package hover :ensure)
+(use-package hover :ensure t)
 
 ;; (require 'helm-config)
 ;; (helm-mode 0)
@@ -393,6 +441,7 @@
 ;;    (window-height . 0.4)))
 
 (use-package key-chord
+ :ensure t
  :after (evil)
  :config
  (key-chord-mode 1)
@@ -404,6 +453,7 @@
  (setq powerline-image-apple-rgb t))
 
 (use-package spaceline
+ :ensure t
  :config
  (require 'spaceline-config)
  (spaceline-toggle-version-control-off)
@@ -432,8 +482,6 @@
  (interactive)
  (dolist (pkg '(auctex
                 auctex-latexmk
-                ac-company
-                company-sourcekit
                 ))
   (el-get-install pkg)))
 
@@ -567,6 +615,7 @@
 (or
  ;; (try-set-font "ProggyTiny 11")
  ;; (try-set-font "Crisp 16")
+ ;; (try-set-font "CommitMono 11")
  (try-set-font "Menlo 12")
  (try-set-font "Hack 10")
  (when (eq window-system 'w32)
@@ -580,35 +629,6 @@
 
 (setq org-startup-folded nil)
 (setq org-M-RET-may-split-line nil)
-
-(defun do-ligatures ()
- (interactive)
- ;; from https://github.com/tonsky/FiraCode/wiki/Emacs-instructions
- (when (window-system)
-  (set-default-font "Fira Code"))
- (let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
-                (35 . ".\\(?:[(?[_{]\\)")
-                (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
-                (42 . ".\\(?:\\(?:\\*\\*\\)\\|[*/]\\)")
-                (43 . ".\\(?:\\(?:\\+\\+\\)\\|\\+\\)")
-                (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
-                (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=]\\)")
-                (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
-                (58 . ".\\(?:[:=]\\)")
-                (59 . ".\\(?:;\\)")
-                (60 . ".\\(?:\\(?:!--\\)\\|\\(?:\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[/<=>|-]\\)")
-                (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
-                (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
-                (63 . ".\\(?:[:=?]\\)")
-                (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
-                (94 . ".\\(?:=\\)")
-                (123 . ".\\(?:-\\)")
-                (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
-                (126 . ".\\(?:[=@~-]\\)"))))
-  (dolist (char-regexp alist)
-   (set-char-table-range composition-function-table (car char-regexp)
-    `([,(cdr char-regexp) 0 font-shape-gstring])))))
-
 
 ;; (require 'frame-focus-hints)
 (require 'transpose-window-splits)
@@ -683,6 +703,7 @@
 (global-unset-key (kbd "<M-mouse-1>"))	  ; was mouse-start-secondary
 (global-unset-key (kbd "<M-mouse-2>"))	  ; was mouse-yank-secondary
 (global-unset-key (kbd "<M-mouse-3>"))	  ; was mouse-secondary-save-then-kill
+(global-unset-key (kbd "<mouse-3>"))	  ; was mouse-save-then-kill
 (global-unset-key (kbd "M-'")) ; was abbrev-prefix-mark
 
 (global-unset-key (kbd "C-x C-z"))	  ; was suspend-frame
@@ -759,15 +780,14 @@
 (add-my-hook tex-mode-hook ()
  (set (make-local-variable 'before-save-hook) nil))
 
-(require 'auto-complete)
 (require 'auto-complete-config)
 
-(setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
-(define-key ac-completing-map (kbd "RET") nil)
-(add-my-hook emacs-lisp-mode-hook ()
- (add-to-list 'ac-sources 'ac-source-symbols))
-(add-my-hook auto-complete-mode-hook ()
- (add-to-list 'ac-sources 'ac-source-filename))
+;; (setq-default ac-sources '(ac-source-words-in-same-mode-buffers))
+;; (define-key ac-completing-map (kbd "RET") nil)
+;; (add-my-hook emacs-lisp-mode-hook ()
+;;  (add-to-list 'ac-sources 'ac-source-symbols))
+;; (add-my-hook auto-complete-mode-hook ()
+;;  (add-to-list 'ac-sources 'ac-source-filename))
 
 ;;(define-key ac-complete-mode-map viper-ESC-key 'viper-intercept-ESC-key)
 (add-my-hook objc-mode-hook ()
@@ -777,9 +797,9 @@
 (define-key ac-menu-map (kbd "RET") nil)
 
 
-(setq ac-auto-start t)
-(setq ac-dwim t)
-(global-auto-complete-mode t)
+;; (setq ac-auto-start t)
+;; (setq ac-dwim t)
+;; (global-auto-complete-mode t)
 
 
 (setq help-window-select t)
@@ -789,12 +809,13 @@
 (set-face-background 'fringe "#444444")
 ;; (fringe-mode (cdr-safe (assoc "half-width" fringe-styles)))
 
-(set-face-background 'ac-candidate-face "lightgray")
-(set-face-underline-p 'ac-candidate-face "darkgray")
-(set-face-background 'ac-selection-face "steelblue")
+;; (set-face-background 'ac-candidate-face "lightgray")
+;; (ignore-errors
+;;  (set-face-underline-p 'ac-candidate-face "darkgray"))
+;; (set-face-background 'ac-selection-face "steelblue")
 ;;(define-key ac-completing-map (kbd "M-n") 'ac-next)
 ;;(define-key ac-completing-map (kbd "M-p") 'ac-previous)
-(ac-linum-workaround)
+;; (ac-linum-workaround)
 
 ;;(require 'objc-help)
 ;;(iphoneize)
@@ -863,6 +884,9 @@
   (setq linum-format #'custom-linum-formatter))
 (column-number-mode t)
 
+(when (version<= "26.0.50" emacs-version )
+  (global-display-line-numbers-mode))
+
 (defun eml-modoid ()
  (interactive)
  (fundamental-mode)
@@ -927,6 +951,12 @@
  ;;  (let ((file (file-name-nondirectory buffer-file-name)))
  ;;   (concat "/usr/share/jslint/jslint " file)))
  )
+
+(add-my-hook dart-mode-hook ()
+ (add-to-list* 'compilation-error-regexp-alist-alist
+  '((dart-error   "^[[:blank:]]*\\(\\([^:\n]+.dart\\):\\([0-9]+\\):\\([0-9]+\\): \\(Error\\):\\)" 2 3 4 2 1)
+    (dart-warning "^[[:blank:]]*\\(\\([^:\n]+.dart\\):\\([0-9]+\\):\\([0-9]+\\): \\(Warning\\):\\)" 2 3 4 1 1)))
+ (add-to-list* 'compilation-error-regexp-alist '(dart-error dart-warning)))
 
 (require 'ido)
 (setq ido-create-new-buffer 'always)
@@ -1002,6 +1032,7 @@ means reverse order), BEG and END (region to sort)."
  (require 'haskell-compile)
  (define-key haskell-mode-map "\C-ch" 'haskell-hoogle)
  (local-set-key (kbd "C-c c") #'recompile)
+ (local-set-key (kbd "C-c C-k") #'kill-compilation)
  ;; (set (make-local-variable 'compile-command)
  ;;  (format haskell-compile-command
  ;;   (file-name-nondirectory buffer-file-name)))
@@ -1009,10 +1040,11 @@ means reverse order), BEG and END (region to sort)."
  ;; (turn-on-haskell-indentation)
  (if (fboundp 'electric-indent-local-mode)
   (electric-indent-local-mode -1))
- (hindent-mode 1)
+ ;; (hindent-mode 1)
  (setq compilation-error-regexp-alist haskell-compilation-error-regexp-alist)
  '(add-to-list 'prettify-symbols-alist '("\\" . ?λ))
- '(prettify-symbols-mode t))
+ '(prettify-symbols-mode t)
+ )
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
 
@@ -1193,7 +1225,7 @@ means reverse order), BEG and END (region to sort)."
 
 (setq dabbrev-case-fold-search nil)
 
-(setq ispell-program-name "aspell")
+(setq ispell-program-name "hunspell")
 
 (setq doc-view-resolution 200)
 
@@ -1364,3 +1396,9 @@ means reverse order), BEG and END (region to sort)."
  '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-string-face ((t (:inherit font-lock-string-face)))))
+
+
+(defun save-html-tmp ()
+ (interactive)
+ (with-current-buffer (htmlize-buffer)
+  (write-file "/tmp/formatted.html")))

@@ -12,7 +12,7 @@
 (when nil
  (with-current-buffer "the-colors"
   (erase-buffer)
-  (loop for x from 0 to 1000 do
+  (cl-loop for x from 0 to 1000 do
    (when (= 0 (mod x 21))
     (insert "\n"))
    (let ((opoint (point)))

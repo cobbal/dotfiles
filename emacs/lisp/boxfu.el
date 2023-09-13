@@ -11,12 +11,12 @@ the mode, `toggle' toggles the state.
 │ When Boxfu mode is enabled, magic box drawing happens. │
 └────────────────────────────────────────────────────────┘"
 
- nil
- " ⧉"
- `(("-" . boxfu-insert-intersection)
-   ("=" . boxfu-insert-double-intersection)))
+ :init-value nil
+ :lighter " ⧉"
+ :keymap `(("-" . boxfu-insert-intersection)
+           ("=" . boxfu-insert-double-intersection)))
 
-(global-set-key (kbd "C-c -") #'boxfu)
+(global-set-key (kbd "C-c =") #'boxfu)
 
 (defun boxfu-insert-horizontal ()
  (interactive)

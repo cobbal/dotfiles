@@ -3,7 +3,8 @@
 source ${HOME}/.launchd.conf.sh launchctl
 source ${HOME}/.launchd.conf.sh export
 
-open -a "/Applications/Quicksilver.app"
+open -a ~/Applications/Quicksilver.app
+open -a ~/Applications/Hammerspoon.app
 # open -a "/Applications/Scroll Reverser.app"
 # open -a "/Applications/GrowlTunes.app"
 # open -a "/Applications/Growl.app"
@@ -22,7 +23,7 @@ open -a "/Applications/iTerm.app"
 # open -a "/Applications/Adium.app"
 # open -a "${HOME}/Applications/MicMapper.app"
 # open -a "${HOME}/Applications/gfxCardStatus.app"
-open -a "/Applications/Slate.app"
+# open -a "/Applications/Slate.app"
 # open -a "${HOME}/Applications/Honer.app"
 # open -a "${HOME}/Applications/volume-limiter.app"
 # open -a "/Applications/Copy.app"

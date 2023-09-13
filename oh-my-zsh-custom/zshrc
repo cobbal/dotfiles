@@ -23,6 +23,31 @@
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # plugins=(macos nix colors bitrise)
 
+zstyle ':omz:update' mode reminder
+
+plugins=(
+    zsh-completions
+    zsh-autosuggestions
+    zsh-syntax-highlighting
+    history-substring-search
+    screen
+    # systemd
+    # web-search
+    # extract
+    k
+    # z
+    # sudo
+    # httpie
+    # git
+    # python
+    # docker
+    # lol
+    # pip
+    # pyenv
+    # redis-cli
+    # zsh-wakatime          # enable if you use wakatime with 'https://github.com/wbingli/zsh-wakatime'
+    )
+
 # source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
@@ -78,6 +103,7 @@ alias ceamcs='cemacs'
 alias svgpathpp='gsed -Ee '\''s/\W*([A-Za-z])\b/\n\1/g'\'
 alias ooooops='EDITOR=true git commit -a --amend && git push -f'
 alias ag='ag --path-to-ignore ~/.ignore --hidden'
+alias intel='arch -x86_64'
 
 unset alias_if_present
 
