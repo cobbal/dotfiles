@@ -67,10 +67,10 @@ do_install gitconfig .gitconfig
 do_install gitignore_global .gitignore_global
 do_git https://github.com/robbyrussell/oh-my-zsh .oh-my-zsh
 do_install oh-my-zsh-custom/zshrc .zshrc
-do_install slate/slate .slate
-do_install slate/slate.js .slate.js
 do_install env/loginitems.sh .loginitems.sh
-do_install env/launchd.conf.sh .launchd.conf.sh
-do_abs_install env/com.cobbal.environment.plist Library/LaunchAgents/com.cobbal.environment.plist
+if [[ $(uname) == Darwin ]]; then
+    do_install env/launchd.conf.sh .launchd.conf.sh
+    do_abs_install env/com.cobbal.environment.plist Library/LaunchAgents/com.cobbal.environment.plist
+fi
 
 exit $PROBLEMS
