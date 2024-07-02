@@ -65,8 +65,10 @@ do_install screenrc .screenrc
 do_install vimrc .vimrc
 do_install gitconfig .gitconfig
 do_install gitignore_global .gitignore_global
-do_git https://github.com/robbyrussell/oh-my-zsh .oh-my-zsh
+do_git https://github.com/ohmyzsh/ohmyzsh .config/ohmyzsh
+do_git https://github.com/romkatv/powerlevel10k .config/powerlevel10k
 do_install oh-my-zsh-custom/zshrc .zshrc
+do_install oh-my-zsh-custom/p10k.zsh .p10k.zsh
 do_install env/loginitems.sh .loginitems.sh
 if [[ $(uname) == Darwin ]]; then
     do_install env/launchd.conf.sh .launchd.conf.sh

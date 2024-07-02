@@ -112,9 +112,7 @@
   (list
    "~/.emacs.d/lisp"
    "~/.emacs.d/lisp/from-wiki"
-   "~/.emacs.d/PG/generic"
    "~/.nix-profile/share/emacs/site-lisp"
-   "~/.nix-profile/share/emacs/site-lisp/ProofGeneral/generic"
    "/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/")))
 
 (let ((opam-share (ignore-errors (car (process-lines "opam" "config" "var" "share")))))
@@ -180,9 +178,9 @@
 (use-package hindent :ensure t)
 (use-package hy-mode :ensure t)
 (use-package idris-mode :ensure t)
-(use-package magit :ensure t)
+;; (use-package magit :ensure t)
 (use-package markdown-mode :ensure t)
-;; (use-package nix-mode :ensure t)
+(use-package nix-mode :ensure t)
 (use-package ocp-indent :ensure t)
 ;; (use-package php-mode :ensure t)
 ;; (use-package purescript-mode :ensure t)
@@ -201,7 +199,7 @@
 (use-package lua-mode :ensure t)
 (use-package julia-mode :ensure t)
 (use-package dockerfile-mode :ensure t)
-(use-package eglot :ensure t
+'(use-package eglot :ensure t
  :config
  (add-to-list 'eglot-server-programs
   '(swift-mode . ("xcrun" "sourcekit-lsp"))))
@@ -237,10 +235,6 @@
   ("C-c -" . string-inflection-kebab-case)
   ("C-c l" . string-inflection-lower-camelcase)
   ("C-c L" . string-inflection-camelcase)))
-
-(use-package csharp-mode
- :ensure t
- :quelpa)
 
 (use-package dedent
  :ensure t
@@ -1113,6 +1107,10 @@ means reverse order), BEG and END (region to sort)."
   (lambda ()
    (interactive)
 
+   (use-package proof-general
+    :ensure t
+    :quelpa t)
+
    (unless proof-loaded
     (setq proof-splash-enable nil)
     (setq proof-shell-process-connection-type nil)
@@ -1372,6 +1370,7 @@ means reverse order), BEG and END (region to sort)."
 
 (setq custom-file "/dev/zero")
 
+(setq auth-source-save-behavior nil)
 
 (set-face-attribute 'show-paren-mismatch nil
  :foreground "#000000"
@@ -1396,7 +1395,6 @@ means reverse order), BEG and END (region to sort)."
  '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
  '(agda2-highlight-string-face ((t (:inherit font-lock-string-face)))))
-
 
 (defun save-html-tmp ()
  (interactive)

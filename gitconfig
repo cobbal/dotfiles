@@ -1,6 +1,6 @@
 [user]
     name = Andrew Cobb
-    email = acobb@cricut.com
+    email = andrew.cobb@gmail.com
 [color]
     diff = auto
     status = auto
@@ -43,3 +43,5 @@
     directory = /workspace
 [alias]
     conflicts = !git --no-pager diff --name-only --diff-filter=U
+[init]
+    defaultBranch = master
