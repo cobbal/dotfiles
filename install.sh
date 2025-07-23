@@ -29,7 +29,7 @@ function do_git {
     if [[ -d "$INSTL/.git" ]]; then
         echo "EXISTS, SKIPPING"
     else
-        git clone "$1" "$INSTL"
+        git clone "$1" --depth 1 "$INSTL"
         finish
     fi
 }
@@ -60,7 +60,7 @@ function do_abs_install {
     finish
 }
 
-do_install emacs .emacs.d
+do_install doom .config/doom
 do_install screenrc .screenrc
 do_install vimrc .vimrc
 do_install gitconfig .gitconfig
@@ -74,5 +74,7 @@ if [[ $(uname) == Darwin ]]; then
     do_install env/launchd.conf.sh .launchd.conf.sh
     do_abs_install env/com.cobbal.environment.plist Library/LaunchAgents/com.cobbal.environment.plist
 fi
+do_git https://github.com/doomemacs/doomemacs .config/emacs
+~/.config/emacs/bin/doom install
 
 exit $PROBLEMS

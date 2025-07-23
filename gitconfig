@@ -25,11 +25,6 @@
     tool = Kaleidoscope
 [help]
     autocorrect = 1
-[filter "lfs"]
-    required = true
-    clean = git-lfs clean -- %f
-    smudge = git-lfs smudge -- %f
-    process = git-lfs filter-process
 [credential "https://github.com"]
     helper = !gh auth git-credential
 [credential "https://gist.github.com"]
@@ -43,5 +38,18 @@
     directory = /workspace
 [alias]
     conflicts = !git --no-pager diff --name-only --diff-filter=U
+
+    # Show the most recent commit with difftastic.
+    ds = -c diff.external=difft show --ext-diff
+
+    # `git diff` with difftastic.
+    d = -c diff.external=difft diff
 [init]
     defaultBranch = master
+[http]
+    postBuffer = 524288000
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
