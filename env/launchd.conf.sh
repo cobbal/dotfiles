@@ -3,15 +3,15 @@
 case ${1} in
     (launchctl)
         varset() {
-            checko launchctl setenv "${1}" "${2}"
+            printf "launchctl setenv %s %s" "${1}" "${2}"
             launchctl setenv "${1}" "${2}"
         }
         varunset() {
-            checko launchctl unsetenv "${1}"
+            printf "launchctl unsetenv %s" "${1}"
             launchctl unsetenv "${1}"
         }
         ;;
-    (export)
+    (export|exec)
         varset() {
             export ${${1}}=${2}
         }
@@ -22,7 +22,10 @@ case ${1} in
     (*)
         echo "usage: $0 launchctl"
         echo "       $0 export"
+        echo "       $0 exec <command> ..."
         varset() {
+        }
+        varunset() {
         }
         ;;
 esac
@@ -42,6 +45,8 @@ function {
     lpath+="${HOME}/.ghcup/bin"
     lpath+="${HOME}/bin"
     lpath+="${HOME}/.local/bin"
+    lpath+="${HOME}/.swiftly/bin"
+    lpath+="${HOME}/.config/emacs/bin"
     lpath+="/usr/local/bin"
     lpath+="/opt/homebrew/bin"
     lpath+="/usr/local/sbin"
@@ -52,7 +57,7 @@ function {
     lpath+="/Library/TeX/texbin"
     lpath+="/Applications/Mathematica.app/Contents/MacOS"
     lpath+="/Applications/LilyPond.app/Contents/Resources/bin"
-    lpath+="/Applications/VMware Fusion.app/Contents/Library"
+    # lpath+="/Applications/VMware Fusion.app/Contents/Library"
     lpath+="/Applications/Racket/bin"
     lpath+="${HOME}/Applications/Skim.app/Contents/SharedSupport"
     lpath+="${HOME}/.gem/ruby/latest/bin"
@@ -64,6 +69,8 @@ function {
     lpath+="${HOME}/.mint/bin"
     lpath+="${HOME}/.dotnet/tools"
     lpath+="${HOME}/.rd/bin"
+    lpath+="${HOME}/app-support/JetBrains/Toolbox/scripts"
+    lpath+="/opt/homebrew/opt/dotnet@6/bin"
 
     lpath+="${OPAM}/bin"
     lpath+="${HOME}/.cargo/bin"
@@ -92,6 +99,8 @@ function {
     varset HOMEBREW_NO_ANALYTICS 1
     varset HOMEBREW_CASK_OPTS "--appdir=${HOME}/Applications"
     varset DOTNET_ROOT "/opt/homebrew/opt/dotnet/libexec"
+    varset SWIFTLY_HOME_DIR "${HOME}/.swiftly"
+    varset SWIFTLY_BIN_DIR "${HOME}/.swiftly/bin"
 
     # EC2 stuff
     # varset JAVA_HOME "$(/usr/libexec/java_home)"
@@ -153,3 +162,13 @@ function {
 }
 
 unfunction varset
+unfunction varunset
+
+case ${1} in
+    (exec)
+        shift
+        exec "$@"
+        ;;
+    (*)
+        ;;
+esac

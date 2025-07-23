@@ -16,3 +16,4 @@ quelpa
 .cache
 .lsp-session*
 eshell
+debug-adapters

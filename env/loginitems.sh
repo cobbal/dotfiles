@@ -5,7 +5,7 @@ source ${HOME}/.launchd.conf.sh export
 
 open -a ~/Applications/Quicksilver.app
 open -a ~/Applications/Hammerspoon.app
-# open -a "/Applications/Scroll Reverser.app"
+open -a ~/Applications/"Scroll Reverser.app"
 # open -a "/Applications/GrowlTunes.app"
 # open -a "/Applications/Growl.app"
 # open -a "/Applications/HardwareGrowler.app"
@@ -18,7 +18,7 @@ open -a ~/Applications/Hammerspoon.app
 # open -a "/Applications/Arq.app/Contents/Library/LoginItems/Arq Agent.app"
 # open -a "/Applications/Bartender 3.app"
 # open -a "/Applications/Dropbox.app"
-open -a "/Applications/iTerm.app"
+open -a ~/Applications/iTerm.app
 # open -a "/Applications/Fantastical.app"
 # open -a "/Applications/Adium.app"
 # open -a "${HOME}/Applications/MicMapper.app"

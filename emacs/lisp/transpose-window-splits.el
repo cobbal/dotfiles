@@ -31,7 +31,6 @@
                 (`(,old-dir ,old-size . ,children)
                  (let* ((new-dir (if (eq old-dir 'horiz) 'below 'right))
                         (new-size (window-total-size window (eq old-dir 'vert)))
-                        (foobar (message "%s" new-size))
                         (windows
                          (cl-loop
                           for child in children

@@ -6,6 +6,10 @@
   (require 'color-theme-sanityinc-tomorrow)
   (load-theme 'sanityinc-tomorrow-bright t)))
 
+;; Hack to use GNU tar on OSX for quelpa:
+;; https://github.com/quelpa/quelpa/issues/221#issuecomment-882123183
+(setq quelpa-build-tar-executable "gtar")
+
 (require 'package)
 (unless (package-installed-p 'quelpa)
  (with-temp-buffer
@@ -156,7 +160,7 @@
        ("M-j" . evil-scroll-down)))
 
 ;; magit is always using a too-new version of compat for elpa
-(quelpa '(compat :repo "phikal/compat.el" :fetcher github))
+;; (quelpa '(compat :repo "phikal/compat.el" :fetcher github))
 
 (use-package auto-complete :ensure t)
 (use-package avy :ensure t)
@@ -206,6 +210,7 @@
 '(use-package ts-movement
   :ensure t
   :quelpa (ts-movement :repo "haritkapadia/ts-movement" :fetcher github))
+(use-package powershell :ensure t)
 
 (defun filter-company-explicit-actions (cmd)
  (when (company-explicit-action-p) cmd))
@@ -243,7 +248,19 @@
   :fetcher url
   :url "https://raw.githubusercontent.com/deactivated/dedent-el/master/dedent.el"))
 
-;; (use-package dap-mode :ensure t)
+(use-package dape
+ :ensure t
+ :config
+ ;; Turn on global bindings for setting breakpoints with mouse
+ (dape-breakpoint-global-mode)
+ ;; Pulse source line (performance hit)
+ (add-hook 'dape-display-source-hook 'pulse-momentary-highlight-one-line)
+ :quelpa (dape :repo "svaante/dape" :fetcher github))
+
+(use-package repeat
+ :ensure t
+ :config
+ (repeat-mode))
 
 (use-package diff-hl
  :ensure t
@@ -375,14 +392,12 @@
  (setq swift-mode:parenthesized-expression-offset 4)
  (setq swift-mode:multiline-statement-offset 4))
 
-;; (use-package spinner)
 ;; (use-package lsp-mode
 ;;  :hook (swift-mode . #'lsp)
 ;;  :commands lsp
-;;  :after spinner
 ;;  :config
 ;;  (setq lsp-enable-snippet nil)
-;;  :ensure)
+;;  :ensure t)
 ;; (use-package lsp-ui
 ;;  :hook (lsp-mode . lsp-ui-mode)
 ;;  :commands lsp-ui-mode
@@ -507,7 +522,7 @@
     (- col (current-column))
     ?-))))
 
-;; (require 'window-lock)
+(require 'window-lock)
 
 (setq racket-mode-pretty-lambda nil)
 (setq racket-program "/Applications/Racket/bin/racket")
@@ -834,7 +849,7 @@
         (new-sets (string-join (cons sets (when old-sets (list old-sets))) ",")))
   (setf (alist-get mode dash-at-point-mode-alist) new-sets)))
 
-(dash-at-point-add-mode 'swift-mode "nodejs")
+;; (dash-at-point-add-mode 'swift-mode "nodejs")
 (dash-at-point-add-mode 'racket-mode "racket")
 (dash-at-point-add-mode 'scheme-mode "racket")
 
@@ -1368,33 +1383,19 @@ means reverse order), BEG and END (region to sort)."
             (apply sub-read args))))
 (advice-add 'read-from-minibuffer :around #'cancel-minibuffer-first)
 
-(setq custom-file "/dev/zero")
+(setq custom-file (make-temp-file "emacs-custom"))
+
+(setq read-process-output-max (* 64 1024))
 
 (setq auth-source-save-behavior nil)
+
+(setq eval-expression-print-length nil)
 
 (set-face-attribute 'show-paren-mismatch nil
  :foreground "#000000"
  :background "#00ff00"
  :weight 'bold
  )
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(agda2-highlight-datatype-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-field-face ((t (:foreground "#ad7fa8"))))
- '(agda2-highlight-function-face ((t (:inherit font-lock-function-name-face))))
- '(agda2-highlight-inductive-constructor-face ((t (:foreground "#ef2929"))))
- '(agda2-highlight-keyword-face ((t (:inherit font-lock-keyword-face))))
- '(agda2-highlight-module-face ((t (:inherit font-lock-builtin-face))))
- '(agda2-highlight-number-face ((t (:inherit font-lock-constant-face))))
- '(agda2-highlight-postulate-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-primitive-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-primitive-type-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-record-face ((t (:inherit font-lock-type-face))))
- '(agda2-highlight-string-face ((t (:inherit font-lock-string-face)))))
 
 (defun save-html-tmp ()
  (interactive)
