@@ -99,7 +99,7 @@
   (add-to-list list-var a append compare-fn))
  (symbol-value list-var))
 
-(add-load-path! (expand-file-name "../dotfiles/emacs/lisp"))
+(add-load-path! (expand-file-name "./lisp"))
 
 (when (memq window-system '(mac ns))
   (require 'exec-path-from-shell)

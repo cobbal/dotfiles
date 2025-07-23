@@ -36,6 +36,9 @@ function do_git {
 
 function do_install {
     local SRC="$RWD/$1"
+    if [[ "$ABSOLUTE" = "1" ]]; then
+        SRC="$WD/$1"
+    fi
     local INSTL="$HOME/$2"
     echo -n "Linking '$SRC' to '$INSTL'... "
     if [[ -L "$INSTL" ]]; then
@@ -47,20 +50,7 @@ function do_install {
     finish
 }
 
-function do_abs_install {
-    local SRC="$WD/$1"
-    local INSTL="$HOME/$2"
-    echo -n "Linking '$SRC' to '$INSTL'... "
-    if [[ -L "$INSTL" ]]; then
-        rm "$INSTL"
-    else
-        mv "$INSTL" "$INSTL~"
-    fi
-    ln -s "$SRC" "$INSTL"
-    finish
-}
-
-do_install doom .config/doom
+ABSOLUTE=1 do_install doom .config/doom
 do_install screenrc .screenrc
 do_install vimrc .vimrc
 do_install gitconfig .gitconfig
@@ -72,9 +62,9 @@ do_install oh-my-zsh-custom/p10k.zsh .p10k.zsh
 do_install env/loginitems.sh .loginitems.sh
 if [[ $(uname) == Darwin ]]; then
     do_install env/launchd.conf.sh .launchd.conf.sh
-    do_abs_install env/com.cobbal.environment.plist Library/LaunchAgents/com.cobbal.environment.plist
+    ABSOLUTE=1 do_install env/com.cobbal.environment.plist Library/LaunchAgents/com.cobbal.environment.plist
 fi
 do_git https://github.com/doomemacs/doomemacs .config/emacs
-~/.config/emacs/bin/doom install
+~/.config/emacs/bin/doom install --no-env --no-config; finish
 
 exit $PROBLEMS
