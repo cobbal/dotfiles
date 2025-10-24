@@ -47,7 +47,7 @@ plugins=(
     # redis-cli
     # zsh-wakatime          # enable if you use wakatime with 'https://github.com/wbingli/zsh-wakatime'
 )
-
+fpath+="/opt/homebrew/share/zsh/site-functions"
 source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...

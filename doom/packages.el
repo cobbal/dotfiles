@@ -50,3 +50,6 @@
 
 (package! color-theme-sanityinc-tomorrow)
 (package! exec-path-from-shell)
+(package! just-mode)
+(package! dash-at-point)
+(package! graphviz-dot-mode)

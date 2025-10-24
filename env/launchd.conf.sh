@@ -88,7 +88,7 @@ function {
     lperl5lib+="${HOME}/.perl5/lib/perl5"
     varset PERL5LIB ${(j.:.)lperl5lib}
 
-    varset PYTHONSTARTUP "${HOME}/.python"
+    # varset PYTHONSTARTUP "${HOME}/.python"
     # varset PYTHONPATH "/usr/local/lib/python"
     varset ANDROID_SDK_ROOT "${HOME}/Library/Android/sdk"
 

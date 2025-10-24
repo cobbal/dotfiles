@@ -44,12 +44,13 @@
 
     # `git diff` with difftastic.
     d = -c diff.external=difft diff
+    set-upstream = !git branch --set-upstream-to=origin/$(git symbolic-ref --short HEAD)
 [init]
     defaultBranch = master
 [http]
     postBuffer = 524288000
 [filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true

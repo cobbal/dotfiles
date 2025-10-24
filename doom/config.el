@@ -132,6 +132,8 @@
 (map! "C-c c" #'recompile)
 (map! "C-c C" #'compile)
 (map! "C-c C-k" #'kill-compilation)
+(map! "M-h" #'ns-do-hide-emacs)
+(map! "M-d" #'dash-at-point)
 
 (defun first-error ()
   (interactive)
@@ -156,6 +158,8 @@
 (map! "M-g M-n" #'next-error-skip-warnings)
 (map! "M-g M-p" #'previous-error-skip-warnings)
 
+(map! "C-c C-/" #'describe-char)
+
 (setq initial-major-mode #'text-mode)
 
 ;; https://everything2.com/index.pl?node_id=1038451
@@ -176,7 +180,7 @@
 (map! :map ivy-minibuffer-map "S-SPC" (lambda () (interactive) (insert " ")))
 (global-auto-revert-mode 1)
 
-(remove-hook! 'compilation-filter-hook #'comint-truncate-buffer)
+(advice-add 'comint-truncate-buffer :around #'ignore)
 
 (after! swift-mode
   (setq swift-mode:parenthesized-expression-offset 4)
@@ -185,7 +189,35 @@
 (after! evil-snipe
   (setq evil-snipe-scope 'buffer))
 
+(add-hook! 'compilation-mode-hook
+  (defun my-compilation-mode-hook ()
+    (setq truncate-lines nil)
+    (set (make-local-variable 'truncate-partial-width-windows) nil)))
 
+(after! compile
+  (add-to-list 'compilation-error-regexp-alist-alist
+               '(xcbeautify
+                 "^\\(❌\\|⚠️\\)  *\\([^:]*\\):\\([1-9][0-9]*\\)\\(:\\([1-9][0-9]*\\)\\)?:"
+                 2 3 5 nil 0))
+  (add-to-list 'compilation-error-regexp-alist 'xcbeautify))
+
+(add-hook! 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+
+;; https://sites.google.com/site/steveyegge2/my-dot-emacs-file
+(defun rename-file-and-buffer (new-name)
+ "Renames both current buffer and file it's visiting to NEW-NAME." (interactive "sNew name: ")
+ (let ((name (buffer-name))
+       (filename (buffer-file-name)))
+  (if (not filename)
+   (message "Buffer '%s' is not visiting a file!" name)
+   (if (get-buffer new-name)
+    (message "A buffer named '%s' already exists!" new-name)
+    (progn
+     (rename-file filename new-name 1)
+     (rename-buffer new-name)
+     (set-visited-file-name new-name)
+     (set-buffer-modified-p nil))))))
+(map! :map doom-leader-buffer-map :desc "Rename file and buffer" "R" #'rename-file-and-buffer)
 
 ;; ;; -*- lexical-binding: t; -*-
 ;; ;; Do this first to minimize color flash
@@ -1480,22 +1512,6 @@
 ;;    (if (and ix (equal "LaTeX" (substring mode-name ix)) nil)
 ;;     (LaTeX-fill-region-as-paragraph beg (point))
 ;;     (fill-region-as-paragraph beg (point))))))
-
-;; ;; https://sites.google.com/site/steveyegge2/my-dot-emacs-file
-;; (defun rename-file-and-buffer (new-name)
-;;  "Renames both current buffer and file it's visiting to NEW-NAME." (interactive "sNew name: ")
-;;  (let ((name (buffer-name))
-;;        (filename (buffer-file-name)))
-;;   (if (not filename)
-;;    (message "Buffer '%s' is not visiting a file!" name)
-;;    (if (get-buffer new-name)
-;;     (message "A buffer named '%s' already exists!" new-name)
-;;     (progn
-;;      (rename-file filename new-name 1)
-;;      (rename-buffer new-name)
-;;      (set-visited-file-name new-name)
-;;      (set-buffer-modified-p nil))))))
-;; (global-set-key (kbd "M-R") #'rename-file-and-buffer)
 
 ;; (defun move-buffer-file (dir)
 ;;  "Moves both current buffer and file it's visiting to DIR." (interactive "DNew directory: ")
