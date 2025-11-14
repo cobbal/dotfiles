@@ -94,6 +94,8 @@
 (setq mac-command-modifier 'meta)
 (setq mac-option-modifier 'super)
 
+(setq-default buffer-file-coding-system 'utf-8-unix)
+
 (defun add-to-list* (list-var elements &optional append compare-fn)
  (dolist (a elements)
   (add-to-list list-var a append compare-fn))
@@ -201,6 +203,11 @@
                  2 3 5 nil 0))
   (add-to-list 'compilation-error-regexp-alist 'xcbeautify))
 
+(add-hook! 'before-save-hook
+  (defun my-before-save-hook ()
+    (delete-trailing-whitespace)
+    (refmt-before-save)))
+
 (add-hook! 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
 ;; https://sites.google.com/site/steveyegge2/my-dot-emacs-file
@@ -218,6 +225,24 @@
      (set-visited-file-name new-name)
      (set-buffer-modified-p nil))))))
 (map! :map doom-leader-buffer-map :desc "Rename file and buffer" "R" #'rename-file-and-buffer)
+
+(setq lisp-indent-offset 2)
+(add-to-list* 'auto-mode-alist
+  '(("\\.wat\\'" . wat-mode)))
+
+(if (eq window-system 'w32)
+  ;; from https://www.reddit.com/r/emacs/comments/1dqno2l/comment/ml2ckkp/
+  (defun kill-compilation ()
+    "Kill the process made by the \\[compile] or \\[grep] commands."
+    (interactive)
+    (let* ((buffer (compilation-find-buffer))
+            (comp-proc (get-buffer-process buffer)))
+      (if comp-proc
+        (progn
+          (interrupt-process (get-buffer-process buffer))
+          (sit-for 1)
+          (delete-process (get-buffer-process buffer)))
+        (error "The %s process is not running" (downcase mode-name))))))
 
 ;; ;; -*- lexical-binding: t; -*-
 ;; ;; Do this first to minimize color flash
@@ -326,11 +351,6 @@
 ;;    (defun ,my-hook-name ,args
 ;;     ,@body)
 ;;    (add-hook ',hook-name ',my-hook-name))))
-
-;; (defun add-to-list* (list-var elements &optional append compare-fn)
-;;  (dolist (a elements)
-;;   (add-to-list list-var a append compare-fn))
-;;  (symbol-value list-var))
 
 ;; (add-to-list* 'load-path
 ;;  (mapcar #'expand-file-name
@@ -1295,10 +1315,6 @@
 ;;  (if (fboundp 'electric-indent-local-mode)
 ;;   (electric-indent-local-mode -1))
 ;;  (hindent-mode 1))
-
-;; (add-my-hook before-save-hook ()
-;;  (delete-trailing-whitespace)
-;;  (refmt-before-save))
 
 ;; (add-my-hook after-save-hook ()
 ;;  (executable-make-buffer-file-executable-if-script-p))
