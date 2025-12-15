@@ -86,9 +86,16 @@
 (when (boundp '+popup-defaults)
   (plist-put +popup-defaults :modeline t))
 (after! evil-snipe
-  (setq evil-snipe-repeat-keys nil))
+  (setq evil-snipe-repeat-keys nil)
+  (setq evil-snipe-scope 'buffer))
+(map!
+ :nv "<up>" #'evil-previous-visual-line
+ :nv "<down>" #'evil-next-visual-line
+ :nv "j" #'evil-next-visual-line
+ :nv "k" #'evil-previous-visual-line)
 (after! lsp-mode
-  (setq lsp-enable-indentation nil))
+  (setq lsp-enable-indentation nil)
+  (setq lsp-file-watch-threshold 10000))
 
 ;; normal config
 (setq mac-command-modifier 'meta)
@@ -186,20 +193,21 @@
   (setq swift-mode:parenthesized-expression-offset 4)
   (setq swift-mode:multiline-statement-offset 4))
 
-(after! evil-snipe
-  (setq evil-snipe-scope 'buffer))
-
 (add-hook! 'compilation-mode-hook
   (defun my-compilation-mode-hook ()
     (setq truncate-lines nil)
     (set (make-local-variable 'truncate-partial-width-windows) nil)))
 
 (after! compile
-  (add-to-list 'compilation-error-regexp-alist-alist
-               '(xcbeautify
-                 "^\\(❌\\|⚠️\\)  *\\([^:]*\\):\\([1-9][0-9]*\\)\\(:\\([1-9][0-9]*\\)\\)?:"
-                 2 3 5 nil 0))
-  (add-to-list 'compilation-error-regexp-alist 'xcbeautify))
+  (add-to-list*
+   'compilation-error-regexp-alist-alist
+   '((xcbeautify
+      "^\\(❌\\|⚠️\\)  *\\([^:]*\\):\\([1-9][0-9]*\\)\\(:\\([1-9][0-9]*\\)\\)?:"
+      2 3 5 nil 0)
+     (swift-backtrace
+      " at \\(\\([^ :\n]+\\):\\([0-9]+\\)\\(:\\([1-9][0-9]*\\)\\)?\\)$"
+      2 3 5 nil 1)))
+  (add-to-list* 'compilation-error-regexp-alist '(xcbeautify swift-backtrace)))
 
 (add-hook! 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
@@ -218,6 +226,8 @@
      (set-visited-file-name new-name)
      (set-buffer-modified-p nil))))))
 (map! :map doom-leader-buffer-map :desc "Rename file and buffer" "R" #'rename-file-and-buffer)
+
+(global-visual-line-mode t)
 
 ;; ;; -*- lexical-binding: t; -*-
 ;; ;; Do this first to minimize color flash
