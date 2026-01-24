@@ -140,6 +140,7 @@
 (defun first-error ()
   (interactive)
   (next-error 1 t))
+(setq compilation-auto-jump-to-first-error (when nil 'first-known))
 (defun first-error-skip-warnings ()
   (interactive)
   (let ((compilation-skip-threshold 2))
@@ -179,7 +180,14 @@
 
 (advice-add 'swift-mode:resolve-swift-test-file :around #'ignore)
 (advice-add 'swift-mode:setup-swift-testing-buffer :around #'ignore)
-(map! :map ivy-minibuffer-map "S-SPC" (lambda () (interactive) (insert " ")))
+
+(after! ivy
+  (map! :map ivy-minibuffer-map "S-SPC" (lambda () (interactive) (insert " ")))
+  (map! :map ivy-minibuffer-map "RET" #'ivy-immediate-done)
+  (map! :map ivy-minibuffer-map "M-RET" #'exit-minibuffer))
+
+(map! :map minibuffer-mode-map "C-k" #'kill-line)
+
 (global-auto-revert-mode 1)
 
 (advice-add 'comint-truncate-buffer :around #'ignore)
@@ -187,6 +195,9 @@
 (after! swift-mode
   (setq swift-mode:parenthesized-expression-offset 4)
   (setq swift-mode:multiline-statement-offset 4))
+
+(after! evil
+  (setq evil-want-minibuffer nil))
 
 (after! evil-snipe
   (setq evil-snipe-scope 'buffer))
@@ -227,6 +238,9 @@
 (map! :map doom-leader-buffer-map :desc "Rename file and buffer" "R" #'rename-file-and-buffer)
 
 (setq lisp-indent-offset 2)
+
+(autoload 'wat-mode "wat-mode.el" nil t)
+
 (add-to-list* 'auto-mode-alist
   '(("\\.wat\\'" . wat-mode)))
 
