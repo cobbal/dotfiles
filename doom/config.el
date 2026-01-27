@@ -97,6 +97,9 @@
   (setq lsp-enable-indentation nil)
   (setq lsp-file-watch-threshold 10000))
 
+(after! recentf
+  (recentf-mode -1))
+
 ;; normal config
 (setq mac-command-modifier 'meta)
 (setq mac-option-modifier 'super)
