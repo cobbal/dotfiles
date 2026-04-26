@@ -96,9 +96,8 @@
 (after! lsp-mode
   (setq lsp-enable-indentation nil)
   (setq lsp-file-watch-threshold 10000))
-
-(after! recentf
-  (recentf-mode -1))
+(after! recentf (recentf-mode -1))
+(menu-bar-mode 1)
 
 ;; normal config
 (setq mac-command-modifier 'meta)
@@ -121,15 +120,8 @@
   ;; (setq exec-path-from-shell-debug t)
   (exec-path-from-shell-initialize))
 
-(when (memq window-system '(mac ns))
- (setq frame-resize-pixelwise t)
- (let ((fullscreen-mode 'maximized))
-  (when (> (x-display-pixel-width) 1440) ;; crude test for multiple displays
-   (setq initial-frame-alist `((left - 2000) . ,initial-frame-alist))
-   '(setq fullscreen-mode 'fullscreen))
-  ;;(setq ns-use-native-fullscreen nil)
-  (setq initial-frame-alist
-   `((fullscreen . ,fullscreen-mode) . ,initial-frame-alist))))
+(setq frame-resize-pixelwise t)
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
 
 (require 'transpose-window-splits)
 
@@ -206,6 +198,12 @@
   (setq swift-mode:parenthesized-expression-offset 4)
   (setq swift-mode:multiline-statement-offset 4))
 
+(after! sml-mode
+  ;; After is already too late for setting this variable, so manually remove the hook it installed
+  (setq sml-electric-pipe-mode nil)
+  (map! :map 'sml-mode-map :i "|" #'self-insert-command)
+  (remove-hook 'post-self-insert-hook #'sml-post-self-insert-pipe))
+
 (after! evil
   (setq evil-want-minibuffer nil))
 
@@ -219,14 +217,16 @@
 
 (after! compile
   (add-to-list*
-   'compilation-error-regexp-alist-alist
-   '((xcbeautify
-      "^\\(❌\\|⚠️\\)  *\\([^:]*\\):\\([1-9][0-9]*\\)\\(:\\([1-9][0-9]*\\)\\)?:"
-      2 3 5 nil 0)
-     (swift-backtrace
-      " at \\(\\([^ :\n]+\\):\\([0-9]+\\)\\(:\\([1-9][0-9]*\\)\\)?\\)$"
-      2 3 5 nil 1)))
-  (add-to-list* 'compilation-error-regexp-alist '(xcbeautify swift-backtrace)))
+    'compilation-error-regexp-alist-alist
+    '((xcbeautify
+        "^\\(❌\\|⚠️\\)  *\\([^:]*\\):\\([1-9][0-9]*\\)\\(:\\([1-9][0-9]*\\)\\)?:"
+        2 3 5 nil 0)
+       (swift-backtrace
+         " at \\(\\([^ :\n]+\\):\\([0-9]+\\)\\(:\\([1-9][0-9]*\\)\\)?\\)$"
+         2 3 5 nil 1)
+       (mlton "^\\(Error\\|\\(Warning\\)\\): \\(\\([^ ]*\\) \\([0-9]*\\)\\.\\([0-9]*\\)-\\([0-9]*\\)\\.\\([0-9]*\\)\\)\\.$"
+         4 (5 . 7) (6 . 8) (2) 3)))
+  (add-to-list* 'compilation-error-regexp-alist '(xcbeautify swift-backtrace mlton)))
 
 (add-hook! 'before-save-hook
   (defun my-before-save-hook ()
@@ -237,18 +237,18 @@
 
 ;; https://sites.google.com/site/steveyegge2/my-dot-emacs-file
 (defun rename-file-and-buffer (new-name)
- "Renames both current buffer and file it's visiting to NEW-NAME." (interactive "sNew name: ")
- (let ((name (buffer-name))
-       (filename (buffer-file-name)))
-  (if (not filename)
-   (message "Buffer '%s' is not visiting a file!" name)
-   (if (get-buffer new-name)
-    (message "A buffer named '%s' already exists!" new-name)
-    (progn
-     (rename-file filename new-name 1)
-     (rename-buffer new-name)
-     (set-visited-file-name new-name)
-     (set-buffer-modified-p nil))))))
+  "Renames both current buffer and file it's visiting to NEW-NAME." (interactive "sNew name: ")
+  (let ((name (buffer-name))
+         (filename (buffer-file-name)))
+    (if (not filename)
+      (message "Buffer '%s' is not visiting a file!" name)
+      (if (get-buffer new-name)
+        (message "A buffer named '%s' already exists!" new-name)
+        (progn
+          (rename-file filename new-name 1)
+          (rename-buffer new-name)
+          (set-visited-file-name new-name)
+          (set-buffer-modified-p nil))))))
 (map! :map doom-leader-buffer-map :desc "Rename file and buffer" "R" #'rename-file-and-buffer)
 
 (global-visual-line-mode t)
@@ -258,7 +258,8 @@
 (autoload 'wat-mode "wat-mode.el" nil t)
 
 (add-to-list* 'auto-mode-alist
-  '(("\\.wat\\'" . wat-mode)))
+  '(("\\.wat\\'" . wat-mode)
+     ("\\.mlb\\'" . sml-mode)))
 
 (if (eq window-system 'w32)
   ;; from https://www.reddit.com/r/emacs/comments/1dqno2l/comment/ml2ckkp/
