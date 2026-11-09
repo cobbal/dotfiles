@@ -52,7 +52,7 @@ source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
 
-# source ~/.launchd.conf.sh export
+source ~/.launchd.conf.sh export
 
 set +o multios
 
@@ -168,6 +168,14 @@ if (( $+commands[tag] )); then
   tag() { command tag "$@"; source ${TAG_ALIAS_FILE} 2>/dev/null }
   alias ag='tag --hidden --path-to-ignore ~/.ignore'
 fi
+
+# Like ag, but the pattern is at the end
+function ga() {
+    # https://unix.stackexchange.com/a/611717/5471
+    last=${argv[-1]}
+    unset 'argv[-1]'
+    ag $last $@
+}
 
 eval $(thefuck --alias fix 2>/dev/null) 2>/dev/null || true
 source "${HOME}/programs/git-subrepo/.rc" 2>/dev/null || true

@@ -28,8 +28,12 @@
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
 ;; refresh your font settings. If Emacs still can't find your font, it likely
 ;; wasn't installed correctly. Font issues are rarely Doom issues!
-(setq doom-font (font-spec :family "Hack Nerd Font Mono"))
-(setq doom-symbol-font doom-font)
+;; (setq doom-font (font-spec :family "Hack Nerd Font Mono"))
+(setq-default mac-allow-anti-aliasing t)
+(setq doom-font (font-spec :family "JetBrains Mono NL" :weight 'normal))
+(setq doom-symbol-font (font-spec :family "Hack Nerd Font Mono"))
+(setq doom-leader-alt-key "s-SPC")
+(setq doom-localleader-alt-key "s-SPC m")
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -44,6 +48,7 @@
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
 
+;; (setq confirm-kill-emacs nil)
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -93,6 +98,8 @@
  :nv "<down>" #'evil-next-visual-line
  :nv "j" #'evil-next-visual-line
  :nv "k" #'evil-previous-visual-line)
+(after! corfu
+  (map! :map corfu-mode-map :nv "C-SPC" #'set-mark-command))
 (after! lsp-mode
   (setq lsp-enable-indentation nil)
   (setq lsp-file-watch-threshold 10000))
@@ -134,18 +141,38 @@
 (require 'transpose-window-splits)
 
 (map! "C-S-h" #'windmove-left)
-(map! "C-S-l" #'windmove-right)
-(map! "C-S-k" #'windmove-up)
 (map! "C-S-j" #'windmove-down)
+(map! "C-S-k" #'windmove-up)
+(map! "C-S-l" #'windmove-right)
+
 (map! :map evil-window-map ";" #'transpose-window-splits)
+(map! :map evil-window-map "H" #'windmove-swap-states-left)
+(map! :map evil-window-map "J" #'windmove-swap-states-down)
+(map! :map evil-window-map "K" #'windmove-swap-states-up)
+(map! :map evil-window-map "L" #'windmove-swap-states-right)
 (map! "s-t" nil) ;; previously menu-set-font
+
+(map! "C-<mouse-4>" nil) ;; previously m mouse-wheel-text-scale
+(map! "C-<mouse-5>" nil) ;; previously m mouse-wheel-text-scale
+(map! "C-<wheel-down>" nil) ;; previously m mouse-wheel-text-scale
+(map! "C-<wheel-up>" nil) ;; previously m mouse-wheel-text-scale
+
 (map! "M-s" #'save-buffer)
 
 (map! "C-c c" #'recompile)
 (map! "C-c C" #'compile)
 (map! "C-c C-k" #'kill-compilation)
+
+;; Stop compilation-mode from creating so many new windows
+(defadvice compile-goto-error (around my-compile-goto-error activate)
+  (let ((display-buffer-overriding-action '(display-buffer-in-previous-window)))
+    ad-do-it))
+
 (map! "M-h" #'ns-do-hide-emacs)
 (map! "M-d" #'dash-at-point)
+
+(after! string-inflection
+  (map! "C-M-S-l" #'string-inflection-cycle))
 
 (defun first-error ()
   (interactive)
@@ -207,7 +234,11 @@
   (setq swift-mode:multiline-statement-offset 4))
 
 (after! evil
-  (setq evil-want-minibuffer nil))
+  (setq evil-want-minibuffer nil)
+  (evil-transient-mark -1))
+
+(after! transient-mark-mode
+  (transient-mark-mode -1))
 
 (after! evil-snipe
   (setq evil-snipe-scope 'buffer))
@@ -219,14 +250,20 @@
 
 (after! compile
   (add-to-list*
-   'compilation-error-regexp-alist-alist
-   '((xcbeautify
-      "^\\(❌\\|⚠️\\)  *\\([^:]*\\):\\([1-9][0-9]*\\)\\(:\\([1-9][0-9]*\\)\\)?:"
-      2 3 5 nil 0)
-     (swift-backtrace
-      " at \\(\\([^ :\n]+\\):\\([0-9]+\\)\\(:\\([1-9][0-9]*\\)\\)?\\)$"
-      2 3 5 nil 1)))
-  (add-to-list* 'compilation-error-regexp-alist '(xcbeautify swift-backtrace)))
+    'compilation-error-regexp-alist-alist
+    '((xcbeautify
+        "^\\(❌\\|⚠️\\)  *\\([^:]*\\):\\([1-9][0-9]*\\)\\(:\\([1-9][0-9]*\\)\\)?:"
+        2 3 5 nil 0)
+       (new-swift-errors
+         "^error: \\(\\([^ :\n]+\\):\\([0-9]+\\)\\(:\\([1-9][0-9]*\\)\\)?.*\\)"
+         2 3 5 nil 1)
+       (swift-backtrace
+         " at \\(\\([^ :\n]+\\):\\([0-9]+\\)\\(:\\([1-9][0-9]*\\)\\)?\\)$"
+         2 3 5 nil 1)
+       (pyrefly
+         "^ERROR \\([^:]*\\):\\([1-9][0-9]*\\):\\([1-9][0-9]*\\)-\\([1-9][0-9]*\\):"
+         1 2 3 nil 0)))
+  (add-to-list* 'compilation-error-regexp-alist '(xcbeautify new-swift-errors swift-backtrace pyrefly)))
 
 (add-hook! 'before-save-hook
   (defun my-before-save-hook ()

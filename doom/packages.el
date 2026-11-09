@@ -53,3 +53,4 @@
 (package! just-mode)
 (package! dash-at-point)
 (package! graphviz-dot-mode)
+(package! string-inflection)

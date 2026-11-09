@@ -70,7 +70,7 @@ function {
     lpath+="${HOME}/.dotnet/tools"
     lpath+="${HOME}/.rd/bin"
     lpath+="${HOME}/app-support/JetBrains/Toolbox/scripts"
-    lpath+="/opt/homebrew/opt/dotnet@6/bin"
+    lpath+="/usr/local/share/dotnet"
 
     lpath+="${OPAM}/bin"
     lpath+="${HOME}/.cargo/bin"

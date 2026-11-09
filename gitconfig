@@ -37,6 +37,7 @@
 [safe]
     directory = /workspace
 [alias]
+    git = !false
     conflicts = !git --no-pager diff --name-only --diff-filter=U
 
     # Show the most recent commit with difftastic.

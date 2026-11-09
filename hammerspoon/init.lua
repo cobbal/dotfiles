@@ -64,14 +64,14 @@ print(hs.inspect(hs.screen.allScreens()))
 
 local layouts = {
    inOffice = {
-      {"Emacs", nil, getScreen(4), hs.layout.maximized, nil, nil},
-      {"Firefox Nightly", nil, getScreen(2), hs.layout.maximized, nil, nil},
+      {"Emacs", nil, getScreen(1), hs.layout.maximized, nil, nil},
+      {"Firefox Nightly", nil, getScreen(1), hs.layout.maximized, nil, nil},
       {"Skim", nil, getScreen(2), hs.layout.maximized, nil, nil},
 
-      {"Microsoft Teams", nil, getScreen(3), hs.layout.maximized, nil, nil},
-      {"Slack", nil, getScreen(1), "[0,0 80x100]", nil, nil},
-      {"Microsoft Outlook", nil, getScreen(1), "[6,0 74x100]", nil, nil},
-      {"Music", "MiniPlayer", getScreen(1), "[80,0 20x100]", nil, nil},
+      {"Microsoft Teams", nil, getScreen(2), hs.layout.maximized, nil, nil},
+      {"Slack", nil, getScreen(4), "[0,0 80x100]", nil, nil},
+      {"Microsoft Outlook", nil, getScreen(4), "[6,0 74x100]", nil, nil},
+      {"Music", "MiniPlayer", getScreen(4), "[80,0 20x10]", nil, nil},
    },
 }
 
